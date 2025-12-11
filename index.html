@@ -1,0 +1,39 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>社内ツール ポータル</title>
+    <!-- その他のスタイル設定（CSS）はそのまま残してOK -->
+    <style>
+        /* CSSはさっきのままでOKですが、bodyのdisplay:noneだけ消しておくとスムーズです */
+        /* もし面倒ならそのままでも動きます */
+        body { font-family: sans-serif; background: #f0f2f5; display: none; } /* 最初は隠す */
+        /* ... 他のデザイン ... */
+    </style>
+</head>
+<body>
+
+    <!-- ▼▼▼ ここが変わったところ！ ▼▼▼ -->
+    <script src="auth.js"></script>
+    <script>
+        // ページが開いた瞬間
+        if (isLoggedin()) {
+            // ログイン済みなら画面を表示
+            document.body.style.display = "flex";
+        } else {
+            // ログインしてないならパスワードを聞く
+            login();
+        }
+    </script>
+    <!-- ▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲ -->
+
+    <header><h1>社内書類作成ツール</h1></header>
+    <div class="menu-container">
+        <!-- メニューの中身はそのまま... -->
+        <a href="zaishoku.html" class="card">
+            <span class="card-title">在職証明書</span>
+        </a>
+    </div>
+</body>
+</html>

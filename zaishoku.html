@@ -1,0 +1,330 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>在職証明書作成ツール</title>
+    <style>
+        /* --- 全体のレイアウト --- */
+        body {
+            /* 最初は隠しておく（セキュリティのため） */
+            display: none; 
+            
+            font-family: "Helvetica Neue", Arial, sans-serif;
+            background-color: #f4f4f4;
+            margin: 0;
+            padding: 20px;
+            gap: 20px;
+            justify-content: center;
+            min-height: 100vh;
+        }
+
+        /* --- 入力フォームエリア --- */
+        .editor-pane {
+            width: 350px;
+            background: #fff;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+            height: fit-content;
+        }
+        .editor-pane h2 { font-size: 18px; margin-bottom: 15px; border-bottom: 2px solid #ddd; padding-bottom: 5px; }
+        .form-group { margin-bottom: 15px; }
+        .form-group label { display: block; font-size: 12px; font-weight: bold; margin-bottom: 5px; color: #555; }
+        .form-group input, .form-group textarea {
+            width: 100%;
+            padding: 8px;
+            box-sizing: border-box;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+            font-size: 14px;
+        }
+        button.print-btn {
+            width: 100%;
+            padding: 12px;
+            background-color: #007bff;
+            color: white;
+            border: none;
+            border-radius: 4px;
+            font-size: 16px;
+            cursor: pointer;
+            font-weight: bold;
+            margin-top: 10px;
+        }
+        button.print-btn:hover { background-color: #0056b3; }
+
+        /* --- プレビューエリア（A4用紙イメージ） --- */
+        .preview-pane {
+            flex-grow: 1;
+            display: flex;
+            justify-content: center;
+        }
+        
+        #certificate {
+            width: 210mm; /* A4幅 */
+            min-height: 297mm; /* A4高さ */
+            background: white;
+            padding: 20mm; /* 余白 */
+            box-sizing: border-box;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.2);
+            position: relative;
+            
+            /* フォント設定：明朝体で公的文書感を出す */
+            font-family: "Yu Mincho", "YuMincho", "Hiragino Mincho ProN", "HGS Mincho E", serif;
+            color: #000;
+        }
+
+        /* --- 証明書の中身のデザイン --- */
+        .cert-title {
+            text-align: center;
+            font-size: 32px;
+            font-weight: bold;
+            margin-bottom: 40px;
+            letter-spacing: 5px;
+            text-decoration: underline double; /* 二重下線 */
+        }
+
+        .cert-date {
+            text-align: right;
+            margin-bottom: 30px;
+        }
+
+        .cert-body {
+            margin-bottom: 40px;
+            line-height: 2;
+        }
+
+        .cert-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-bottom: 50px;
+            border: 2px solid #333;
+        }
+        .cert-table th, .cert-table td {
+            border: 1px solid #333;
+            padding: 12px 15px;
+            vertical-align: middle;
+        }
+        .cert-table th {
+            width: 30%;
+            background-color: #f9f9f9;
+            text-align: left;
+            font-weight: normal;
+        }
+        .cert-table td {
+            width: 70%;
+            font-weight: bold;
+            font-size: 18px;
+        }
+
+        .cert-footer {
+            margin-top: 50px;
+            text-align: right;
+            line-height: 1.6;
+        }
+        .company-name { font-size: 20px; font-weight: bold; margin-top: 10px; }
+        .ceo-name { font-size: 18px; margin-top: 5px; }
+
+        /* --- 印刷時の設定 --- */
+        @media print {
+            body {
+                background: none;
+                margin: 0;
+                padding: 0;
+                display: block !important; /* 印刷時は必ずブロック表示 */
+            }
+            .editor-pane { display: none; } /* フォームを消す */
+            .preview-pane { display: block; }
+            #certificate {
+                box-shadow: none;
+                width: 100%;
+                height: 100%;
+                margin: 0;
+                padding: 20mm; /* 印刷時の余白確保 */
+                page-break-after: always;
+            }
+            @page { margin: 0; size: A4 portrait; }
+        }
+
+        /* レスポンシブ対応（スマホなどは縦並び） */
+        @media (max-width: 900px) {
+            body { flex-direction: column; align-items: center; }
+            .editor-pane { width: 100%; max-width: 500px; }
+            #certificate { width: 100%; font-size: 0.9em; padding: 10mm;}
+        }
+    </style>
+</head>
+<body>
+
+    <!-- ▼▼▼ セキュリティチェック（ここが重要！） ▼▼▼ -->
+    <script src="auth.js"></script>
+    <script>
+        // auth.jsの手形チェックを使うが、レイアウト(flex)を維持するために手動で設定
+        if (sessionStorage.getItem("access_token") !== "allowed") {
+            alert("ログインしていません。メニュー画面に戻ります。");
+            window.location.href = "index.html";
+        } else {
+            // ログインOKなら、このページ専用のレイアウト(flex)で表示する
+            document.body.style.display = "flex";
+        }
+    </script>
+    <!-- ▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲ -->
+
+
+    <!-- 左側：入力フォーム -->
+    <div class="editor-pane">
+        <h2>入力フォーム</h2>
+        
+        <div class="form-group">
+            <label>証明日 (発行日)</label>
+            <input type="date" id="issueDate">
+        </div>
+
+        <hr>
+
+        <div class="form-group">
+            <label>氏名</label>
+            <input type="text" id="name" placeholder="山田 太郎">
+        </div>
+        <div class="form-group">
+            <label>生年月日</label>
+            <input type="date" id="birthDate">
+        </div>
+        <div class="form-group">
+            <label>住所</label>
+            <input type="text" id="address" placeholder="東京都千代田区...">
+        </div>
+        <div class="form-group">
+            <label>在職期間 (開始)</label>
+            <input type="date" id="periodStart">
+        </div>
+        <div class="form-group">
+            <label>在職期間 (終了/現在)</label>
+            <input type="text" id="periodEnd" placeholder="現在に至る、または日付">
+        </div>
+        <div class="form-group">
+            <label>所属・役職</label>
+            <input type="text" id="department" placeholder="営業部 課長">
+        </div>
+        <div class="form-group">
+            <label>業務内容</label>
+            <textarea id="jobDesc" rows="2" placeholder="営業活動およびチームマネジメント"></textarea>
+        </div>
+
+        <hr>
+
+        <div class="form-group">
+            <label>会社住所</label>
+            <input type="text" id="compAddress" placeholder="東京都港区...">
+        </div>
+        <div class="form-group">
+            <label>会社名</label>
+            <input type="text" id="compName" placeholder="株式会社〇〇">
+        </div>
+        <div class="form-group">
+            <label>代表者名</label>
+            <input type="text" id="compRep" placeholder="代表取締役 佐藤 次郎">
+        </div>
+
+        <button class="print-btn" onclick="window.print()">🖨️ 印刷する / PDF保存</button>
+    </div>
+
+    <!-- 右側：プレビュー -->
+    <div class="preview-pane">
+        <div id="certificate">
+            <div class="cert-title">在職証明書</div>
+            
+            <div class="cert-date">
+                <span id="viewIssueDate">令和〇年〇月〇日</span>
+            </div>
+
+            <div class="cert-body">
+                下記の者は、当社に在職している（していた）ことを証明します。
+            </div>
+
+            <table class="cert-table">
+                <tr>
+                    <th>氏 名</th>
+                    <td id="viewName"></td>
+                </tr>
+                <tr>
+                    <th>生年月日</th>
+                    <td id="viewBirthDate"></td>
+                </tr>
+                <tr>
+                    <th>住 所</th>
+                    <td id="viewAddress"></td>
+                </tr>
+                <tr>
+                    <th>在職期間</th>
+                    <td>
+                        <span id="viewPeriodStart"></span> 〜 <span id="viewPeriodEnd"></span>
+                    </td>
+                </tr>
+                <tr>
+                    <th>所属・役職</th>
+                    <td id="viewDepartment"></td>
+                </tr>
+                <tr>
+                    <th>業務内容</th>
+                    <td id="viewJobDesc"></td>
+                </tr>
+            </table>
+
+            <div class="cert-footer">
+                <div id="viewCompAddress"></div>
+                <div class="company-name" id="viewCompName"></div>
+                <div class="ceo-name" id="viewCompRep"></div>
+                <!-- ここにハンコ画像用のimgタグを入れることも可能 -->
+                <div style="margin-top:20px; color:#ccc; font-size:12px;">(社印)</div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // 日付を「令和〇年〇月〇日」や「YYYY年MM月DD日」形式にする関数
+        function formatDate(dateStr) {
+            if (!dateStr) return "";
+            const d = new Date(dateStr);
+            // 日本語形式に変換 (シンプルに年月日)
+            return `${d.getFullYear()}年${d.getMonth() + 1}月${d.getDate()}日`;
+        }
+
+        // 入力を反映させる関数
+        function updateCert() {
+            // 証明日
+            const issueDateVal = document.getElementById('issueDate').value;
+            document.getElementById('viewIssueDate').innerText = issueDateVal ? formatDate(issueDateVal) : "令和　年　月　日";
+
+            // 個人情報
+            document.getElementById('viewName').innerText = document.getElementById('name').value;
+            document.getElementById('viewBirthDate').innerText = formatDate(document.getElementById('birthDate').value);
+            document.getElementById('viewAddress').innerText = document.getElementById('address').value;
+            
+            // 在職期間
+            const startVal = document.getElementById('periodStart').value;
+            document.getElementById('viewPeriodStart').innerText = formatDate(startVal);
+            document.getElementById('viewPeriodEnd').innerText = document.getElementById('periodEnd').value;
+
+            // 業務・所属
+            document.getElementById('viewDepartment').innerText = document.getElementById('department').value;
+            document.getElementById('viewJobDesc').innerText = document.getElementById('jobDesc').value;
+
+            // 会社情報
+            document.getElementById('viewCompAddress').innerText = document.getElementById('compAddress').value;
+            document.getElementById('viewCompName').innerText = document.getElementById('compName').value;
+            document.getElementById('viewCompRep').innerText = document.getElementById('compRep').value;
+        }
+
+        // 全てのinput/textareaにイベントリスナーをつける
+        const inputs = document.querySelectorAll('input, textarea');
+        inputs.forEach(input => {
+            input.addEventListener('input', updateCert);
+        });
+
+        // 初期ロード時に今日の日付などをセットしておく（オプション）
+        document.getElementById('issueDate').valueAsDate = new Date();
+        updateCert();
+    </script>
+</body>
+</html>
