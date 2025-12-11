@@ -4,36 +4,185 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>社内ツール ポータル</title>
-    <!-- その他のスタイル設定（CSS）はそのまま残してOK -->
     <style>
-        /* CSSはさっきのままでOKですが、bodyのdisplay:noneだけ消しておくとスムーズです */
-        /* もし面倒ならそのままでも動きます */
-        body { font-family: sans-serif; background: #f0f2f5; display: none; } /* 最初は隠す */
-        /* ... 他のデザイン ... */
+        /* --- デザイン設定 --- */
+        body {
+            font-family: "Helvetica Neue", Arial, sans-serif;
+            background-color: #f0f2f5;
+            margin: 0;
+            padding: 0;
+            /* 最初は隠す（セキュリティ＆チラつき防止） */
+            display: none; 
+            min-height: 100vh;
+            /* 縦並びにして、中央揃えにする設定 */
+            flex-direction: column; 
+            align-items: center; 
+        }
+
+        header {
+            background-color: #333;
+            color: white;
+            width: 100%;
+            padding: 20px 0;
+            text-align: center;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+            margin-bottom: 30px;
+        }
+        h1 { margin: 0; font-size: 24px; }
+
+        /* メニューカードエリア */
+        .menu-container {
+            max-width: 800px;
+            width: 100%;
+            padding: 0 20px;
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 20px;
+            box-sizing: border-box;
+            margin-bottom: 40px;
+        }
+
+        /* カードのデザイン */
+        .card {
+            background: white;
+            padding: 30px;
+            border-radius: 12px;
+            text-align: center;
+            text-decoration: none; /* リンクの下線を消す */
+            color: #333;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.05);
+            transition: transform 0.2s, box-shadow 0.2s;
+            border: 1px solid #ddd;
+            display: block; /* リンクをブロック要素にする */
+        }
+        .card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 8px 15px rgba(0,0,0,0.1);
+            border-color: #007bff;
+        }
+        .card-icon { font-size: 40px; margin-bottom: 15px; display: block; }
+        .card-title { font-size: 18px; font-weight: bold; display: block; margin-bottom: 10px; }
+        .card-desc { font-size: 13px; color: #666; display: block; }
+
+        /* 会社情報設定エリア */
+        .settings-container {
+            max-width: 800px;
+            width: 90%;
+            background: white;
+            padding: 20px;
+            border-radius: 12px;
+            border: 2px solid #2c517c;
+            margin-bottom: 50px;
+            box-sizing: border-box;
+        }
     </style>
 </head>
 <body>
 
-    <!-- ▼▼▼ ここが変わったところ！ ▼▼▼ -->
-    <script src="auth.js"></script>
+    <!-- 1. ヘッダー（タイトル） -->
+    <header>
+        <h1>社内書類作成ツール</h1>
+    </header>
+
+    <!-- 2. メニューエリア -->
+    <div class="menu-container">
+        
+        <!-- 在職証明書へのリンク -->
+        <a href="zaishoku.html" class="card">
+            <span class="card-icon">📄</span>
+            <span class="card-title">在職証明書</span>
+            <span class="card-desc">氏名・期間などを入力して<br>PDF発行します。</span>
+        </a>
+
+                <!-- 領収証（明細あり） -->
+        <a href="ryoshusho.html" class="card">
+            <span class="card-icon">¥</span>
+            <span class="card-title">領収証（明細あり）</span>
+            <span class="card-desc">品目ごとの明細付き</span>
+        </a>
+
+        <!-- ▼▼▼ これを追加！ ▼▼▼ -->
+        <a href="ryoshusho_simple.html" class="card">
+            <span class="card-icon">🧾</span>
+            <span class="card-title">領収書（シンプル）</span>
+            <span class="card-desc">合計金額を入れるだけ<br>明細なしタイプ</span>
+        </a>
+        <!-- ▲▲▲▲▲▲▲▲▲▲▲▲▲▲ -->
+                <!-- ▼▼▼ 封筒印刷ツール ▼▼▼ -->
+        <a href="envelope.html" class="card">
+            <span class="card-icon">✉️</span>
+            <span class="card-title">長形3号 宛名印刷</span>
+            <span class="card-desc">横書き / 会社情報自動入力<br>「様・御中」切替可能</span>
+        </a>
+        <!-- ▲▲▲▲▲▲▲▲▲▲▲▲▲ -->
+
+        <!-- ▼▼▼ 送付状ツール ▼▼▼ -->
+        <a href="sofujo.html" class="card">
+            <span class="card-icon">📝</span>
+            <span class="card-title">送付状 作成</span>
+            <span class="card-desc">社外・社内(支店) 切替可<br>挨拶文の自動セット機能</span>
+        </a>
+        <!-- ▲▲▲▲▲▲▲▲▲▲▲▲▲▲ -->
+         <!-- ▼▼▼ 一括送付状ツール ▼▼▼ -->
+        <a href="sofujo_multi.html" class="card">
+            <span class="card-icon">📚</span>
+            <span class="card-title">一括 送付状</span>
+            <span class="card-desc">支店・関連会社へ一斉送信<br>リスト管理・一括印刷</span>
+        </a>
+        <!-- ▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲ -->
+
+    </div>
+
+    <!-- 3. 会社情報設定エリア -->
+    <div class="settings-container">
+        <h3 style="margin-top:0; color:#2c517c;">⚙️ 会社基本情報設定</h3>
+        <p style="font-size:12px; color:#666;">ここに入力して保存すると、全ツールの入力欄に自動で反映されます。</p>
+        
+        <div style="display:grid; gap:10px;">
+            <div>
+                <label style="font-size:12px; font-weight:bold;">会社名</label>
+                <input type="text" id="setCompName" placeholder="株式会社〇〇" style="width:100%; padding:8px; box-sizing:border-box;">
+            </div>
+            <div>
+                <label style="font-size:12px; font-weight:bold;">住所・TEL</label>
+                <textarea id="setCompAddr" rows="2" placeholder="〒..." style="width:100%; padding:8px; box-sizing:border-box;"></textarea>
+            </div>
+            <div style="display:flex; gap:10px;">
+                <div style="flex:1;">
+                    <label style="font-size:12px; font-weight:bold;">登録番号(T)</label>
+                    <input type="text" id="setRegNo" placeholder="T123..." style="width:100%; padding:8px; box-sizing:border-box;">
+                </div>
+                <div style="flex:1;">
+                    <label style="font-size:12px; font-weight:bold;">代表者/担当者</label>
+                    <input type="text" id="setCompRep" placeholder="代表..." style="width:100%; padding:8px; box-sizing:border-box;">
+                </div>
+            </div>
+            <button onclick="saveCompanyData()" style="background:#2c517c; color:white; border:none; padding:10px; border-radius:4px; cursor:pointer; font-weight:bold; margin-top:10px;">設定を保存する</button>
+        </div>
+    </div>
+
+    <!-- 4. スクリプト読み込み（順番が大事！） -->
+    <script src="auth.js"></script>     <!-- 鍵の機能 -->
+    <script src="settings.js"></script> <!-- 設定保存の機能 -->
+    
     <script>
-        // ページが開いた瞬間
-        if (isLoggedin()) {
-            // ログイン済みなら画面を表示
+        // ログインチェックと表示処理
+        if (typeof isLoggedin === 'function' && isLoggedin()) {
+            // ログイン済みなら画面を表示（縦並びのflex）
             document.body.style.display = "flex";
+            // 保存してある会社情報を画面に表示
+            if(typeof loadSettingsDisplay === 'function') {
+                loadSettingsDisplay();
+            }
         } else {
             // ログインしてないならパスワードを聞く
-            login();
+            if(typeof login === 'function') {
+                login();
+            } else {
+                // auth.jsが無い場合の予備動作
+                document.body.style.display = "flex";
+            }
         }
     </script>
-    <!-- ▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲ -->
-
-    <header><h1>社内書類作成ツール</h1></header>
-    <div class="menu-container">
-        <!-- メニューの中身はそのまま... -->
-        <a href="zaishoku.html" class="card">
-            <span class="card-title">在職証明書</span>
-        </a>
-    </div>
 </body>
 </html>

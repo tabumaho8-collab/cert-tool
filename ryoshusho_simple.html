@@ -1,0 +1,303 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>シンプル領収書作成</title>
+    <style>
+        /* --- 全体のレイアウト --- */
+        body {
+            display: none; /* セキュリティ用 */
+            font-family: "Helvetica Neue", Arial, "Hiragino Kaku Gothic ProN", "Hiragino Sans", Meiryo, sans-serif;
+            background-color: #f4f4f4;
+            margin: 0;
+            padding: 20px;
+            gap: 20px;
+            justify-content: center;
+            min-height: 100vh;
+        }
+
+        /* --- 入力フォーム --- */
+        .editor-pane {
+            width: 350px;
+            background: #fff;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+            height: fit-content;
+        }
+
+        /* 戻るボタン */
+        .back-btn {
+            display: inline-block;
+            background-color: #6c757d;
+            color: white;
+            padding: 5px 10px;
+            text-decoration: none;
+            border-radius: 4px;
+            font-size: 12px;
+            margin-bottom: 15px;
+            cursor: pointer;
+        }
+        .back-btn:hover { background-color: #5a6268; }
+
+        .form-group { margin-bottom: 15px; }
+        .form-group label { display: block; font-size: 12px; font-weight: bold; margin-bottom: 5px; color: #555; }
+        .form-group input, .form-group textarea {
+            width: 100%; padding: 10px; box-sizing: border-box;
+            border: 1px solid #ccc; border-radius: 4px; font-size: 14px;
+        }
+        /* 金額入力欄を目立たせる */
+        .input-money { font-size: 16px; font-weight: bold; text-align: right; }
+
+        button.print-btn {
+            width: 100%; padding: 12px; background-color: #333;
+            color: white; border: none; border-radius: 4px; font-size: 16px;
+            cursor: pointer; font-weight: bold; margin-top: 20px;
+        }
+        button.print-btn:hover { background-color: #000; }
+
+        /* --- プレビューエリア --- */
+        .preview-pane { flex-grow: 1; display: flex; justify-content: center; }
+
+        #receipt {
+            width: 210mm; min-height: 297mm; background: white; padding: 25mm;
+            box-sizing: border-box; box-shadow: 0 5px 15px rgba(0,0,0,0.2); position: relative;
+            color: #000;
+        }
+
+        /* --- 領収書の中身（画像のデザインを再現） --- */
+        .r-title {
+            text-align: center; font-size: 28px; font-weight: bold;
+            margin-bottom: 60px; letter-spacing: 5px;
+        }
+
+        .r-header {
+            display: flex; justify-content: space-between; align-items: flex-end;
+            margin-bottom: 40px;
+        }
+        .r-client { font-size: 24px; border-bottom: 1px solid #000; padding-bottom: 5px; min-width: 300px; }
+        .r-date { font-size: 14px; text-align: right; }
+
+        .r-amount-row {
+            display: flex; justify-content: space-between; align-items: flex-end;
+            border-bottom: 2px solid #000;
+            padding-bottom: 10px; margin-bottom: 20px;
+        }
+        .r-amount-label { font-size: 18px; font-weight: bold; }
+        .r-total-amount { font-size: 36px; font-weight: bold; }
+
+        .r-proviso { font-size: 14px; margin-bottom: 80px; }
+
+        /* 下部レイアウト（左：内訳、右：会社情報） */
+        .r-footer {
+            display: flex; justify-content: space-between; align-items: flex-end;
+        }
+
+        /* 内訳エリア */
+        .tax-breakdown { font-size: 12px; line-height: 1.8; }
+        .tax-title { font-weight: bold; margin-bottom: 5px; font-size: 14px; }
+        .tax-row { display: flex; justify-content: space-between; width: 220px; }
+
+        /* 会社情報エリア */
+        .issuer-info { text-align: right; font-size: 14px; line-height: 1.6; }
+        .issuer-name { font-size: 18px; font-weight: bold; margin-bottom: 5px; }
+
+        /* --- 印刷設定 --- */
+        @media print {
+            body { display: block !important; background: none; margin: 0; padding: 0; }
+            .editor-pane { display: none; }
+            .preview-pane { display: block; }
+            #receipt { box-shadow: none; width: 100%; height: 100%; margin: 0; padding: 25mm; page-break-after: always; }
+            @page { margin: 0; size: A4 portrait; }
+        }
+        @media (max-width: 900px) {
+            body { flex-direction: column; align-items: center; }
+            .editor-pane { width: 100%; max-width: 500px; }
+            #receipt { width: 100%; font-size: 0.8em; padding: 10mm; }
+        }
+    </style>
+</head>
+<body>
+
+    <!-- 共通設定読み込み -->
+    <script src="auth.js"></script>
+    <script src="settings.js"></script>
+    <script>
+        if (typeof checkAuth === 'function') checkAuth(); else document.body.style.display = "flex";
+        window.addEventListener('load', function() {
+            if (typeof applyCompanyData === 'function') applyCompanyData();
+            // 初期日付
+            document.getElementById('iptDate').valueAsDate = new Date();
+            update();
+        });
+    </script>
+
+    <!-- 入力フォーム -->
+    <div class="editor-pane">
+        <a href="index.html" class="back-btn">⬅ メニューに戻る</a>
+        
+        <h2>シンプル領収書</h2>
+        
+        <div class="form-group">
+            <label>宛名</label>
+            <input type="text" id="iptClient" placeholder="〇〇株式会社 御中" oninput="update()">
+        </div>
+        <div class="form-group">
+            <label>領収日</label>
+            <input type="date" id="iptDate" oninput="update()">
+        </div>
+
+        <hr>
+        
+        <div style="background:#f9f9f9; padding:10px; border-radius:4px; margin-bottom:15px;">
+            <label style="font-weight:bold; margin-bottom:10px; display:block;">金額入力 (税込)</label>
+            
+            <div class="form-group">
+                <label>10%対象 金額</label>
+                <input type="number" id="iptAmount10" class="input-money" placeholder="0" oninput="update()">
+            </div>
+            <div class="form-group">
+                <label>8%対象 金額 (軽減税率)</label>
+                <input type="number" id="iptAmount8" class="input-money" placeholder="0" oninput="update()">
+            </div>
+            <p style="font-size:11px; color:#666; margin:0;">※ここに入力すると消費税額は自動計算されます。</p>
+        </div>
+
+        <div class="form-group">
+            <label>但し書き</label>
+            <input type="text" id="iptProviso" placeholder="お品代として" oninput="update()">
+        </div>
+
+        <hr>
+
+        <h3>発行者情報</h3>
+        <div class="form-group">
+            <label>会社名</label>
+            <input type="text" id="iptIssuerName" placeholder="株式会社〇〇" oninput="update()">
+        </div>
+        <div class="form-group">
+            <label>住所</label>
+            <textarea id="iptIssuerAddr" rows="2" placeholder="東京都渋谷区..." oninput="update()"></textarea>
+        </div>
+        <div class="form-group">
+            <label>登録番号</label>
+            <input type="text" id="iptRegNo" placeholder="T12345..." oninput="update()">
+        </div>
+
+        <button class="print-btn" onclick="window.print()">🖨️ 印刷する</button>
+    </div>
+
+    <!-- プレビュー -->
+    <div class="preview-pane">
+        <div id="receipt">
+            
+            <div class="r-title">領収書</div>
+
+            <div class="r-header">
+                <div class="r-client" id="viewClient"></div>
+                <div class="r-date">
+                    領収日　<span id="viewDate"></span>
+                </div>
+            </div>
+
+            <div class="r-amount-row">
+                <div class="r-amount-label">合計金額</div>
+                <div class="r-total-amount">¥<span id="viewTotal">0</span></div>
+            </div>
+
+            <div class="r-proviso">
+                但し<br>
+                <span id="viewProviso"></span><br>
+                上記の通り、正に領収いたしました。
+            </div>
+
+            <div class="r-footer">
+                <!-- 左下：内訳 -->
+                <div class="tax-breakdown">
+                    <div class="tax-title">内訳</div>
+                    
+                    <div class="tax-row">
+                        <span>10%税率対象 小計</span>
+                        <span>¥<span id="viewSub10">0</span></span>
+                    </div>
+                    <div class="tax-row">
+                        <span>8%税率対象 小計</span>
+                        <span>¥<span id="viewSub8">0</span></span>
+                    </div>
+                    <div class="tax-row">
+                        <span>10%対象 税額</span>
+                        <span>¥<span id="viewTax10">0</span></span>
+                    </div>
+                    <div class="tax-row">
+                        <span>8%対象 税額</span>
+                        <span>¥<span id="viewTax8">0</span></span>
+                    </div>
+                </div>
+
+                <!-- 右下：発行者情報 -->
+                <div class="issuer-info">
+                    <div class="issuer-name" id="viewIssuerName"></div>
+                    <div id="viewIssuerAddr" style="white-space: pre-wrap;"></div>
+                    <div>登録番号 <span id="viewRegNo"></span></div>
+                    <!-- ハンコスペース -->
+                    <div style="margin-top:20px; color:#ccc; border:1px solid #eee; width:60px; height:60px; display:flex; align-items:center; justify-content:center; margin-left:auto;">(印)</div>
+                </div>
+            </div>
+
+        </div>
+    </div>
+
+    <script>
+        function fmt(num) { return num.toLocaleString(); }
+        function formatDate(dateStr) {
+            if(!dateStr) return "";
+            const d = new Date(dateStr);
+            return `${d.getFullYear()}/${d.getMonth()+1}/${d.getDate()}`;
+        }
+
+        function update() {
+            // 基本情報の反映
+            document.getElementById('viewClient').innerText = document.getElementById('iptClient').value;
+            document.getElementById('viewDate').innerText = formatDate(document.getElementById('iptDate').value);
+            document.getElementById('viewProviso').innerText = document.getElementById('iptProviso').value;
+            
+            document.getElementById('viewIssuerName').innerText = document.getElementById('iptIssuerName').value;
+            document.getElementById('viewIssuerAddr').innerText = document.getElementById('iptIssuerAddr').value;
+            document.getElementById('viewRegNo').innerText = document.getElementById('iptRegNo').value;
+
+            // 金額計算
+            // 入力されたのは「税込金額」
+            const in10 = parseInt(document.getElementById('iptAmount10').value) || 0;
+            const in8  = parseInt(document.getElementById('iptAmount8').value) || 0;
+
+            // 合計
+            const total = in10 + in8;
+            document.getElementById('viewTotal').innerText = fmt(total);
+
+            // インボイス計算（割り戻し計算）
+            // 10%対象
+            const sub10 = Math.floor(in10 / 1.1); // 税抜金額
+            const tax10 = in10 - sub10;           // 消費税額
+            
+            // 8%対象
+            const sub8 = Math.floor(in8 / 1.08);  // 税抜金額
+            const tax8 = in8 - sub8;              // 消費税額
+
+            // 内訳表示（※画像に合わせて「税込」ではなく「税抜(小計)」を表示する場合が多いですが、
+            // 画像の「小計」が税込か税抜か読み取れないため、一般的なインボイスの「税抜金額」を表示します）
+            // もし画像が「税込金額」の小計なら in10 を表示すればOKです。
+            // ここでは画像にある「小計」＝「税抜金額」として計算しています。
+            
+            // 修正案：画像の数字を見ると、10000+10000=20000、消費税1000+800=1800、合計21800となっています。
+            // つまり、画像の「小計」は『税抜』のことですね。
+            
+            document.getElementById('viewSub10').innerText = fmt(sub10);
+            document.getElementById('viewSub8').innerText = fmt(sub8);
+            document.getElementById('viewTax10').innerText = fmt(tax10);
+            document.getElementById('viewTax8').innerText = fmt(tax8);
+        }
+    </script>
+</body>
+</html>
+
