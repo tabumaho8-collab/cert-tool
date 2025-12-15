@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>請求書作成ツール</title>
+    <title>納品書作成ツール</title>
     <style>
         /* --- 全体レイアウト --- */
         body { display: none; font-family: "Helvetica Neue", Arial, "Hiragino Kaku Gothic ProN", "Hiragino Sans", Meiryo, sans-serif; background-color: #f4f4f4; margin: 0; padding: 20px; gap: 20px; justify-content: center; min-height: 100vh; }
@@ -19,78 +19,89 @@
         .item-row .w-unit { width: 50px; flex: none; }
         .item-row .w-price { width: 80px; flex: none; text-align: right; }
         .item-row .w-tax { width: 60px; flex: none; }
-        .save-bank-btn { background-color: #17a2b8; color: white; border: none; padding: 5px 10px; border-radius: 4px; font-size: 12px; cursor: pointer; margin-left: auto; display: block; margin-bottom: 5px; }
-        button.print-btn { width: 100%; padding: 12px; background-color: #0056b3; color: white; border: none; border-radius: 4px; font-size: 16px; cursor: pointer; font-weight: bold; margin-top: 10px; }
+        button.print-btn { width: 100%; padding: 12px; background-color: #e67e22; /* 納品書はオレンジ */ color: white; border: none; border-radius: 4px; font-size: 16px; cursor: pointer; font-weight: bold; margin-top: 10px; }
         .auto-no-switch { display: flex; align-items: center; gap: 5px; margin-bottom: 5px; font-size: 12px; cursor: pointer; }
         
         .preview-pane { flex-grow: 1; display: flex; justify-content: center; }
         
         #invoice { width: 210mm; min-height: 297mm; background: white; padding: 20mm; box-sizing: border-box; box-shadow: 0 5px 15px rgba(0,0,0,0.2); position: relative; font-family: "Yu Mincho", "YuMincho", serif; color: #333; }
         
-        .header-top { display: flex; justify-content: space-between; align-items: flex-end; margin-bottom: 10px; border-bottom: 2px solid #0056b3; padding-bottom: 5px; }
-        .doc-title { font-size: 32px; font-weight: bold; color: #0056b3; letter-spacing: 5px; }
+        /* 納品書デザイン */
+        .header-top { display: flex; justify-content: space-between; align-items: flex-end; margin-bottom: 10px; border-bottom: 2px solid #e67e22; padding-bottom: 5px; }
+        .doc-title { font-size: 32px; font-weight: bold; color: #e67e22; letter-spacing: 5px; }
         .doc-no-date { text-align: right; font-size: 12px; }
         
         .info-section { display: flex; justify-content: space-between; margin-bottom: 30px; margin-top: 20px;}
         .client-info { width: 50%; }
         .client-name { font-size: 22px; margin-bottom: 5px; border-bottom: 1px solid #333; display: inline-block; min-width: 250px;}
         
+        /* ▼▼▼ 発行者情報（右寄せ・左揃え） ▼▼▼ */
         .issuer-info { 
             width: max-content;
             max-width: 50%;
             margin-left: auto; 
             font-size: 13px; 
             line-height: 1.5; 
-            text-align: left; 
-            position: relative; 
+            text-align: left; /* 文字の頭を揃える */
         }
         .issuer-name { font-size: 16px; font-weight: bold; margin-bottom: 5px; }
 
-        /* ▼▼▼ ハンコを小さく変更（40px） ▼▼▼ */
+        /* ▼▼▼ ハンコの位置とサイズ（40px） ▼▼▼ */
         .seal-container {
             position: absolute;
-            top: 45px;    /* 少し下に調整 */
-            right: -10px; /* 少し左に調整 */
+            top: -5px;    /* 担当者の横あたり */
+            right: -50px; /* 右端に合わせる */
             
-            width: 40px;  /* ← 50pxから40pxへ変更 */
-            height: 40px; /* ← 同上 */
+            width: 40px;  /* 小さく！ */
+            height: 40px; 
             
             z-index: 10; 
             transform: rotate(-10deg);
         }
-        /* ▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲ */
-
         .seal-img { width: 100%; height: 100%; object-fit: contain; opacity: 0.85; }
         .seal-dummy { width: 100%; height: 100%; border: 1px solid #eee; display: flex; align-items: center; justify-content: center; color: #ddd; background: rgba(255,255,255,0.5); font-size: 10px; }
+        /* ▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲ */
 
-        .amount-bar { background-color: #0056b3; color: white; padding: 10px 20px; display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; }
+        .amount-bar { background-color: #e67e22; color: white; padding: 10px 20px; display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; }
         .amount-label { font-size: 16px; font-weight: bold; }
         .total-amount { font-size: 28px; font-weight: bold; }
-        .payment-limit { text-align: right; font-weight: bold; margin-bottom: 20px; }
+        
         .details-table { width: 100%; border-collapse: collapse; margin-bottom: 20px; font-size: 13px; }
-        .details-table th { background-color: #e3f2fd; border: 1px solid #0056b3; padding: 6px; color: #0056b3; }
-        .details-table td { border: 1px solid #0056b3; padding: 6px; vertical-align: middle; }
+        .details-table th { background-color: #fff5e6; border: 1px solid #e67e22; padding: 6px; color: #d35400; }
+        .details-table td { border: 1px solid #e67e22; padding: 6px; vertical-align: middle; }
         .col-kubun { width: 30px; text-align: center; }
         .col-qty { width: 50px; text-align: right; }
         .col-unit { width: 40px; text-align: center; }
         .col-price { width: 80px; text-align: right; }
         .col-total { width: 90px; text-align: right; }
-        .bottom-section { display: flex; justify-content: space-between; }
-        .bank-info { width: 55%; font-size: 13px; line-height: 1.6; }
-        .bank-box { border: 1px solid #ccc; padding: 10px; margin-top: 5px; white-space: pre-wrap; }
+        
+        .bottom-section { display: flex; justify-content: space-between; margin-top:30px; }
+        
+        /* 受領印エリア */
+        .receipt-stamp-box {
+            width: 50%; border-top: 1px solid #333; padding-top: 5px; font-size: 12px;
+        }
+        .stamp-area {
+            margin-top: 10px; border: 1px solid #ccc; height: 80px; width: 100%; 
+            display: flex; align-items: center; justify-content: center; color: #ccc;
+        }
+
         .tax-summary { width: 40%; }
         .tax-table { border-collapse: collapse; width: 100%; font-size: 12px; }
-        .tax-table td, .tax-table th { border: 1px solid #0056b3; padding: 4px 8px; text-align: right; }
-        .tax-table th { background-color: #e3f2fd; color: #0056b3; font-weight: normal; }
-        .remarks-box { margin-top: 20px; border: 1px solid #0056b3; height: 60px; padding: 10px; font-size: 12px; }
-        
+        .tax-table td, .tax-table th { border: 1px solid #e67e22; padding: 4px 8px; text-align: right; }
+        .tax-table th { background-color: #fff5e6; color: #d35400; font-weight: normal; }
+        .remarks-box { margin-top: 20px; border: 1px solid #e67e22; height: 80px; padding: 10px; font-size: 12px; }
+
+        /* --- 印刷時の設定 --- */
         @media print { 
             body { display: block !important; background: none; margin: 0; padding: 0; } 
             .editor-pane { display: none; } 
             .preview-pane { display: block; } 
             #invoice { box-shadow: none; width: 100%; height: 100%; margin: 0; padding: 20mm; page-break-after: always; } 
-            /* 印刷時もハンコの位置をキープ */
-            .seal-container { position: absolute; top: 45px; right: -10px; }
+            
+            /* 手押し用の枠は消す */
+            .seal-dummy { display: none !important; }
+            
             @page { margin: 0; size: A4 portrait; } 
         }
     </style>
@@ -102,34 +113,29 @@
         if (typeof checkAuth === 'function') checkAuth(); else document.body.style.display = "flex";
         window.addEventListener('load', function() {
             if (typeof applyCompanyData === 'function') applyCompanyData();
-            loadBankInfo();
-            initAutoNumber();
-            toggleSeal(); 
-            update();
+            initAutoNumber(); toggleSeal(); update();
         });
     </script>
 
     <div class="editor-pane">
         <a href="index.html" class="back-btn">⬅ メニューに戻る</a>
-        <h2>請求書 作成</h2>
-        <div class="form-group"><label>No.</label><label class="auto-no-switch"><input type="checkbox" id="chkAutoNo" onchange="toggleAutoNo()"> 自動採番する (印刷時に+1)</label><input type="text" id="iptNo" placeholder="番号なし" oninput="update()"></div>
-        <div class="form-group"><label>発行日</label><input type="date" id="iptDate" oninput="update()"></div>
-        <div class="form-group"><label>支払期限</label><input type="date" id="iptLimit" oninput="update()"></div>
-        <div class="form-group"><label>請求先 (会社名)</label><input type="text" id="iptClient" placeholder="株式会社〇〇 御中" oninput="update()"></div>
-        <div class="form-group"><label>件名</label><input type="text" id="iptSubject" placeholder="〇〇月分 ご請求" oninput="update()"></div>
+        <h2>納品書 作成</h2>
+        <div class="form-group"><label>No.</label><label class="auto-no-switch"><input type="checkbox" id="chkAutoNo" onchange="toggleAutoNo()"> 自動採番 (印刷時+1)</label><input type="text" id="iptNo" placeholder="DEL-001" oninput="update()"></div>
+        <div class="form-group"><label>納品日</label><input type="date" id="iptDate" oninput="update()"></div>
+        <div class="form-group"><label>納品先</label><input type="text" id="iptClient" placeholder="株式会社〇〇 御中" oninput="update()"></div>
+        <div class="form-group"><label>件名</label><input type="text" id="iptSubject" placeholder="〇〇一式" oninput="update()"></div>
         <hr>
         <label style="font-size:12px; font-weight:bold; color:#555;">明細</label>
         <div id="items-container"></div>
         <hr>
-        <div class="form-group"><label>振込先口座</label><p style="font-size:11px; margin:0; color:#666;">一度入力して保存すれば、次回から自動で入ります。</p><textarea id="iptBank" rows="4" placeholder="〇〇銀行 〇〇支店&#13;普通 1234567&#13;カ）ジシャ" oninput="update()"></textarea><button class="save-bank-btn" onclick="saveBankInfo()">この振込先を保存</button></div>
-        <div class="form-group"><label>備考</label><textarea id="iptRemarks" rows="2" oninput="update()"></textarea></div>
+        <div class="form-group"><label>備考</label><textarea id="iptRemarks" rows="3" oninput="update()"></textarea></div>
         <hr>
         <h3>発行者情報</h3>
         <div class="form-group"><label>会社名</label><input type="text" id="iptIssuerName" oninput="update()"></div>
         <div class="form-group"><label>住所・TEL</label><textarea id="iptIssuerAddr" rows="3" oninput="update()"></textarea></div>
-        <div class="form-group"><label>登録番号(T)</label><input type="text" id="iptRegNo" oninput="update()"></div>
         <div class="form-group"><label>担当者</label><input type="text" id="iptIssuerRep" oninput="update()"></div>
         
+        <!-- ハンコスイッチ -->
         <div class="form-group">
             <label class="seal-switch">
                 <input type="checkbox" id="chkSeal" checked onchange="toggleSeal()">
@@ -137,20 +143,20 @@
             </label>
         </div>
 
-        <button class="print-btn" onclick="handlePrint()">🖨️ 請求書を印刷</button>
+        <button class="print-btn" onclick="window.print()">🖨️ 納品書を印刷</button>
     </div>
 
     <div class="preview-pane">
         <div id="invoice">
-            <div class="header-top"><div class="doc-title">請 求 書</div><div class="doc-no-date"><div id="viewNoArea">No. <span id="viewNo"></span></div>発行日：<span id="viewDate"></span></div></div>
+            <div class="header-top"><div class="doc-title">納 品 書</div><div class="doc-no-date"><div id="viewNoArea">No. <span id="viewNo"></span></div>納品日：<span id="viewDate"></span></div></div>
             <div class="info-section">
-                <div class="client-info"><div class="client-name" id="viewClient"></div><div style="margin-top:5px; font-size:14px;">件名：<span id="viewSubject"></span></div><div style="margin-top:10px; font-size:12px;">下記の通りご請求申し上げます。</div></div>
+                <div class="client-info"><div class="client-name" id="viewClient"></div><div style="margin-top:5px; font-size:14px;">件名：<span id="viewSubject"></span></div><div style="margin-top:10px; font-size:12px;">下記の通り納品いたしました。</div></div>
                 
+                <!-- ▼▼▼ 修正：左揃えブロック ▼▼▼ -->
                 <div class="issuer-info">
                     <div class="issuer-name" id="viewIssuerName"></div>
                     <div id="viewIssuerAddr" style="white-space: pre-wrap;"></div>
                     <div style="margin-top:5px;">担当：<span id="viewIssuerRep"></span></div>
-                    <div style="margin-top:5px; border-bottom:1px solid #ccc; display:inline-block;">登録番号：<span id="viewRegNo"></span></div>
                     
                     <!-- ハンコエリア (絶対配置) -->
                     <div class="seal-container">
@@ -160,16 +166,20 @@
                 </div>
             </div>
             
-            <div class="amount-bar"><div class="amount-label">ご請求金額</div><div class="total-amount">¥<span id="viewGrandTotal">0</span>-</div></div>
-            <div class="payment-limit">お支払期限：<span id="viewLimit"></span></div>
+            <div class="amount-bar"><div class="amount-label">納品金額</div><div class="total-amount">¥<span id="viewGrandTotal">0</span>-</div></div>
+            
             <table class="details-table">
                 <thead><tr><th class="col-kubun">区分</th><th>品 目</th><th class="col-qty">数 量</th><th class="col-unit">単位</th><th class="col-price">単価</th><th class="col-total">金額</th></tr></thead>
                 <tbody id="viewItemsBody"></tbody>
             </table>
             <div style="font-size:10px; margin-bottom:10px;">区分欄に「※」記載のある商品は軽減税率(8%)対象です。</div>
+            
             <div class="bottom-section">
-                <div class="bank-info"><div style="font-weight:bold;">お振込先</div><div class="bank-box" id="viewBank"></div><div style="font-size:11px; margin-top:5px;">※振込手数料は貴社にてご負担願います。</div></div>
-                <div class="tax-summary"><table class="tax-table"><tr><th>税 率</th><th>10%</th><th>8% (軽減)</th></tr><tr><th>対象小計</th><td id="viewSub10">0</td><td id="viewSub8">0</td></tr><tr><th>消費税等</th><td id="viewTax10">0</td><td id="viewTax8">0</td></tr><tr style="background:#f0f8ff; font-weight:bold;"><th>合 計</th><td colspan="2" id="viewTotalBottom">0</td></tr></table></div>
+                <div class="receipt-stamp-box">
+                    <div>受領印</div>
+                    <div class="stamp-area">（サインまたは押印をお願いします）</div>
+                </div>
+                <div class="tax-summary"><table class="tax-table"><tr><th>税 率</th><th>10%</th><th>8% (軽減)</th></tr><tr><th>対象小計</th><td id="viewSub10">0</td><td id="viewSub8">0</td></tr><tr><th>消費税等</th><td id="viewTax10">0</td><td id="viewTax8">0</td></tr><tr style="background:#fff5e6; font-weight:bold;"><th>合 計</th><td colspan="2" id="viewTotalBottom">0</td></tr></table></div>
             </div>
             <div style="font-size:12px; font-weight:bold; margin-top:10px;">備考：</div>
             <div class="remarks-box" id="viewRemarks"></div>
@@ -178,9 +188,8 @@
 
     <script>
         const ROW_COUNT = 8;
-        const KEY_BANK = "my_tool_bank_info";
-        const KEY_INV_SEQ = "my_tool_invoice_seq"; 
-        const KEY_INV_AUTO_MODE = "my_tool_invoice_auto_mode"; 
+        const KEY_DEL_SEQ = "my_tool_delivery_seq"; 
+        const KEY_DEL_AUTO_MODE = "my_tool_delivery_auto_mode";
 
         window.onload = function() {
             const container = document.getElementById('items-container');
@@ -192,17 +201,13 @@
             }
             document.getElementById('iptDate').valueAsDate = new Date();
             if (typeof applyCompanyData === 'function') applyCompanyData();
-            loadBankInfo();
-            initAutoNumber();
-            toggleSeal(); 
-            update();
+            initAutoNumber(); toggleSeal(); update();
         };
 
         function toggleSeal() {
             const isChecked = document.getElementById('chkSeal').checked;
             const img = document.getElementById('viewSeal');
             const dummy = document.getElementById('dummySeal');
-            
             if (img.src && img.src.length > 10 && isChecked) {
                 img.style.display = 'block';
                 dummy.style.display = 'none';
@@ -212,32 +217,9 @@
             }
         }
 
-        function initAutoNumber() {
-            const mode = localStorage.getItem(KEY_INV_AUTO_MODE);
-            const checkbox = document.getElementById('chkAutoNo');
-            if(mode === "on") { checkbox.checked = true; loadInvoiceNumber(); } else { checkbox.checked = false; document.getElementById('iptNo').value = ""; }
-        }
-        function toggleAutoNo() {
-            const checkbox = document.getElementById('chkAutoNo');
-            const iptNo = document.getElementById('iptNo');
-            if(checkbox.checked) {
-                localStorage.setItem(KEY_INV_AUTO_MODE, "on");
-                loadInvoiceNumber();
-                iptNo.readOnly = true;
-                iptNo.style.backgroundColor = "#e9ecef";
-            } else {
-                localStorage.setItem(KEY_INV_AUTO_MODE, "off");
-                iptNo.value = "";
-                iptNo.readOnly = false;
-                iptNo.style.backgroundColor = "#fff";
-            }
-            update();
-        }
-        function loadInvoiceNumber() {
-            let current = localStorage.getItem(KEY_INV_SEQ);
-            if(!current) current = "100001";
-            document.getElementById('iptNo').value = current;
-        }
+        function initAutoNumber() { const mode = localStorage.getItem(KEY_DEL_AUTO_MODE); const checkbox = document.getElementById('chkAutoNo'); if(mode === "on") { checkbox.checked = true; loadNum(); } else { checkbox.checked = false; document.getElementById('iptNo').value = ""; } }
+        function toggleAutoNo() { const checkbox = document.getElementById('chkAutoNo'); if(checkbox.checked) { localStorage.setItem(KEY_DEL_AUTO_MODE, "on"); loadNum(); } else { localStorage.setItem(KEY_DEL_AUTO_MODE, "off"); document.getElementById('iptNo').value = ""; } update(); }
+        function loadNum() { let current = localStorage.getItem(KEY_DEL_SEQ); if(!current) current = "DEL-001"; document.getElementById('iptNo').value = current; }
         function handlePrint() {
             window.print();
             const checkbox = document.getElementById('chkAutoNo');
@@ -245,51 +227,32 @@
                 let current = document.getElementById('iptNo').value;
                 let num = parseInt(current.replace(/[^0-9]/g, ''), 10);
                 if (!isNaN(num)) {
+                    let prefix = current.replace(/[0-9]/g, '');
                     let nextNum = num + 1;
-                    let nextStr = String(nextNum).padStart(6, '0');
-                    localStorage.setItem(KEY_INV_SEQ, nextStr);
+                    let nextStr = prefix + String(nextNum).padStart(3, '0');
+                    localStorage.setItem(KEY_DEL_SEQ, nextStr);
                     document.getElementById('iptNo').value = nextStr;
                     update();
                 }
             }
         }
-        function saveBankInfo() {
-            const val = document.getElementById('iptBank').value;
-            localStorage.setItem(KEY_BANK, val);
-            alert("振込先情報を保存しました！");
-        }
-        function loadBankInfo() {
-            const val = localStorage.getItem(KEY_BANK);
-            if(val) document.getElementById('iptBank').value = val;
-        }
         function fmt(num) { return num.toLocaleString(); }
         function formatDate(dateStr) { if(!dateStr) return ""; const d = new Date(dateStr); return `${d.getFullYear()}年${d.getMonth()+1}月${d.getDate()}日`; }
         function update() {
             const noVal = document.getElementById('iptNo').value;
-            if(noVal) { document.getElementById('viewNoArea').style.display = "block"; document.getElementById('viewNo').innerText = noVal; } 
-            else { document.getElementById('viewNoArea').style.display = "none"; }
-
+            if(noVal) { document.getElementById('viewNoArea').style.display = "block"; document.getElementById('viewNo').innerText = noVal; } else { document.getElementById('viewNoArea').style.display = "none"; }
             document.getElementById('viewDate').innerText = formatDate(document.getElementById('iptDate').value);
-            document.getElementById('viewLimit').innerText = formatDate(document.getElementById('iptLimit').value);
             document.getElementById('viewClient').innerText = document.getElementById('iptClient').value;
             document.getElementById('viewSubject').innerText = document.getElementById('iptSubject').value;
             document.getElementById('viewIssuerName').innerText = document.getElementById('iptIssuerName').value;
             document.getElementById('viewIssuerAddr').innerText = document.getElementById('iptIssuerAddr').value;
             document.getElementById('viewIssuerRep').innerText = document.getElementById('iptIssuerRep').value;
-            document.getElementById('viewRegNo').innerText = document.getElementById('iptRegNo').value;
-            document.getElementById('viewBank').innerText = document.getElementById('iptBank').value;
             document.getElementById('viewRemarks').innerText = document.getElementById('iptRemarks').value;
-
             let html = ''; let subTotal10 = 0; let subTotal8 = 0;
             document.querySelectorAll('.item-row').forEach(row => {
-                const name = row.querySelector('.ipt-item').value;
-                const qty = parseFloat(row.querySelector('.ipt-qty').value);
-                const unit = row.querySelector('.ipt-unit').value;
-                const price = parseFloat(row.querySelector('.ipt-price').value);
-                const taxRate = row.querySelector('.ipt-tax').value;
+                const name = row.querySelector('.ipt-item').value; const qty = parseFloat(row.querySelector('.ipt-qty').value); const unit = row.querySelector('.ipt-unit').value; const price = parseFloat(row.querySelector('.ipt-price').value); const taxRate = row.querySelector('.ipt-tax').value;
                 if(name || price) {
-                    const isValid = !isNaN(qty) && !isNaN(price);
-                    const lineTotal = isValid ? (qty * price) : 0;
+                    const isValid = !isNaN(qty) && !isNaN(price); const lineTotal = isValid ? (qty * price) : 0;
                     if(taxRate === "10") subTotal10 += lineTotal; else subTotal8 += lineTotal;
                     const mark = (taxRate === "8") ? "※" : "";
                     html += `<tr><td class="col-kubun">${mark}</td><td>${name}</td><td class="col-qty">${isValid?qty:""}</td><td class="col-unit">${unit}</td><td class="col-price">${isValid?fmt(price):""}</td><td class="col-total">${isValid?fmt(lineTotal):""}</td></tr>`;

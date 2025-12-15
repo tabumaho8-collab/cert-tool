@@ -1,0 +1,411 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>年間勤怠・有給計画</title>
+    <style>
+        /* --- 全体設定 --- */
+        body {
+            display: none; /* セキュリティ用 */
+            font-family: "Helvetica Neue", Arial, sans-serif;
+            background-color: #f4f4f4;
+            margin: 0;
+            padding: 0;
+            min-height: 100vh;
+            color: #333;
+        }
+
+        /* --- レイアウト枠 --- */
+        .layout-container {
+            display: flex;
+            height: 100vh;
+            overflow: hidden; 
+        }
+
+        /* --- 左サイドバー (固定) --- */
+        .sidebar {
+            width: 300px;
+            background: white;
+            padding: 20px;
+            box-shadow: 2px 0 10px rgba(0,0,0,0.1);
+            overflow-y: auto;
+            flex-shrink: 0;
+            z-index: 10;
+        }
+
+        /* --- 右メイン (カレンダーエリア) --- */
+        .main-content {
+            flex-grow: 1;
+            padding: 20px;
+            overflow-y: auto;
+            background-color: #e9ecef;
+        }
+
+        /* 戻るボタン */
+        .back-btn {
+            display: inline-block; background-color: #6c757d; color: white;
+            padding: 6px 12px; text-decoration: none; border-radius: 4px;
+            font-size: 12px; margin-bottom: 15px; cursor: pointer;
+        }
+
+        h2 { margin-top: 0; border-bottom: 2px solid #ddd; padding-bottom: 10px; font-size: 18px; margin-bottom: 15px;}
+        h3 { font-size: 14px; margin-top: 20px; border-left: 5px solid #28a745; padding-left: 8px; margin-bottom: 10px;}
+
+        /* ステータスパネル */
+        .status-item {
+            background: #fff; padding: 12px; border-radius: 6px; border: 1px solid #ddd; margin-bottom: 10px;
+        }
+        .status-item.ok { border-color: #28a745; background-color: #d4edda; color: #155724; }
+        .status-label { font-size: 11px; font-weight: bold; display: block; color: #666; margin-bottom: 2px; }
+        .status-val { font-size: 22px; font-weight: bold; }
+        .status-sub { font-size: 12px; margin-left: 5px; }
+
+        /* 有給入力 */
+        .paid-input-box { background: #fff3cd; padding: 12px; border-radius: 6px; border: 1px solid #ffeeba; }
+        .paid-input-box input { width: 60px; padding: 5px; font-size: 16px; text-align: center; border-radius: 4px; border: 1px solid #ccc; }
+
+        /* --- カレンダーグリッド (超ワイド化！) --- */
+        .year-selector { text-align: center; margin-bottom: 15px; font-size: 20px; font-weight: bold; }
+        
+        .calendar-grid {
+            display: grid;
+            /* ★ここを変更！PCなら横に6個並べる（6ヶ月×2行＝1年）★ */
+            grid-template-columns: repeat(6, 1fr); 
+            gap: 15px;
+            width: 100%;
+            padding-bottom: 50px;
+        }
+
+        .month-box {
+            background: white; border: 1px solid #ccc; border-radius: 8px; overflow: hidden;
+            box-shadow: 0 4px 8px rgba(0,0,0,0.05);
+            display: flex; flex-direction: column; /* 中身を縦に伸ばす */
+        }
+        .month-header {
+            background: #333; color: white; text-align: center; padding: 8px; font-weight: bold; font-size: 18px; /* 月名さらに大きく */
+        }
+        .month-days {
+            display: grid; grid-template-columns: repeat(7, 1fr); text-align: center; font-size: 14px;
+            flex-grow: 1; /* 高さいっぱいに広げる */
+        }
+        .day-cell {
+            padding: 0;
+            height: 45px; /* ★さらに大きく！押しやすく */
+            line-height: 45px;
+            border-bottom: 1px solid #eee; border-right: 1px solid #eee;
+            cursor: pointer; user-select: none;
+            transition: background 0.1s;
+            font-size: 16px; /* 日付文字も大きく */
+            font-weight: bold;
+        }
+        .day-cell:hover { filter: brightness(0.95); }
+
+        .day-header { 
+            background: #f8f9fa; font-weight: bold; color: #555; pointer-events: none; 
+            height: 30px; line-height: 30px; font-size: 12px;
+        }
+        
+        .col-sun { color: red; }
+        .col-sat { color: blue; }
+        .type-work { background: white; color: #333; }
+        .type-holiday { background: #ffcccc; color: #d00; font-weight: bold; }
+        .type-paid { background: #ffeeba; color: #856404; font-weight: bold; }
+
+        .legend { margin-top: 20px; font-size: 12px; display: flex; gap: 15px; justify-content: center; }
+        .legend span { display: inline-block; width: 16px; height: 16px; margin-right: 4px; border: 1px solid #ccc; vertical-align: middle; }
+
+        /* --- レスポンシブ (画面サイズに合わせて列数を減らす) --- */
+        /* ノートPCサイズ (1400px以下) なら4列 */
+        @media (max-width: 1600px) {
+            .calendar-grid { grid-template-columns: repeat(4, 1fr); }
+        }
+        /* タブレットサイズ (1100px以下) なら3列 */
+        @media (max-width: 1100px) {
+            .calendar-grid { grid-template-columns: repeat(3, 1fr); }
+        }
+        /* スマホサイズ (900px以下) なら縦並び */
+        @media (max-width: 900px) {
+            .layout-container { flex-direction: column; height: auto; overflow: visible; }
+            .sidebar { width: 100%; position: static; height: auto; box-sizing: border-box; }
+            .calendar-grid { grid-template-columns: repeat(1, 1fr); }
+            .day-cell { height: 50px; line-height: 50px; font-size: 18px; } /* スマホは特大サイズ */
+        }
+    </style>
+</head>
+<body>
+
+    <script src="auth.js"></script>
+    <script src="settings.js"></script>
+    <script>
+        if (typeof checkAuth === 'function') checkAuth(); else document.body.style.display = "block";
+    </script>
+
+    <div class="layout-container">
+        <!-- 左サイドバー -->
+        <div class="sidebar">
+            <a href="index.html" class="back-btn">⬅ メニュー</a>
+            <h2>勤怠・有給管理</h2>
+
+            <div class="year-selector">
+                <button onclick="changeYear(-1)" style="padding:5px 10px; cursor:pointer;">◀</button>
+                <span id="displayYear" style="margin:0 10px;">2025</span>年
+                <button onclick="changeYear(1)" style="padding:5px 10px; cursor:pointer;">▶</button>
+            </div>
+
+            <h3>有給休暇 残数管理</h3>
+            <div class="status-item paid-input-box">
+                <span class="status-label">今年度の有給総数</span>
+                <div style="display:flex; align-items:center; gap:5px; margin-top:5px;">
+                    <input type="number" id="iptPaidStock" value="20" onchange="saveData()"> 日
+                </div>
+                <div style="margin-top:8px; font-size:13px;">
+                    使用数: <strong id="val_paid_used" style="color:#d00;">0</strong> 日<br>
+                    <span style="font-size:15px; font-weight:bold; color:#28a745;">残り: <span id="val_paid_remain">20</span> 日</span>
+                </div>
+            </div>
+
+            <h3>年間休日目標</h3>
+            <div class="status-item" id="st_total">
+                <span class="status-label">年間休日 (公休+有給)</span>
+                <span class="status-val" id="val_total">0</span> 日
+                <span class="status-sub">/ 110日</span>
+            </div>
+            
+            <h3>連休取得チェック</h3>
+            <div class="status-item" id="st_ren3">
+                <span class="status-label">3連休以上</span>
+                <span class="status-val" id="val_ren3">0</span> 回
+                <span class="status-sub">/ 2回</span>
+            </div>
+            <div class="status-item" id="st_ren5">
+                <span class="status-label">5連休以上</span>
+                <span class="status-val" id="val_ren5">0</span> 回
+                <span class="status-sub">/ 1回</span>
+            </div>
+
+            <h3>半期ごとの有給</h3>
+            <div style="display:flex; gap:5px;">
+                <div class="status-item" id="st_paid1" style="flex:1;">
+                    <span class="status-label">上期(1-6)</span>
+                    <span class="status-val" id="val_paid1">0</span>
+                    <span class="status-sub">/2</span>
+                </div>
+                <div class="status-item" id="st_paid2" style="flex:1;">
+                    <span class="status-label">下期(7-12)</span>
+                    <span class="status-val" id="val_paid2">0</span>
+                    <span class="status-sub">/2</span>
+                </div>
+            </div>
+
+            <div class="legend">
+                <div><span style="background:white;"></span>出勤</div>
+                <div><span style="background:#ffcccc;"></span>公休</div>
+                <div><span style="background:#ffeeba;"></span>有給</div>
+            </div>
+        </div>
+
+        <!-- 右メイン (カレンダー) -->
+        <div class="main-content">
+            <div id="calendarArea" class="calendar-grid"></div>
+        </div>
+    </div>
+
+    <script>
+        const KEY_DATA = "my_tool_kintai_data";
+        const KEY_PAID_STOCK = "my_tool_kintai_stock";
+
+        let currentYear = new Date().getFullYear();
+        let attendanceData = {};
+        const AUTO_SUNDAY = true;
+
+        window.onload = function() {
+            loadData();
+            renderAll();
+        };
+
+        function loadData() {
+            const json = localStorage.getItem(KEY_DATA);
+            if (json) attendanceData = JSON.parse(json);
+            const stock = localStorage.getItem(KEY_PAID_STOCK);
+            if (stock) document.getElementById('iptPaidStock').value = stock;
+        }
+
+        function saveData() {
+            localStorage.setItem(KEY_DATA, JSON.stringify(attendanceData));
+            const stock = document.getElementById('iptPaidStock').value;
+            localStorage.setItem(KEY_PAID_STOCK, stock);
+            updateStats();
+        }
+
+        function changeYear(offset) {
+            currentYear += offset;
+            document.getElementById('displayYear').innerText = currentYear;
+            renderAll();
+        }
+
+        function renderAll() {
+            const container = document.getElementById('calendarArea');
+            container.innerHTML = "";
+            document.getElementById('displayYear').innerText = currentYear;
+
+            for (let m = 1; m <= 12; m++) {
+                container.appendChild(createMonthHTML(currentYear, m));
+            }
+            updateStats();
+        }
+
+        function createMonthHTML(year, month) {
+            const box = document.createElement('div');
+            box.className = 'month-box';
+
+            const header = document.createElement('div');
+            header.className = 'month-header';
+            header.innerText = `${month}月`;
+            box.appendChild(header);
+
+            const grid = document.createElement('div');
+            grid.className = 'month-days';
+
+            const weeks = ['日','月','火','水','木','金','土'];
+            weeks.forEach((w, i) => {
+                const el = document.createElement('div');
+                el.className = 'day-header';
+                if(i===0) el.classList.add('col-sun');
+                if(i===6) el.classList.add('col-sat');
+                el.innerText = w;
+                grid.appendChild(el);
+            });
+
+            const firstDay = new Date(year, month - 1, 1).getDay();
+            for(let i=0; i<firstDay; i++) {
+                const empty = document.createElement('div');
+                empty.className = 'day-cell';
+                grid.appendChild(empty);
+            }
+
+            const lastDate = new Date(year, month, 0).getDate();
+            for(let d=1; d<=lastDate; d++) {
+                const dateKey = `${year}-${String(month).padStart(2,'0')}-${String(d).padStart(2,'0')}`;
+                const dateObj = new Date(year, month-1, d);
+                const dayOfWeek = dateObj.getDay();
+
+                const cell = document.createElement('div');
+                cell.className = 'day-cell';
+                cell.innerText = d;
+                
+                if(dayOfWeek === 0) cell.classList.add('col-sun');
+                if(dayOfWeek === 6) cell.classList.add('col-sat');
+
+                let status = attendanceData[dateKey];
+                if (!status) {
+                    status = (AUTO_SUNDAY && dayOfWeek === 0) ? "holiday" : "work";
+                }
+
+                applyStatusClass(cell, status);
+
+                cell.onclick = function() {
+                    const next = getNextStatus(status);
+                    status = next;
+                    attendanceData[dateKey] = status;
+                    applyStatusClass(cell, status);
+                    saveData();
+                };
+
+                grid.appendChild(cell);
+            }
+            box.appendChild(grid);
+            return box;
+        }
+
+        function applyStatusClass(el, status) {
+            el.classList.remove('type-work', 'type-holiday', 'type-paid');
+            if (status === 'holiday') el.classList.add('type-holiday');
+            else if (status === 'paid') el.classList.add('type-paid');
+            else el.classList.add('type-work');
+        }
+
+        function getNextStatus(current) {
+            if (current === 'work') return 'holiday';
+            if (current === 'holiday') return 'paid';
+            return 'work';
+        }
+
+        function updateStats() {
+            let countTotalOff = 0;
+            let countPaid1 = 0;
+            let countPaid2 = 0;
+            let countPaidYear = 0; 
+            
+            const daysMap = [];
+            const start = new Date(currentYear, 0, 1);
+            const end = new Date(currentYear, 11, 31);
+            
+            for (let d = new Date(start); d <= end; d.setDate(d.getDate() + 1)) {
+                const y = d.getFullYear();
+                const m = d.getMonth() + 1;
+                const day = d.getDate();
+                const dateKey = `${y}-${String(m).padStart(2,'0')}-${String(day).padStart(2,'0')}`;
+                const week = d.getDay();
+
+                let status = attendanceData[dateKey];
+                if (!status) {
+                    status = (AUTO_SUNDAY && week === 0) ? 'holiday' : 'work';
+                }
+
+                const isOff = (status === 'holiday' || status === 'paid');
+                const isPaid = (status === 'paid');
+
+                if (isOff) countTotalOff++;
+                if (isPaid) {
+                    countPaidYear++;
+                    if (m <= 6) countPaid1++; else countPaid2++;
+                }
+                daysMap.push(isOff ? 1 : 0);
+            }
+
+            let streak3 = 0;
+            let streak5 = 0;
+            let currentStreak = 0;
+            for (let i = 0; i < daysMap.length; i++) {
+                if (daysMap[i] === 1) {
+                    currentStreak++;
+                } else {
+                    if (currentStreak >= 5) streak5++;
+                    else if (currentStreak >= 3) streak3++;
+                    currentStreak = 0;
+                }
+            }
+            if (currentStreak >= 5) streak5++;
+            else if (currentStreak >= 3) streak3++;
+            const totalRen3 = streak3 + streak5;
+
+            document.getElementById('val_total').innerText = countTotalOff;
+            document.getElementById('val_ren3').innerText = totalRen3;
+            document.getElementById('val_ren5').innerText = streak5;
+            document.getElementById('val_paid1').innerText = countPaid1;
+            document.getElementById('val_paid2').innerText = countPaid2;
+
+            const stock = parseInt(document.getElementById('iptPaidStock').value) || 0;
+            const remain = stock - countPaidYear;
+            document.getElementById('val_paid_used').innerText = countPaidYear;
+            document.getElementById('val_paid_remain').innerText = remain;
+            
+            const elRemain = document.getElementById('val_paid_remain');
+            if(remain < 0) elRemain.style.color = "red";
+            else elRemain.style.color = "#28a745";
+
+            setStatus('st_total', countTotalOff >= 110);
+            setStatus('st_ren3', totalRen3 >= 2);
+            setStatus('st_ren5', streak5 >= 1);
+            setStatus('st_paid1', countPaid1 >= 2);
+            setStatus('st_paid2', countPaid2 >= 2);
+        }
+
+        function setStatus(id, isOk) {
+            const el = document.getElementById(id);
+            if (isOk) el.classList.add('ok'); else el.classList.remove('ok');
+        }
+    </script>
+</body>
+</html>

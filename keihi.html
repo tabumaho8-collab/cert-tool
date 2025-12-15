@@ -1,0 +1,206 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>経費精算書作成ツール</title>
+    <style>
+        body { display: none; font-family: "Helvetica Neue", Arial, sans-serif; background-color: #f4f4f4; margin: 0; padding: 20px; gap: 20px; justify-content: center; min-height: 100vh; }
+        .editor-pane { width: 400px; background: #fff; padding: 20px; border-radius: 8px; box-shadow: 0 2px 10px rgba(0,0,0,0.1); height: fit-content; overflow-y: auto; max-height: 90vh; }
+        .back-btn { display: inline-block; background-color: #6c757d; color: white; padding: 5px 10px; text-decoration: none; border-radius: 4px; font-size: 12px; margin-bottom: 15px; cursor: pointer; }
+        .form-group { margin-bottom: 15px; }
+        .form-group label { display: block; font-size: 12px; font-weight: bold; margin-bottom: 5px; color: #555; }
+        .form-group input, .form-group textarea, .form-group select { width: 100%; padding: 8px; box-sizing: border-box; border: 1px solid #ccc; border-radius: 4px; font-size: 14px; }
+        
+        /* 明細行入力エリア */
+        .item-row { display: flex; gap: 5px; margin-bottom: 8px; align-items: center; border-bottom: 1px dashed #eee; padding-bottom: 8px; }
+        .item-row input { flex: 1; font-size: 13px; }
+        .w-date { width: 100px; flex: none !important; }
+        .w-price { width: 80px; flex: none !important; text-align: right; }
+        .w-dest { flex: 1.5 !important; }
+        
+        button.print-btn { width: 100%; padding: 12px; background-color: #17a2b8; color: white; border: none; border-radius: 4px; font-size: 16px; cursor: pointer; font-weight: bold; margin-top: 10px; }
+        
+        .preview-pane { flex-grow: 1; display: flex; justify-content: center; }
+        #sheet { width: 210mm; min-height: 297mm; background: white; padding: 20mm; box-sizing: border-box; box-shadow: 0 5px 15px rgba(0,0,0,0.2); position: relative; font-family: "Yu Mincho", "YuMincho", serif; color: #333; }
+        
+        /* デザイン */
+        .s-title { text-align: center; font-size: 28px; font-weight: bold; border-bottom: 2px solid #333; padding-bottom: 10px; margin-bottom: 20px; letter-spacing: 2px; }
+        
+        .s-header { display: flex; justify-content: space-between; margin-bottom: 20px; }
+        .s-info { font-size: 14px; }
+        .s-hanko-box { display: flex; border: 1px solid #333; }
+        .s-hanko { width: 60px; height: 60px; border-left: 1px solid #333; position: relative; }
+        .s-hanko:first-child { border-left: none; }
+        .s-hanko-title { border-bottom: 1px solid #333; font-size: 10px; text-align: center; background: #f0f0f0; height: 15px; line-height: 15px; }
+        
+        .s-total-bar { display: flex; justify-content: flex-end; align-items: center; margin-bottom: 10px; font-size: 18px; font-weight: bold; }
+        .s-total-val { font-size: 24px; border-bottom: 2px solid #333; margin-left: 10px; padding: 0 10px; }
+
+        .s-table { width: 100%; border-collapse: collapse; font-size: 12px; margin-bottom: 20px; }
+        .s-table th, .s-table td { border: 1px solid #333; padding: 6px; vertical-align: middle; }
+        .s-table th { background: #f0f0f0; text-align: center; font-weight: normal; }
+        .s-table td { height: 25px; }
+        
+        /* 列幅 */
+        .tc-date { width: 40px; text-align: center; }
+        .tc-dest { width: 120px; }
+        .tc-route { }
+        .tc-price { width: 70px; text-align: right; }
+        .tc-note { width: 80px; }
+
+        @media print { body { display: block !important; background: none; margin: 0; padding: 0; } .editor-pane { display: none; } .preview-pane { display: block; } #sheet { box-shadow: none; width: 100%; height: 100%; margin: 0; padding: 20mm; page-break-after: always; } @page { margin: 0; size: A4 portrait; } }
+    </style>
+</head>
+<body>
+    <script src="auth.js"></script>
+    <script src="settings.js"></script>
+    <script>
+        if (typeof checkAuth === 'function') checkAuth(); else document.body.style.display = "flex";
+        window.addEventListener('load', function() {
+            if (typeof applyCompanyData === 'function') applyCompanyData();
+            document.getElementById('iptDate').valueAsDate = new Date();
+            update();
+        });
+    </script>
+
+    <div class="editor-pane">
+        <a href="index.html" class="back-btn">⬅ メニューに戻る</a>
+        <h2>経費精算書 作成</h2>
+        
+        <div class="form-group"><label>提出日</label><input type="date" id="iptDate" oninput="update()"></div>
+        <div class="form-group"><label>期間（〇月分など）</label><input type="text" id="iptPeriod" placeholder="2025年12月度" oninput="update()"></div>
+        
+        <hr>
+        <div class="form-group"><label>所属</label><input type="text" id="iptDept" placeholder="営業部" oninput="update()"></div>
+        <div class="form-group"><label>氏名</label><input type="text" id="iptIssuerRep" oninput="update()"></div> <!-- settings.jsと連携 -->
+        
+        <hr>
+        <label>明細入力 (日付 / 訪問先・内容 / 経路 / 金額)</label>
+        <div id="items-container"></div>
+
+        <button class="print-btn" onclick="window.print()">🖨️ 経費精算書を印刷</button>
+    </div>
+
+    <div class="preview-pane">
+        <div id="sheet">
+            <div class="s-title">交通費・経費精算書</div>
+            
+            <div class="s-header">
+                <div class="s-info">
+                    提出日：<span id="viewDate"></span><br>
+                    対象期間：<span id="viewPeriod"></span><br>
+                    所　属：<span id="viewDept"></span><br>
+                    氏　名：<span id="viewName"></span>
+                    <div style="margin-top:5px; position:relative; width:50px; height:50px;">
+                        <img id="viewSeal" src="" style="width:100%; height:100%; object-fit:contain; display:none; opacity:0.8;">
+                        <div style="position:absolute; top:0; left:0; width:100%; height:100%; border:1px solid #ccc; display:flex; align-items:center; justify-content:center; color:#ccc; z-index:-1; font-size:10px;">(印)</div>
+                    </div>
+                </div>
+                
+                <div class="s-hanko-box">
+                    <div class="s-hanko"><div class="s-hanko-title">承認</div></div>
+                    <div class="s-hanko"><div class="s-hanko-title">審査</div></div>
+                    <div class="s-hanko"><div class="s-hanko-title">係</div></div>
+                </div>
+            </div>
+
+            <div class="s-total-bar">
+                合計金額：<div class="s-total-val">¥<span id="viewTotal">0</span></div>
+            </div>
+
+            <table class="s-table">
+                <thead>
+                    <tr>
+                        <th class="tc-date">日</th>
+                        <th class="tc-dest">訪問先・内容</th>
+                        <th class="tc-route">区間・経路</th>
+                        <th class="tc-price">金額</th>
+                        <th class="tc-note">備考</th>
+                    </tr>
+                </thead>
+                <tbody id="viewItemsBody"></tbody>
+            </table>
+            
+            <div style="font-size:12px;">
+                ※ 領収証がある場合は裏面に添付してください。<br>
+                ※ 定期区間内の交通費は除いて記入してください。
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const ROW_COUNT = 15; // 15行分作成
+
+        window.onload = function() {
+            const container = document.getElementById('items-container');
+            for(let i=0; i<ROW_COUNT; i++) {
+                const div = document.createElement('div');
+                div.className = 'item-row';
+                div.innerHTML = `
+                    <input type="text" class="ipt-day w-date" placeholder="日(10)" oninput="update()">
+                    <input type="text" class="ipt-dest w-dest" placeholder="訪問先など" oninput="update()">
+                    <input type="text" class="ipt-route" placeholder="東京⇔大阪" oninput="update()">
+                    <input type="number" class="ipt-price w-price" placeholder="¥" oninput="update()">
+                `;
+                container.appendChild(div);
+            }
+            
+            document.getElementById('iptDate').valueAsDate = new Date();
+            if (typeof applyCompanyData === 'function') applyCompanyData();
+            
+            // ハンコ表示（settings.jsから読み込まれた後）
+            setTimeout(() => {
+                const img = document.getElementById('viewSeal');
+                if(img.src && img.src.length > 10) img.style.display = 'block';
+            }, 500);
+
+            update();
+        };
+
+        function formatDate(dateStr) { if(!dateStr) return ""; const d = new Date(dateStr); return `${d.getFullYear()}年${d.getMonth()+1}月${d.getDate()}日`; }
+        function fmt(num) { return num.toLocaleString(); }
+
+        function update() {
+            document.getElementById('viewDate').innerText = formatDate(document.getElementById('iptDate').value);
+            document.getElementById('viewPeriod').innerText = document.getElementById('iptPeriod').value;
+            document.getElementById('viewDept').innerText = document.getElementById('iptDept').value;
+            document.getElementById('viewName').innerText = document.getElementById('iptIssuerRep').value;
+
+            let html = '';
+            let total = 0;
+            
+            const rows = document.querySelectorAll('.item-row');
+            rows.forEach(row => {
+                const day = row.querySelector('.ipt-day').value;
+                const dest = row.querySelector('.ipt-dest').value;
+                const route = row.querySelector('.ipt-route').value;
+                const priceVal = row.querySelector('.ipt-price').value;
+                const price = parseInt(priceVal) || 0;
+
+                // 入力がある行だけ計算・表示（空行も枠は出す）
+                if (day || dest || route || priceVal) {
+                    total += price;
+                    html += `
+                        <tr>
+                            <td class="tc-date">${day}</td>
+                            <td>${dest}</td>
+                            <td>${route}</td>
+                            <td class="tc-price">${priceVal ? fmt(price) : ''}</td>
+                            <td></td>
+                        </tr>
+                    `;
+                } else {
+                    // 空行
+                    html += `<tr><td class="tc-date"></td><td></td><td></td><td></td><td></td></tr>`;
+                }
+            });
+            
+            document.getElementById('viewItemsBody').innerHTML = html;
+            document.getElementById('viewTotal').innerText = fmt(total);
+        }
+        
+        document.querySelectorAll('input').forEach(i => i.addEventListener('input', update));
+    </script>
+</body>
+</html>
