@@ -3,398 +3,196 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>一括送付状作成</title>
+    <title>送付状作成ツール</title>
     <style>
         /* --- 全体レイアウト --- */
-        body {
-            display: none; /* セキュリティ用 */
-            font-family: "Helvetica Neue", Arial, sans-serif;
-            background-color: #f4f4f4;
-            margin: 0;
-            padding: 20px;
-            gap: 20px;
-            justify-content: center;
-            min-height: 100vh;
-        }
-
-        /* --- 左側：設定・入力エリア --- */
-        .editor-pane {
-            width: 400px;
-            background: #fff;
-            padding: 20px;
-            border-radius: 8px;
-            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
-            height: fit-content;
-            max-height: 90vh;
-            overflow-y: auto; /* ★ここ重要：内容が多いとスクロールバーが出ます */
-        }
-
-        .back-btn {
-            display: inline-block; background-color: #6c757d; color: white;
-            padding: 5px 10px; text-decoration: none; border-radius: 4px;
-            font-size: 12px; margin-bottom: 15px; cursor: pointer;
-        }
-
-        h2 { font-size: 18px; border-bottom: 2px solid #ddd; padding-bottom: 5px; margin-top: 0;}
-        h3 { font-size: 14px; margin-top: 20px; background: #eee; padding: 5px; }
-
+        body { display: none; font-family: "Helvetica Neue", Arial, sans-serif; background-color: #f4f4f4; margin: 0; padding: 20px; gap: 20px; justify-content: center; min-height: 100vh; }
+        .editor-pane { width: 350px; background: #fff; padding: 20px; border-radius: 8px; box-shadow: 0 2px 10px rgba(0,0,0,0.1); height: fit-content; }
+        .back-btn { display: inline-block; background-color: #6c757d; color: white; padding: 5px 10px; text-decoration: none; border-radius: 4px; font-size: 12px; margin-bottom: 15px; cursor: pointer; }
         .form-group { margin-bottom: 15px; }
         .form-group label { display: block; font-size: 12px; font-weight: bold; margin-bottom: 5px; color: #555; }
-        .form-group input, .form-group textarea {
-            width: 100%; padding: 8px; box-sizing: border-box;
-            border: 1px solid #ccc; border-radius: 4px; font-size: 14px;
-        }
-
-        /* --- 宛先リストエリア --- */
-        .dest-list {
-            border: 1px solid #ccc; max-height: 200px; overflow-y: scroll; padding: 10px; margin-bottom: 10px;
-        }
-        .dest-item {
-            display: flex; align-items: center; border-bottom: 1px solid #eee; padding: 5px 0;
-        }
-        .dest-item:last-child { border-bottom: none; }
-        .dest-item input[type="checkbox"] { width: auto; margin-right: 10px; }
-        .dest-info { flex: 1; font-size: 13px; }
-        .del-btn {
-            background: #d9534f; color: white; border: none; padding: 2px 5px; 
-            border-radius: 4px; font-size: 10px; cursor: pointer; margin-left: 5px;
-        }
-
-        /* --- ボタン類 --- */
-        .btn-add { background: #17a2b8; color: white; width: 100%; border:none; padding:8px; border-radius:4px; cursor:pointer; font-weight:bold;}
-        .btn-print { background: #28a745; color: white; width: 100%; border:none; padding:12px; border-radius:4px; cursor:pointer; font-weight:bold; font-size:16px; margin-top:20px;}
-        .btn-mini { background: #6c757d; color: white; border:none; padding:4px 8px; border-radius:4px; cursor:pointer; font-size:12px; }
-
-        /* 保存ボタン（目立つようにオレンジに変更） */
-        .save-sender-btn {
-            background-color: #fd7e14; color: white; border: none; 
-            padding: 8px 12px; border-radius: 4px; font-size: 12px; font-weight: bold;
-            cursor: pointer; margin-left: auto; display: block; margin-bottom: 5px;
-        }
-        .save-sender-btn:hover { background-color: #e36d0d; }
-
-        /* --- 右側：プレビュー --- */
-        .preview-pane { flex-grow: 1; display: flex; justify-content: center; }
+        .form-group input, .form-group textarea, .form-group select { width: 100%; padding: 8px; box-sizing: border-box; border: 1px solid #ccc; border-radius: 4px; font-size: 14px; }
         
-        .sheet {
-            width: 210mm; min-height: 297mm; background: white; padding: 25mm;
-            box-sizing: border-box; box-shadow: 0 5px 15px rgba(0,0,0,0.2); 
-            font-family: "Yu Mincho", "YuMincho", serif; color: #333; line-height: 1.8;
-            position: relative; margin-bottom: 20px;
-        }
-
-        #print-container { display: none; }
-
+        /* スイッチ類 */
+        .mode-switch { display: flex; gap: 10px; margin-bottom: 20px; background: #eee; padding: 5px; border-radius: 4px; }
+        .mode-label { flex: 1; text-align: center; padding: 8px; cursor: pointer; font-size: 14px; font-weight: bold; border-radius: 4px; }
+        .mode-switch input[type="radio"] { display: none; }
+        .mode-switch input[type="radio"]:checked + .mode-label { background-color: #007bff; color: white; box-shadow: 0 2px 4px rgba(0,0,0,0.2); }
+        
+        /* ボタン類 */
+        button.print-btn { width: 100%; padding: 12px; background-color: #28a745; color: white; border: none; border-radius: 4px; font-size: 16px; cursor: pointer; font-weight: bold; margin-top: 10px; }
+        .save-sender-btn { background-color: #17a2b8; color: white; border: none; padding: 5px 10px; border-radius: 4px; font-size: 12px; cursor: pointer; margin-left: auto; display: block; margin-bottom: 5px; }
+        
+        /* プレビューエリア */
+        .preview-pane { flex-grow: 1; display: flex; justify-content: center; }
+        #letter { width: 210mm; min-height: 297mm; background: white; padding: 25mm; box-sizing: border-box; box-shadow: 0 5px 15px rgba(0,0,0,0.2); position: relative; font-family: "Yu Mincho", "YuMincho", serif; color: #333; line-height: 1.8; }
+        
+        /* 送付状デザイン */
         .l-date { text-align: right; margin-bottom: 20px; }
         .l-header { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 40px; }
         .l-recipient { width: 55%; font-size: 16px; }
-        .rec-comp { font-size: 18px; margin-bottom: 5px; }
-        .rec-name { font-size: 20px; font-weight: bold; border-bottom: 1px solid #333; display: inline-block; }
+        .rec-name { font-size: 20px; font-weight: bold; margin-top: 5px; border-bottom: 1px solid #333; display: inline-block; }
         .l-sender { width: 40%; text-align: right; font-size: 14px; }
         .sender-comp { font-weight: bold; font-size: 16px; margin-bottom: 5px; }
         .l-title { text-align: center; font-size: 24px; font-weight: bold; margin-bottom: 40px; text-decoration: underline; letter-spacing: 3px; }
-        .l-body { margin-bottom: 40px; white-space: pre-wrap; text-align: justify; }
+        
+        /* 本文エリア */
+        .l-body-container { margin-bottom: 40px; }
+        .l-main-text { text-align: left; white-space: pre-wrap; line-height: 1.8; margin-bottom: 20px; }
+        .l-greeting-end { text-align: right; margin-bottom: 20px; }
+        
         .l-list-title { text-align: center; margin-bottom: 10px; font-weight: bold; }
         .l-list-box { border: 1px solid #333; padding: 20px 40px; margin: 0 20px; min-height: 150px; }
-        
+        .l-list-item { margin-bottom: 5px; }
+
+        /* ハンコエリア（画面上は薄く見える） */
+        .seal-watermark {
+            margin-top: 10px; position: relative; width: 60px; height: 60px; margin-left: auto;
+            opacity: 0.3; /* 透かしのように薄く表示 */
+        }
+
+        /* 印刷設定 */
         @media print {
             body { display: block !important; background: none; margin: 0; padding: 0; }
-            .editor-pane, .preview-pane { display: none; }
-            #print-container { display: block; }
-            .print-page { 
-                width: 210mm; height: 297mm; padding: 25mm; box-sizing: border-box;
-                page-break-after: always; position: relative;
-            }
-            .print-page:last-child { page-break-after: auto; }
+            .editor-pane { display: none; }
+            .preview-pane { display: block; }
+            #letter { box-shadow: none; width: 100%; height: 100%; margin: 0; padding: 25mm; page-break-after: always; }
+            @page { margin: 0; size: A4 portrait; }
+
+            /* ★印刷時はハンコエリアを完全に消す★ */
+            .seal-watermark { display: none !important; }
         }
+        @media (max-width: 900px) { body { flex-direction: column; align-items: center; } .editor-pane { width: 100%; max-width: 500px; } #letter { width: 100%; font-size: 0.8em; padding: 10mm; } }
     </style>
 </head>
 <body>
-
     <script src="auth.js"></script>
     <script src="settings.js"></script>
     <script>
         if (typeof checkAuth === 'function') checkAuth(); else document.body.style.display = "flex";
+        window.addEventListener('load', function() {
+            if (typeof applyCompanyData === 'function') applyCompanyData();
+            loadSenderInfo();
+            update();
+        });
     </script>
 
-    <!-- 入力エリア -->
     <div class="editor-pane">
         <a href="index.html" class="back-btn">⬅ メニューに戻る</a>
-        <h2>一括送付状 (社内・関連会社用)</h2>
-
-        <!-- 宛先登録エリア -->
-        <h3>1. 宛先リスト管理</h3>
-        <div class="form-group" style="background:#eee; padding:10px; border-radius:4px;">
-            <input type="text" id="newBranch" placeholder="支店名 (例: 大阪支店)" style="margin-bottom:5px;">
-            <input type="text" id="newName" placeholder="宛名 (例: 支店長 佐藤 殿)" style="margin-bottom:5px;">
-            <button class="btn-add" onclick="addDestination()">リストに追加</button>
+        <h2>送付状 作成</h2>
+        <div class="mode-switch">
+            <input type="radio" name="mode" id="modeExternal" value="external" checked onchange="toggleMode()"><label for="modeExternal" class="mode-label">🏢 社外用</label>
+            <input type="radio" name="mode" id="modeInternal" value="internal" onchange="toggleMode()"><label for="modeInternal" class="mode-label">🏢 社内(支店)用</label>
         </div>
-
-        <div style="display:flex; justify-content:space-between; margin-bottom:5px;">
-            <label>送信先を選択</label>
-            <div>
-                <button class="btn-mini" onclick="checkAll(true)">全選択</button>
-                <button class="btn-mini" onclick="checkAll(false)">全解除</button>
-            </div>
+        <div class="form-group"><label>日付</label><input type="date" id="iptDate" oninput="update()"></div>
+        <hr>
+        <div id="block-external">
+            <div class="form-group"><label>相手先 会社名</label><input type="text" id="iptExtComp" placeholder="〇〇商事株式会社" oninput="update()"></div>
+            <div class="form-group"><label>相手先 部署・氏名</label><input type="text" id="iptExtName" placeholder="営業部 田中 様" oninput="update()"></div>
         </div>
-        <div id="destList" class="dest-list">
-            <div style="color:#777; font-size:12px; text-align:center; padding:10px;">
-                まだ宛先がありません。<br>上から追加してください。
-            </div>
+        <div id="block-internal" style="display:none;">
+            <div class="form-group"><label>宛先 支店名</label><input type="text" id="iptIntBranch" placeholder="大阪支店" oninput="update()"></div>
+            <div class="form-group"><label>宛先 役職・氏名</label><input type="text" id="iptIntName" placeholder="支店長 佐藤 殿" oninput="update()"></div>
         </div>
-
-        <!-- 共通内容入力 -->
-        <h3>2. 共通の内容</h3>
-        <div class="form-group">
-            <label>日付</label>
-            <input type="date" id="iptDate" oninput="updatePreview()">
-        </div>
-        <div class="form-group">
-            <label>件名</label>
-            <input type="text" id="iptSubject" value="書類送付のご案内" oninput="updatePreview()">
-        </div>
-        <div class="form-group">
-            <label>送付書類 (1行に1つ)</label>
-            <textarea id="iptList" rows="4" placeholder="会議資料　1部" oninput="updatePreview()"></textarea>
-        </div>
-        <div class="form-group">
-            <label>本文</label>
-            <textarea id="iptBody" rows="4" oninput="updatePreview()">お疲れ様です。
-表題の件、下記の通り書類を送付いたします。ご確認よろしくお願いいたします。</textarea>
-        </div>
-
-        <h3>3. 差出人</h3>
-        <p style="font-size:11px; color:#666; margin-top:0;">名前を変更して保存すると、次回から自動入力されます。</p>
-
-        <div class="form-group">
-            <label>会社名・部署</label>
-            <input type="text" id="iptIssuerName" oninput="updatePreview()">
-        </div>
-        <div class="form-group">
-            <label>氏名 (担当者)</label>
-            <input type="text" id="iptIssuerRep" oninput="updatePreview()" placeholder="担当者">
-        </div>
-
-        <!-- ▼▼▼ 保存ボタン（ここです！） ▼▼▼ -->
+        <hr>
+        <div class="form-group"><label>件名 (タイトル)</label><input type="text" id="iptSubject" placeholder="書類送付のご案内" oninput="update()"></div>
+        <div class="form-group"><label>送付書類 (1行に1つ)</label><textarea id="iptList" rows="4" placeholder="見積書　1通&#13;会社案内　1部" oninput="update()"></textarea></div>
+        <div class="form-group"><label>本文 / 備考</label><textarea id="iptBody" rows="4" placeholder="拝啓　時下ますます..." oninput="update()"></textarea></div>
+        <hr>
+        <h3>差出人情報</h3>
+        <div class="form-group"><label>会社名・部署</label><input type="text" id="iptIssuerName" oninput="update()"></div>
+        <div class="form-group"><label>氏名 (担当者)</label><input type="text" id="iptIssuerRep" oninput="update()"></div>
         <button type="button" class="save-sender-btn" onclick="saveSenderInfo()">この差出人情報を保存する</button>
-        <!-- ▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲ -->
-
-        <button class="btn-print" onclick="window.print()">🖨️ 選択した全宛先に一括印刷</button>
+        <button class="print-btn" onclick="window.print()">🖨️ 送付状を印刷</button>
     </div>
 
-    <!-- プレビューエリア -->
     <div class="preview-pane">
-        <div class="sheet">
-            <div style="position:absolute; top:0; left:0; background:red; color:white; padding:5px; font-size:12px;">プレビュー（1件目のみ表示）</div>
-            
-            <div class="l-date" id="prevDate"></div>
-
+        <div id="letter">
+            <div class="l-date" id="viewDate"></div>
             <div class="l-header">
-                <div class="l-recipient">
-                    <div class="rec-comp" id="prevRecBranch">（ここに支店名）</div>
-                    <div class="rec-name" id="prevRecName">（ここに氏名）</div>
-                </div>
+                <div class="l-recipient"><div id="viewRec1" style="font-size:18px;"></div><div id="viewRec2" class="rec-name"></div></div>
                 <div class="l-sender">
-                    <div class="sender-comp" id="prevIssuerName"></div>
-                    <div id="prevIssuerRep"></div>
-                    <div style="margin-top:10px; color:#aaa; font-size:40px; position:absolute; right:30mm; opacity:0.3;">(印)</div>
+                    <div class="sender-comp" id="viewIssuerName"></div>
+                    <div id="viewIssuerAddr" style="font-size:12px; margin-bottom:5px;"></div>
+                    <div id="viewIssuerRep"></div>
+                    
+                    <!-- ハンコエリア (画面上は透かし、印刷時は消える) -->
+                    <div class="seal-watermark">
+                        <img id="viewSeal" src="" style="width:100%; height:100%; object-fit:contain; display:none; opacity:0.8;">
+                        <div style="position:absolute; top:0; left:0; width:100%; height:100%; border:1px dashed #ccc; display:flex; align-items:center; justify-content:center; color:#ccc; z-index:-1;">(印)</div>
+                    </div>
                 </div>
             </div>
-
-            <div class="l-title" id="prevSubject"></div>
-            <div class="l-body" id="prevBody"></div>
-
+            <div class="l-title" id="viewSubject">書類送付のご案内</div>
+            <div class="l-body-container">
+                <div id="viewBody" class="l-main-text"></div>
+                <div id="greeting-end" class="l-greeting-end"></div>
+            </div>
             <div class="l-list-title">記</div>
-            <div class="l-list-box" id="prevList"></div>
+            <div class="l-list-box" id="viewList"></div>
             <div style="text-align:right; margin-top:10px;">以上</div>
         </div>
     </div>
 
-    <!-- 印刷用コンテナ -->
-    <div id="print-container"></div>
-
     <script>
-        const KEY_DESTINATIONS = "my_tool_destinations";
         const KEY_SENDER = "my_tool_sofujo_sender"; 
-        
-        let destinations = [];
-
         window.addEventListener('load', function() {
-            if (typeof applyCompanyData === 'function') applyCompanyData();
-            loadSenderInfo();
             document.getElementById('iptDate').valueAsDate = new Date();
-            loadDestinations();
-            updatePreview();
-            window.addEventListener('beforeprint', generatePrintPages);
+            setDefaults('external');
+            update();
         });
-
-        // 差出人の保存・読み込み
         function saveSenderInfo() {
-            const data = {
-                name: document.getElementById('iptIssuerName').value,
-                rep: document.getElementById('iptIssuerRep').value
-            };
+            const data = { name: document.getElementById('iptIssuerName').value, rep: document.getElementById('iptIssuerRep').value };
             localStorage.setItem(KEY_SENDER, JSON.stringify(data));
             alert("差出人情報を保存しました！");
         }
-
         function loadSenderInfo() {
             const json = localStorage.getItem(KEY_SENDER);
-            if(json) {
-                const data = JSON.parse(json);
-                if(data.name) document.getElementById('iptIssuerName').value = data.name;
-                if(data.rep) document.getElementById('iptIssuerRep').value = data.rep;
-            }
+            if(json) { const data = JSON.parse(json); if(data.name) document.getElementById('iptIssuerName').value = data.name; if(data.rep) document.getElementById('iptIssuerRep').value = data.rep; }
         }
-
-        // 宛先リスト管理
-        function loadDestinations() {
-            const json = localStorage.getItem(KEY_DESTINATIONS);
-            if(json) {
-                destinations = JSON.parse(json);
-            }
-            renderDestList();
+        function toggleMode() {
+            const isExternal = document.getElementById('modeExternal').checked;
+            document.getElementById('block-external').style.display = isExternal ? 'block' : 'none';
+            document.getElementById('block-internal').style.display = isExternal ? 'none' : 'block';
+            setDefaults(isExternal ? 'external' : 'internal');
+            update();
         }
-
-        function saveDestinations() {
-            localStorage.setItem(KEY_DESTINATIONS, JSON.stringify(destinations));
-            renderDestList();
-        }
-
-        function addDestination() {
-            const branch = document.getElementById('newBranch').value;
-            const name = document.getElementById('newName').value;
-            if(!branch) return alert("支店名を入力してください");
-
-            destinations.push({ branch: branch, name: name, checked: true });
-            document.getElementById('newBranch').value = "";
-            document.getElementById('newName').value = "";
-            saveDestinations();
-        }
-
-        function deleteDest(index) {
-            if(confirm("この宛先を削除しますか？")) {
-                destinations.splice(index, 1);
-                saveDestinations();
-            }
-        }
-
-        function renderDestList() {
-            const container = document.getElementById('destList');
-            if(destinations.length === 0) {
-                container.innerHTML = '<div style="color:#777; font-size:12px; text-align:center; padding:10px;">宛先を追加してください</div>';
-                return;
-            }
-            let html = '';
-            destinations.forEach((item, index) => {
-                const checked = item.checked ? 'checked' : '';
-                html += `
-                    <div class="dest-item">
-                        <input type="checkbox" id="chk_${index}" ${checked} onchange="toggleCheck(${index})">
-                        <div class="dest-info">
-                            <strong>${item.branch}</strong><br>
-                            ${item.name}
-                        </div>
-                        <button class="del-btn" onclick="deleteDest(${index})">削除</button>
-                    </div>
-                `;
-            });
-            container.innerHTML = html;
-        }
-
-        function toggleCheck(index) {
-            destinations[index].checked = document.getElementById(`chk_${index}`).checked;
-            saveDestinations(); 
-        }
-
-        function checkAll(bool) {
-            destinations.forEach(d => d.checked = bool);
-            saveDestinations();
-        }
-
-        // プレビュー更新
-        function formatDate(dateStr) {
-            if(!dateStr) return "";
-            const d = new Date(dateStr);
-            return `${d.getFullYear()}年${d.getMonth()+1}月${d.getDate()}日`;
-        }
-
-        function updatePreview() {
-            const date = formatDate(document.getElementById('iptDate').value);
-            const subject = document.getElementById('iptSubject').value;
-            const body = document.getElementById('iptBody').value;
-            const issuer = document.getElementById('iptIssuerName').value;
-            const rep = document.getElementById('iptIssuerRep').value;
-            
-            const listText = document.getElementById('iptList').value;
-            let listHtml = '';
-            listText.split('\n').forEach(item => {
-                if(item.trim()) listHtml += `<div>${item}</div>`;
-            });
-
-            document.getElementById('prevDate').innerText = date;
-            document.getElementById('prevSubject').innerText = subject;
-            document.getElementById('prevBody').innerText = body;
-            document.getElementById('prevIssuerName').innerText = issuer;
-            document.getElementById('prevIssuerRep').innerText = rep;
-            document.getElementById('prevList').innerHTML = listHtml;
-
-            if(destinations.length > 0) {
-                document.getElementById('prevRecBranch').innerText = destinations[0].branch;
-                document.getElementById('prevRecName').innerText = destinations[0].name;
+        function setDefaults(mode) {
+            const body = document.getElementById('iptBody');
+            if (mode === 'external') {
+                body.placeholder = "時下ますますご清栄のこととお慶び申し上げます。\nさて、下記の書類を送付いたしますので、ご査収のほどよろしくお願い申し上げます。";
+                if(!body.value) body.value = "時下ますますご清栄のこととお慶び申し上げます。\nさて、下記の書類を送付いたしますので、ご査収のほどよろしくお願い申し上げます。";
             } else {
-                document.getElementById('prevRecBranch').innerText = "（支店名）";
-                document.getElementById('prevRecName').innerText = "（氏名）";
+                body.placeholder = "お疲れ様です。\n表題の件、下記の通り書類を送付いたします。ご確認よろしくお願いいたします。";
+                if(!body.value) body.value = "お疲れ様です。\n表題の件、下記の通り書類を送付いたします。ご確認よろしくお願いいたします。";
             }
         }
-
-        // 印刷用ページ生成
-        function generatePrintPages() {
-            const container = document.getElementById('print-container');
-            container.innerHTML = ""; 
-
-            const date = formatDate(document.getElementById('iptDate').value);
-            const subject = document.getElementById('iptSubject').value;
-            const body = document.getElementById('iptBody').value;
-            const issuer = document.getElementById('iptIssuerName').value;
-            const rep = document.getElementById('iptIssuerRep').value;
+        function formatDate(dateStr) { if(!dateStr) return ""; const d = new Date(dateStr); return `${d.getFullYear()}年${d.getMonth()+1}月${d.getDate()}日`; }
+        function update() {
+            document.getElementById('viewDate').innerText = formatDate(document.getElementById('iptDate').value);
+            document.getElementById('viewSubject').innerText = document.getElementById('iptSubject').value;
+            document.getElementById('viewIssuerName').innerText = document.getElementById('iptIssuerName').value;
+            document.getElementById('viewIssuerRep').innerText = document.getElementById('iptIssuerRep').value;
+            if(document.getElementById('iptIssuerAddr') && document.getElementById('iptIssuerAddr').value){
+                document.getElementById('viewIssuerAddr').innerText = document.getElementById('iptIssuerAddr').value; 
+            }
+            const isExternal = document.getElementById('modeExternal').checked;
+            const bodyValue = document.getElementById('iptBody').value;
+            if (isExternal) {
+                document.getElementById('viewRec1').innerText = document.getElementById('iptExtComp').value;
+                document.getElementById('viewRec2').innerText = document.getElementById('iptExtName').value;
+                document.getElementById('viewBody').innerText = "拝啓　" + bodyValue;
+                document.getElementById('greeting-end').innerText = "敬　具";
+            } else {
+                document.getElementById('viewRec1').innerText = document.getElementById('iptIntBranch').value;
+                document.getElementById('viewRec2').innerText = document.getElementById('iptIntName').value;
+                document.getElementById('viewBody').innerText = bodyValue;
+                document.getElementById('greeting-end').innerText = ""; 
+            }
             const listText = document.getElementById('iptList').value;
             let listHtml = '';
-            listText.split('\n').forEach(item => {
-                if(item.trim()) listHtml += `<div>${item}</div>`;
-            });
-
-            const targets = destinations.filter(d => d.checked);
-            
-            if(targets.length === 0) {
-                alert("送信先が選択されていません！");
-                return;
-            }
-
-            targets.forEach(dest => {
-                const pageHtml = `
-                    <div class="print-page">
-                        <div class="l-date">${date}</div>
-                        <div class="l-header">
-                            <div class="l-recipient">
-                                <div class="rec-comp">${dest.branch}</div>
-                                <div class="rec-name">${dest.name}</div>
-                            </div>
-                            <div class="l-sender">
-                                <div class="sender-comp">${issuer}</div>
-                                <div>${rep}</div>
-                                <div style="margin-top:10px; color:#aaa; font-size:40px; position:absolute; right:30mm; opacity:0.3;">(印)</div>
-                            </div>
-                        </div>
-                        <div class="l-title">${subject}</div>
-                        <div class="l-body" style="white-space: pre-wrap;">${body}</div>
-                        <div class="l-list-title">記</div>
-                        <div class="l-list-box">${listHtml}</div>
-                        <div style="text-align:right; margin-top:10px;">以上</div>
-                    </div>
-                `;
-                container.insertAdjacentHTML('beforeend', pageHtml);
-            });
+            listText.split('\n').forEach(item => { if(item.trim()) listHtml += `<div class="l-list-item">${item}</div>`; });
+            document.getElementById('viewList').innerHTML = listHtml;
         }
     </script>
 </body>

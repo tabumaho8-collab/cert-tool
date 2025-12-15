@@ -50,6 +50,10 @@
         /* 金額入力欄を目立たせる */
         .input-money { font-size: 16px; font-weight: bold; text-align: right; }
 
+        /* ハンコスイッチのデザイン */
+        .seal-switch { display: flex; align-items: center; gap: 5px; font-size: 12px; font-weight: normal; cursor: pointer; margin-top: 5px; }
+        .seal-switch input { width: auto; margin: 0; cursor: pointer; }
+
         button.print-btn {
             width: 100%; padding: 12px; background-color: #333;
             color: white; border: none; border-radius: 4px; font-size: 16px;
@@ -129,6 +133,8 @@
             if (typeof applyCompanyData === 'function') applyCompanyData();
             // 初期日付
             document.getElementById('iptDate').valueAsDate = new Date();
+            // ハンコ表示初期化
+            toggleSeal();
             update();
         });
     </script>
@@ -185,6 +191,15 @@
             <input type="text" id="iptRegNo" placeholder="T12345..." oninput="update()">
         </div>
 
+        <!-- ▼▼▼ ハンコON/OFFスイッチ ▼▼▼ -->
+        <div class="form-group">
+            <label class="seal-switch">
+                <input type="checkbox" id="chkSeal" checked onchange="toggleSeal()">
+                電子印鑑を表示する
+            </label>
+        </div>
+        <!-- ▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲ -->
+
         <button class="print-btn" onclick="window.print()">🖨️ 印刷する</button>
     </div>
 
@@ -240,8 +255,14 @@
                     <div class="issuer-name" id="viewIssuerName"></div>
                     <div id="viewIssuerAddr" style="white-space: pre-wrap;"></div>
                     <div>登録番号 <span id="viewRegNo"></span></div>
-                    <!-- ハンコスペース -->
-                    <div style="margin-top:20px; color:#ccc; border:1px solid #eee; width:60px; height:60px; display:flex; align-items:center; justify-content:center; margin-left:auto;">(印)</div>
+                    
+                    <!-- ハンコエリア -->
+                    <div style="margin-top:20px; position:relative; width:60px; height:60px; margin-left:auto;">
+                        <!-- 画像 -->
+                        <img id="viewSeal" src="" style="width:100%; height:100%; object-fit:contain; display:none; opacity:0.8;">
+                        <!-- ダミー枠（画像OFFの時に見える） -->
+                        <div style="position:absolute; top:0; left:0; width:100%; height:100%; border:1px solid #eee; display:flex; align-items:center; justify-content:center; color:#ddd; z-index:-1;">(印)</div>
+                    </div>
                 </div>
             </div>
 
@@ -256,6 +277,19 @@
             return `${d.getFullYear()}/${d.getMonth()+1}/${d.getDate()}`;
         }
 
+        // ハンコ表示切り替え
+        function toggleSeal() {
+            const isChecked = document.getElementById('chkSeal').checked;
+            const img = document.getElementById('viewSeal');
+            
+            // 画像ソースがある、かつチェックが入っている時だけ表示
+            if (img.src && img.src.length > 10 && isChecked) {
+                img.style.display = 'block';
+            } else {
+                img.style.display = 'none';
+            }
+        }
+
         function update() {
             // 基本情報の反映
             document.getElementById('viewClient').innerText = document.getElementById('iptClient').value;
@@ -267,37 +301,27 @@
             document.getElementById('viewRegNo').innerText = document.getElementById('iptRegNo').value;
 
             // 金額計算
-            // 入力されたのは「税込金額」
             const in10 = parseInt(document.getElementById('iptAmount10').value) || 0;
             const in8  = parseInt(document.getElementById('iptAmount8').value) || 0;
 
-            // 合計
             const total = in10 + in8;
             document.getElementById('viewTotal').innerText = fmt(total);
 
-            // インボイス計算（割り戻し計算）
-            // 10%対象
-            const sub10 = Math.floor(in10 / 1.1); // 税抜金額
-            const tax10 = in10 - sub10;           // 消費税額
+            // インボイス計算
+            const sub10 = Math.floor(in10 / 1.1);
+            const tax10 = in10 - sub10;
             
-            // 8%対象
-            const sub8 = Math.floor(in8 / 1.08);  // 税抜金額
-            const tax8 = in8 - sub8;              // 消費税額
+            const sub8 = Math.floor(in8 / 1.08);
+            const tax8 = in8 - sub8;
 
-            // 内訳表示（※画像に合わせて「税込」ではなく「税抜(小計)」を表示する場合が多いですが、
-            // 画像の「小計」が税込か税抜か読み取れないため、一般的なインボイスの「税抜金額」を表示します）
-            // もし画像が「税込金額」の小計なら in10 を表示すればOKです。
-            // ここでは画像にある「小計」＝「税抜金額」として計算しています。
-            
-            // 修正案：画像の数字を見ると、10000+10000=20000、消費税1000+800=1800、合計21800となっています。
-            // つまり、画像の「小計」は『税抜』のことですね。
-            
             document.getElementById('viewSub10').innerText = fmt(sub10);
             document.getElementById('viewSub8').innerText = fmt(sub8);
             document.getElementById('viewTax10').innerText = fmt(tax10);
             document.getElementById('viewTax8').innerText = fmt(tax8);
         }
+        
+        // 入力イベントリスナー
+        document.querySelectorAll('input, textarea').forEach(i => i.addEventListener('input', update));
     </script>
 </body>
 </html>
-
