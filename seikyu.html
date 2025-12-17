@@ -20,6 +20,8 @@
         .item-row .w-price { width: 80px; flex: none; text-align: right; }
         .item-row .w-tax { width: 60px; flex: none; }
         .save-bank-btn { background-color: #17a2b8; color: white; border: none; padding: 5px 10px; border-radius: 4px; font-size: 12px; cursor: pointer; margin-left: auto; display: block; margin-bottom: 5px; }
+        
+        /* 請求書カラー: 青 */
         button.print-btn { width: 100%; padding: 12px; background-color: #0056b3; color: white; border: none; border-radius: 4px; font-size: 16px; cursor: pointer; font-weight: bold; margin-top: 10px; }
         .auto-no-switch { display: flex; align-items: center; gap: 5px; margin-bottom: 5px; font-size: 12px; cursor: pointer; }
         
@@ -35,30 +37,36 @@
         .client-info { width: 50%; }
         .client-name { font-size: 22px; margin-bottom: 5px; border-bottom: 1px solid #333; display: inline-block; min-width: 250px;}
         
+        /* ▼▼▼ 発行者情報（改良版） ▼▼▼ */
         .issuer-info { 
             width: max-content;
             max-width: 50%;
             margin-left: auto; 
             font-size: 13px; 
             line-height: 1.5; 
-            text-align: left; 
-            position: relative; 
+            text-align: left; /* 中身は左揃え */
         }
-        .issuer-name { font-size: 16px; font-weight: bold; margin-bottom: 5px; }
+        
+        /* 社名とハンコをまとめる枠 */
+        .name-seal-wrap {
+            position: relative;
+            width: fit-content; 
+            margin-bottom: 5px;
+        }
 
-        /* ▼▼▼ ハンコを小さく変更（40px） ▼▼▼ */
+        .issuer-name { font-size: 16px; font-weight: bold; }
+
+        /* ハンコの位置 */
         .seal-container {
             position: absolute;
-            top: 45px;    /* 少し下に調整 */
-            right: -10px; /* 少し左に調整 */
-            
-            width: 40px;  /* ← 50pxから40pxへ変更 */
-            height: 40px; /* ← 同上 */
-            
-            z-index: 10; 
+            top: -5px;
+            right: -55px; /* 社名の右端から55px右 */
+            width: 50px;
+            height: 50px;
+            z-index: 10;
             transform: rotate(-10deg);
         }
-        /* ▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲ */
+        /* ▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲ */
 
         .seal-img { width: 100%; height: 100%; object-fit: contain; opacity: 0.85; }
         .seal-dummy { width: 100%; height: 100%; border: 1px solid #eee; display: flex; align-items: center; justify-content: center; color: #ddd; background: rgba(255,255,255,0.5); font-size: 10px; }
@@ -89,8 +97,7 @@
             .editor-pane { display: none; } 
             .preview-pane { display: block; } 
             #invoice { box-shadow: none; width: 100%; height: 100%; margin: 0; padding: 20mm; page-break-after: always; } 
-            /* 印刷時もハンコの位置をキープ */
-            .seal-container { position: absolute; top: 45px; right: -10px; }
+            .seal-dummy { display: none !important; }
             @page { margin: 0; size: A4 portrait; } 
         }
     </style>
@@ -147,16 +154,19 @@
                 <div class="client-info"><div class="client-name" id="viewClient"></div><div style="margin-top:5px; font-size:14px;">件名：<span id="viewSubject"></span></div><div style="margin-top:10px; font-size:12px;">下記の通りご請求申し上げます。</div></div>
                 
                 <div class="issuer-info">
-                    <div class="issuer-name" id="viewIssuerName"></div>
+                    <!-- ★ここに注目: 社名とハンコをひとまとめにする -->
+                    <div class="name-seal-wrap">
+                        <div class="issuer-name" id="viewIssuerName"></div>
+                        <!-- ハンコ -->
+                        <div class="seal-container">
+                            <img id="viewSeal" src="" class="seal-img" style="display:none;">
+                            <div id="dummySeal" class="seal-dummy">(印)</div>
+                        </div>
+                    </div>
+
                     <div id="viewIssuerAddr" style="white-space: pre-wrap;"></div>
                     <div style="margin-top:5px;">担当：<span id="viewIssuerRep"></span></div>
                     <div style="margin-top:5px; border-bottom:1px solid #ccc; display:inline-block;">登録番号：<span id="viewRegNo"></span></div>
-                    
-                    <!-- ハンコエリア (絶対配置) -->
-                    <div class="seal-container">
-                        <img id="viewSeal" src="" class="seal-img" style="display:none;">
-                        <div id="dummySeal" class="seal-dummy">(印)</div>
-                    </div>
                 </div>
             </div>
             

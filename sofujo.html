@@ -45,12 +45,6 @@
         .l-list-box { border: 1px solid #333; padding: 20px 40px; margin: 0 20px; min-height: 150px; }
         .l-list-item { margin-bottom: 5px; }
 
-        /* ハンコエリア（画面上は薄く見える） */
-        .seal-watermark {
-            margin-top: 10px; position: relative; width: 60px; height: 60px; margin-left: auto;
-            opacity: 0.3; /* 透かしのように薄く表示 */
-        }
-
         /* 印刷設定 */
         @media print {
             body { display: block !important; background: none; margin: 0; padding: 0; }
@@ -58,9 +52,6 @@
             .preview-pane { display: block; }
             #letter { box-shadow: none; width: 100%; height: 100%; margin: 0; padding: 25mm; page-break-after: always; }
             @page { margin: 0; size: A4 portrait; }
-
-            /* ★印刷時はハンコエリアを完全に消す★ */
-            .seal-watermark { display: none !important; }
         }
         @media (max-width: 900px) { body { flex-direction: column; align-items: center; } .editor-pane { width: 100%; max-width: 500px; } #letter { width: 100%; font-size: 0.8em; padding: 10mm; } }
     </style>
@@ -73,6 +64,8 @@
         window.addEventListener('load', function() {
             if (typeof applyCompanyData === 'function') applyCompanyData();
             loadSenderInfo();
+            document.getElementById('iptDate').valueAsDate = new Date();
+            setDefaults('external');
             update();
         });
     </script>
@@ -115,12 +108,7 @@
                     <div class="sender-comp" id="viewIssuerName"></div>
                     <div id="viewIssuerAddr" style="font-size:12px; margin-bottom:5px;"></div>
                     <div id="viewIssuerRep"></div>
-                    
-                    <!-- ハンコエリア (画面上は透かし、印刷時は消える) -->
-                    <div class="seal-watermark">
-                        <img id="viewSeal" src="" style="width:100%; height:100%; object-fit:contain; display:none; opacity:0.8;">
-                        <div style="position:absolute; top:0; left:0; width:100%; height:100%; border:1px dashed #ccc; display:flex; align-items:center; justify-content:center; color:#ccc; z-index:-1;">(印)</div>
-                    </div>
+                    <!-- ハンコエリアは完全に削除しました -->
                 </div>
             </div>
             <div class="l-title" id="viewSubject">書類送付のご案内</div>
@@ -136,20 +124,18 @@
 
     <script>
         const KEY_SENDER = "my_tool_sofujo_sender"; 
-        window.addEventListener('load', function() {
-            document.getElementById('iptDate').valueAsDate = new Date();
-            setDefaults('external');
-            update();
-        });
+        
         function saveSenderInfo() {
             const data = { name: document.getElementById('iptIssuerName').value, rep: document.getElementById('iptIssuerRep').value };
             localStorage.setItem(KEY_SENDER, JSON.stringify(data));
             alert("差出人情報を保存しました！");
         }
+        
         function loadSenderInfo() {
             const json = localStorage.getItem(KEY_SENDER);
             if(json) { const data = JSON.parse(json); if(data.name) document.getElementById('iptIssuerName').value = data.name; if(data.rep) document.getElementById('iptIssuerRep').value = data.rep; }
         }
+        
         function toggleMode() {
             const isExternal = document.getElementById('modeExternal').checked;
             document.getElementById('block-external').style.display = isExternal ? 'block' : 'none';
@@ -157,6 +143,7 @@
             setDefaults(isExternal ? 'external' : 'internal');
             update();
         }
+        
         function setDefaults(mode) {
             const body = document.getElementById('iptBody');
             if (mode === 'external') {
@@ -167,7 +154,9 @@
                 if(!body.value) body.value = "お疲れ様です。\n表題の件、下記の通り書類を送付いたします。ご確認よろしくお願いいたします。";
             }
         }
+        
         function formatDate(dateStr) { if(!dateStr) return ""; const d = new Date(dateStr); return `${d.getFullYear()}年${d.getMonth()+1}月${d.getDate()}日`; }
+        
         function update() {
             document.getElementById('viewDate').innerText = formatDate(document.getElementById('iptDate').value);
             document.getElementById('viewSubject').innerText = document.getElementById('iptSubject').value;
@@ -176,8 +165,10 @@
             if(document.getElementById('iptIssuerAddr') && document.getElementById('iptIssuerAddr').value){
                 document.getElementById('viewIssuerAddr').innerText = document.getElementById('iptIssuerAddr').value; 
             }
+            
             const isExternal = document.getElementById('modeExternal').checked;
             const bodyValue = document.getElementById('iptBody').value;
+            
             if (isExternal) {
                 document.getElementById('viewRec1').innerText = document.getElementById('iptExtComp').value;
                 document.getElementById('viewRec2').innerText = document.getElementById('iptExtName').value;
@@ -189,11 +180,17 @@
                 document.getElementById('viewBody').innerText = bodyValue;
                 document.getElementById('greeting-end').innerText = ""; 
             }
+            
             const listText = document.getElementById('iptList').value;
             let listHtml = '';
             listText.split('\n').forEach(item => { if(item.trim()) listHtml += `<div class="l-list-item">${item}</div>`; });
             document.getElementById('viewList').innerHTML = listHtml;
         }
+        
+        // inputイベント監視
+        document.querySelectorAll('input, textarea').forEach(el => {
+            el.addEventListener('input', update);
+        });
     </script>
 </body>
 </html>

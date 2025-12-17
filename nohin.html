@@ -19,7 +19,9 @@
         .item-row .w-unit { width: 50px; flex: none; }
         .item-row .w-price { width: 80px; flex: none; text-align: right; }
         .item-row .w-tax { width: 60px; flex: none; }
-        button.print-btn { width: 100%; padding: 12px; background-color: #e67e22; /* 納品書はオレンジ */ color: white; border: none; border-radius: 4px; font-size: 16px; cursor: pointer; font-weight: bold; margin-top: 10px; }
+        
+        /* 納品書カラー: オレンジ */
+        button.print-btn { width: 100%; padding: 12px; background-color: #e67e22; color: white; border: none; border-radius: 4px; font-size: 16px; cursor: pointer; font-weight: bold; margin-top: 10px; }
         .auto-no-switch { display: flex; align-items: center; gap: 5px; margin-bottom: 5px; font-size: 12px; cursor: pointer; }
         
         .preview-pane { flex-grow: 1; display: flex; justify-content: center; }
@@ -32,35 +34,42 @@
         .doc-no-date { text-align: right; font-size: 12px; }
         
         .info-section { display: flex; justify-content: space-between; margin-bottom: 30px; margin-top: 20px;}
-        .client-info { width: 50%; }
+        .client-info { width: 55%; }
         .client-name { font-size: 22px; margin-bottom: 5px; border-bottom: 1px solid #333; display: inline-block; min-width: 250px;}
         
-        /* ▼▼▼ 発行者情報（右寄せ・左揃え） ▼▼▼ */
+        /* ▼▼▼ 発行者情報（改良版） ▼▼▼ */
         .issuer-info { 
             width: max-content;
-            max-width: 50%;
-            margin-left: auto; 
+            max-width: 45%;
+            margin-left: auto; /* 右に寄せる */
             font-size: 13px; 
             line-height: 1.5; 
-            text-align: left; /* 文字の頭を揃える */
+            text-align: left; /* 中身は左揃え */
         }
-        .issuer-name { font-size: 16px; font-weight: bold; margin-bottom: 5px; }
+        
+        /* 社名とハンコをまとめる枠（fit-contentが重要！） */
+        .name-seal-wrap {
+            position: relative;
+            width: fit-content; 
+            margin-bottom: 5px;
+        }
 
-        /* ▼▼▼ ハンコの位置とサイズ（40px） ▼▼▼ */
+        .issuer-name { font-size: 16px; font-weight: bold; }
+
+        /* ハンコの位置（社名の右横） */
         .seal-container {
             position: absolute;
-            top: -5px;    /* 担当者の横あたり */
-            right: -50px; /* 右端に合わせる */
-            
-            width: 40px;  /* 小さく！ */
-            height: 40px; 
-            
-            z-index: 10; 
+            top: -5px;
+            right: -55px; /* 社名の端から55px右 */
+            width: 50px;
+            height: 50px;
+            z-index: 10;
             transform: rotate(-10deg);
         }
+        /* ▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲ */
+
         .seal-img { width: 100%; height: 100%; object-fit: contain; opacity: 0.85; }
         .seal-dummy { width: 100%; height: 100%; border: 1px solid #eee; display: flex; align-items: center; justify-content: center; color: #ddd; background: rgba(255,255,255,0.5); font-size: 10px; }
-        /* ▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲ */
 
         .amount-bar { background-color: #e67e22; color: white; padding: 10px 20px; display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; }
         .amount-label { font-size: 16px; font-weight: bold; }
@@ -78,13 +87,8 @@
         .bottom-section { display: flex; justify-content: space-between; margin-top:30px; }
         
         /* 受領印エリア */
-        .receipt-stamp-box {
-            width: 50%; border-top: 1px solid #333; padding-top: 5px; font-size: 12px;
-        }
-        .stamp-area {
-            margin-top: 10px; border: 1px solid #ccc; height: 80px; width: 100%; 
-            display: flex; align-items: center; justify-content: center; color: #ccc;
-        }
+        .receipt-stamp-box { width: 50%; border-top: 1px solid #333; padding-top: 5px; font-size: 12px; }
+        .stamp-area { margin-top: 10px; border: 1px solid #ccc; height: 80px; width: 100%; display: flex; align-items: center; justify-content: center; color: #ccc; }
 
         .tax-summary { width: 40%; }
         .tax-table { border-collapse: collapse; width: 100%; font-size: 12px; }
@@ -98,10 +102,7 @@
             .editor-pane { display: none; } 
             .preview-pane { display: block; } 
             #invoice { box-shadow: none; width: 100%; height: 100%; margin: 0; padding: 20mm; page-break-after: always; } 
-            
-            /* 手押し用の枠は消す */
             .seal-dummy { display: none !important; }
-            
             @page { margin: 0; size: A4 portrait; } 
         }
     </style>
@@ -135,7 +136,6 @@
         <div class="form-group"><label>住所・TEL</label><textarea id="iptIssuerAddr" rows="3" oninput="update()"></textarea></div>
         <div class="form-group"><label>担当者</label><input type="text" id="iptIssuerRep" oninput="update()"></div>
         
-        <!-- ハンコスイッチ -->
         <div class="form-group">
             <label class="seal-switch">
                 <input type="checkbox" id="chkSeal" checked onchange="toggleSeal()">
@@ -143,7 +143,7 @@
             </label>
         </div>
 
-        <button class="print-btn" onclick="window.print()">🖨️ 納品書を印刷</button>
+        <button class="print-btn" onclick="handlePrint()">🖨️ 納品書を印刷</button>
     </div>
 
     <div class="preview-pane">
@@ -152,17 +152,19 @@
             <div class="info-section">
                 <div class="client-info"><div class="client-name" id="viewClient"></div><div style="margin-top:5px; font-size:14px;">件名：<span id="viewSubject"></span></div><div style="margin-top:10px; font-size:12px;">下記の通り納品いたしました。</div></div>
                 
-                <!-- ▼▼▼ 修正：左揃えブロック ▼▼▼ -->
                 <div class="issuer-info">
-                    <div class="issuer-name" id="viewIssuerName"></div>
+                    <!-- ★ここに注目: 社名とハンコをひとまとめにする -->
+                    <div class="name-seal-wrap">
+                        <div class="issuer-name" id="viewIssuerName"></div>
+                        <!-- ハンコ -->
+                        <div class="seal-container">
+                            <img id="viewSeal" src="" class="seal-img" style="display:none;">
+                            <div id="dummySeal" class="seal-dummy">(印)</div>
+                        </div>
+                    </div>
+
                     <div id="viewIssuerAddr" style="white-space: pre-wrap;"></div>
                     <div style="margin-top:5px;">担当：<span id="viewIssuerRep"></span></div>
-                    
-                    <!-- ハンコエリア (絶対配置) -->
-                    <div class="seal-container">
-                        <img id="viewSeal" src="" class="seal-img" style="display:none;">
-                        <div id="dummySeal" class="seal-dummy">(印)</div>
-                    </div>
                 </div>
             </div>
             
@@ -220,6 +222,7 @@
         function initAutoNumber() { const mode = localStorage.getItem(KEY_DEL_AUTO_MODE); const checkbox = document.getElementById('chkAutoNo'); if(mode === "on") { checkbox.checked = true; loadNum(); } else { checkbox.checked = false; document.getElementById('iptNo').value = ""; } }
         function toggleAutoNo() { const checkbox = document.getElementById('chkAutoNo'); if(checkbox.checked) { localStorage.setItem(KEY_DEL_AUTO_MODE, "on"); loadNum(); } else { localStorage.setItem(KEY_DEL_AUTO_MODE, "off"); document.getElementById('iptNo').value = ""; } update(); }
         function loadNum() { let current = localStorage.getItem(KEY_DEL_SEQ); if(!current) current = "DEL-001"; document.getElementById('iptNo').value = current; }
+        
         function handlePrint() {
             window.print();
             const checkbox = document.getElementById('chkAutoNo');
@@ -236,6 +239,7 @@
                 }
             }
         }
+        
         function fmt(num) { return num.toLocaleString(); }
         function formatDate(dateStr) { if(!dateStr) return ""; const d = new Date(dateStr); return `${d.getFullYear()}年${d.getMonth()+1}月${d.getDate()}日`; }
         function update() {

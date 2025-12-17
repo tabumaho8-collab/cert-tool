@@ -3,412 +3,534 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>通勤費精算書 (高機能版)</title>
+    <title>通勤費精算書 (多機能版)</title>
     <style>
-        body { display: none; font-family: "Helvetica Neue", Arial, sans-serif; background-color: #f4f4f4; margin: 0; padding: 20px; gap: 20px; justify-content: center; min-height: 100vh; }
-        .editor-pane { width: 400px; background: #fff; padding: 20px; border-radius: 8px; box-shadow: 0 2px 10px rgba(0,0,0,0.1); height: fit-content; overflow-y: auto; max-height: 90vh; }
-        .back-btn { display: inline-block; background-color: #6c757d; color: white; padding: 5px 10px; text-decoration: none; border-radius: 4px; font-size: 12px; margin-bottom: 15px; cursor: pointer; }
+        /* --- ベーススタイル --- */
+        body {
+            font-family: "Helvetica Neue", Arial, sans-serif;
+            background-color: #f0f2f5;
+            margin: 0;
+            display: flex;
+            justify-content: center;
+            min-height: 100vh;
+        }
+
+        /* --- サイドバー（設定画面） --- */
+        .sidebar {
+            width: 320px;
+            background: #fff;
+            padding: 20px;
+            box-shadow: 2px 0 10px rgba(0,0,0,0.1);
+            height: 100vh;
+            overflow-y: auto;
+            position: fixed;
+            left: 0;
+            top: 0;
+            z-index: 100;
+            box-sizing: border-box;
+        }
+
+        /* メニューに戻るボタン */
+        .back-btn {
+            display: inline-block;
+            background-color: #6c757d;
+            color: white;
+            padding: 8px 15px;
+            text-decoration: none;
+            border-radius: 4px;
+            font-size: 12px;
+            font-weight: bold;
+            margin-bottom: 20px;
+            cursor: pointer;
+            transition: background-color 0.2s;
+        }
+        .back-btn:hover { background-color: #5a6268; }
+
+        .sidebar h2 { font-size: 18px; margin-top: 0; border-bottom: 2px solid #ddd; padding-bottom: 10px; }
+        .sidebar h3 { font-size: 14px; background: #eee; padding: 5px; margin-top: 20px; border-radius: 4px; }
+        
         .form-group { margin-bottom: 15px; }
         .form-group label { display: block; font-size: 12px; font-weight: bold; margin-bottom: 5px; color: #555; }
-        .form-group input, .form-group select { width: 100%; padding: 8px; box-sizing: border-box; border: 1px solid #ccc; border-radius: 4px; font-size: 14px; }
+        .form-group input, .form-group select { width: 100%; padding: 8px; border: 1px solid #ccc; border-radius: 4px; box-sizing: border-box; }
         
-        /* 経路登録エリア */
-        .route-master-box { background: #e3f2fd; padding: 10px; border-radius: 4px; border: 1px solid #90caf9; margin-bottom: 20px; }
-        .route-list-item { display: flex; justify-content: space-between; font-size: 12px; border-bottom: 1px dashed #ccc; padding: 3px 0; }
-        .btn-mini { padding: 2px 6px; font-size: 10px; border-radius: 3px; border:none; cursor: pointer; color:white; }
-        .btn-del { background-color: #d9534f; }
-        .btn-add { background-color: #17a2b8; width: 100%; padding: 8px; font-weight: bold; margin-top: 5px;}
+        .btn-primary { background: #007bff; color: white; width: 100%; padding: 10px; border: none; border-radius: 4px; cursor: pointer; font-weight: bold; }
+        .btn-primary:hover { background: #0056b3; }
+        .btn-danger { background: #dc3545; color: white; padding: 5px 10px; border: none; border-radius: 4px; cursor: pointer; font-size: 11px; float: right; }
+        .btn-print { background: #28a745; color: white; width: 100%; padding: 15px; border: none; border-radius: 4px; cursor: pointer; font-weight: bold; font-size: 16px; margin-top: 20px; }
+        
+        .route-row { display: flex; gap: 5px; margin-bottom: 5px; }
+        .route-row input[type="text"] { flex: 2; }
+        .route-row input[type="number"] { flex: 1; }
 
-        /* 一括操作ボタン */
-        .bulk-action { background-color: #28a745; color: white; border: none; padding: 8px; width: 100%; border-radius: 4px; cursor: pointer; font-weight: bold; margin-top: 5px; }
+        /* ハンコ設定エリア */
+        .seal-setting-box {
+            background: #fff8e1;
+            padding: 10px;
+            border-radius: 4px;
+            margin-bottom: 10px;
+            border: 1px solid #ffe082;
+        }
+        .seal-title { font-size: 12px; font-weight: bold; margin-bottom: 5px; display: block; }
+        .seal-input { font-size: 11px; width: 100%; }
+        .seal-preview-mini {
+            height: 30px; margin-top: 5px; border: 1px solid #ddd; display: none;
+        }
+        .btn-clear {
+            font-size: 10px; background: #999; color: white; border: none; padding: 2px 5px; cursor: pointer; margin-top: 2px; border-radius: 3px;
+        }
 
-        button.print-btn { width: 100%; padding: 12px; background-color: #0056b3; color: white; border: none; border-radius: 4px; font-size: 16px; cursor: pointer; font-weight: bold; margin-top: 20px; }
-        
-        .preview-pane { flex-grow: 1; display: flex; justify-content: center; }
-        #sheet { width: 210mm; min-height: 297mm; background: white; padding: 15mm; box-sizing: border-box; box-shadow: 0 5px 15px rgba(0,0,0,0.2); position: relative; font-family: "Yu Mincho", "YuMincho", serif; color: #333; }
-        
-        /* デザイン */
-        .s-title { text-align: center; font-size: 24px; font-weight: bold; border-bottom: 2px solid #333; padding-bottom: 5px; margin-bottom: 15px; }
-        .s-header { display: flex; justify-content: space-between; margin-bottom: 10px; align-items: flex-end; }
-        .s-info { font-size: 13px; line-height: 1.6; }
-        .s-hanko-box { display: flex; border: 1px solid #333; }
-        .s-hanko { width: 50px; height: 50px; border-left: 1px solid #333; position: relative; }
-        .s-hanko:first-child { border-left: none; }
-        .s-hanko-title { border-bottom: 1px solid #333; font-size: 10px; text-align: center; background: #f0f0f0; }
+        /* --- プレビューエリア（メイン） --- */
+        .main-content {
+            margin-left: 340px;
+            padding: 20px;
+            width: 100%;
+            max-width: 210mm;
+        }
 
-        .total-bar { display: flex; justify-content: space-between; background: #f0f0f0; padding: 5px 10px; border: 1px solid #333; border-bottom: none; font-weight: bold; font-size: 14px; }
+        /* 帳票デザイン (A4) */
+        .sheet {
+            width: 210mm;
+            min-height: 297mm;
+            background: white;
+            padding: 15mm 10mm;
+            box-sizing: border-box;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.2);
+            position: relative;
+            color: #333;
+        }
 
-        .c-table { width: 100%; border-collapse: collapse; font-size: 11px; border: 1px solid #333; }
-        .c-table th, .c-table td { border: 1px solid #333; padding: 2px 4px; vertical-align: middle; }
-        .c-table th { background: #ddd; text-align: center; font-weight: normal; }
+        .sheet-title { text-align: center; font-size: 24px; font-weight: bold; margin-bottom: 5px; border-bottom: 3px double #333; padding-bottom: 5px; }
+        .sheet-info { margin-bottom: 15px; display: flex; justify-content: space-between; align-items: flex-end; }
+        .info-left div { margin-bottom: 5px; font-size: 14px; }
         
-        /* 列幅 */
-        .col-date { width: 30px; text-align: center; }
-        .col-week { width: 20px; text-align: center; }
-        .col-check { width: 30px; text-align: center; background: #e3f2fd; cursor: pointer; }
-        .col-route { }
-        .col-price { width: 60px; text-align: right; }
-        .col-note { width: 80px; }
+        /* ハンコ枠デザイン */
+        .hanko-box { display: flex; border: 1px solid #333; }
+        .hanko-cell { width: 60px; height: 60px; border-right: 1px solid #333; position: relative; display:flex; align-items:center; justify-content:center; flex-direction: column;}
+        .hanko-cell:last-child { border-right: none; }
+        .hanko-label { position: absolute; top: 2px; left: 2px; font-size: 10px; }
+        
+        /* ハンコ画像表示 */
+        .seal-display { width: 45px; height: 45px; object-fit: contain; opacity: 0.85; display: none; position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); }
+        .seal-dummy-text { color: #eee; font-size: 10px; z-index: 0; }
 
-        /* 上下分割スタイル */
-        .split-cell { display: flex; flex-direction: column; gap: 0; }
-        .split-top { border-bottom: 1px dashed #ccc; padding-bottom: 2px; }
-        .split-bottom { padding-top: 2px; }
-        
-        /* プルダウン（印刷時は消す） */
-        .route-select { width: 100%; font-size: 10px; border: 1px solid #eee; margin-bottom: 1px; background: transparent; }
-        
-        /* 状態ごとのスタイル */
-        .row-off { background-color: #f9f9f9; color: #aaa; }
-        .row-sun { color: red; }
-        .row-sat { color: blue; }
-        
-        .ipt-note { width: 100%; border: none; background: transparent; font-size: 10px; }
+        /* 2列レイアウト */
+        .cols-container { display: flex; gap: 10mm; }
+        .col-half { flex: 1; }
 
+        /* テーブル */
+        table { width: 100%; border-collapse: collapse; font-size: 11px; margin-bottom: 0; }
+        th, td { border: 1px solid #000; padding: 4px 2px; text-align: center; height: 26px; box-sizing: border-box; }
+        th { background: #eee; font-weight: bold; }
+        
+        select.route-select { width: 100%; border: none; background: transparent; font-size: 11px; cursor: pointer; text-align: center; appearance: none; -webkit-appearance: none; }
+        .print-text { display: none; }
+
+        .weekend { background-color: #fce8e8; color: #d00; }
+        .saturday { background-color: #e8f4fc; color: #00d; }
+        .total-box { margin-top: 10px; text-align: right; font-size: 16px; font-weight: bold; padding: 5px; border-bottom: 2px solid #333; }
+
+        /* --- 印刷設定 --- */
         @media print {
-            body { display: block !important; background: none; margin: 0; padding: 0; }
-            .editor-pane { display: none; }
-            .preview-pane { display: block; }
-            #sheet { box-shadow: none; width: 100%; height: 100%; margin: 0; padding: 15mm; page-break-after: always; }
-            /* 印刷時にプルダウンの枠を消す */
-            .route-select { border: none; appearance: none; -webkit-appearance: none; padding: 0; }
-            .col-check { background: none !important; color: transparent !important; } /* チェック列は色を消す */
-            .col-check::after { content: ""; color: transparent; } /* 出/休の文字も消すならここ調整 */
-            @page { margin: 0; size: A4 portrait; }
+            body { background: none; display: block; margin: 0; }
+            .sidebar { display: none; }
+            .main-content { margin: 0; padding: 0; width: 100%; }
+            .sheet { box-shadow: none; width: 100%; height: 100%; margin: 0; padding: 15mm 10mm; }
+            
+            select.route-select { display: none; }
+            .print-text { display: block; }
+            .seal-dummy-text { display: none !important; }
+            
+            @page { size: A4 portrait; margin: 0; }
         }
     </style>
 </head>
 <body>
-    <script src="auth.js"></script>
-    <script src="settings.js"></script>
-    <script>
-        if (typeof checkAuth === 'function') checkAuth(); else document.body.style.display = "flex";
-    </script>
 
-    <div class="editor-pane">
+    <!-- ▼ サイドバー設定エリア ▼ -->
+    <div class="sidebar">
         <a href="index.html" class="back-btn">⬅ メニューに戻る</a>
-        <h2>通勤費精算書 (月別保存)</h2>
-        
-        <div class="form-group" style="background:#fff3cd; padding:10px; border-radius:4px;">
-            <label>📅 作成月を選択 (自動保存)</label>
-            <input type="month" id="iptMonthPicker" onchange="changeMonth()">
-        </div>
 
-        <div class="form-group">
-            <label>申請者名 (保存されます)</label>
-            <div style="display:flex; gap:5px;">
-                <input type="text" id="iptUserDept" placeholder="部署">
-                <input type="text" id="iptUserName" placeholder="氏名">
-            </div>
-            <button class="btn-mini" style="background:#6c757d; margin-top:5px; width:100%;" onclick="saveUserInfo()">この申請者情報を保存</button>
-        </div>
+        <h2>設定・操作</h2>
 
-        <div class="route-master-box">
-            <label>🚗 経路パターン登録</label>
-            <p style="font-size:10px; color:#666; margin:0;">よく使う片道の経路と金額を登録してください。</p>
-            <div id="routeList"></div>
+        <!-- メンバー管理 -->
+        <div style="background:#eef; padding:10px; border-radius:4px; margin-bottom:15px;">
+            <label style="font-weight:bold; font-size:12px;">👤 メンバー選択</label>
             <div style="display:flex; gap:5px; margin-top:5px;">
-                <input type="text" id="newRouteName" placeholder="例: 自宅→会社(高速)" style="flex:2;">
-                <input type="number" id="newRoutePrice" placeholder="¥" style="flex:1;">
+                <select id="userSelect" onchange="loadUser()" style="flex:1;"></select>
+                <button onclick="addUser()" style="width:30px;">＋</button>
+                <button onclick="deleteUser()" style="width:30px; background:#d9534f; color:white; border:none;">🗑️</button>
             </div>
-            <button class="btn-add" onclick="addRouteMaster()">＋ 経路を追加</button>
         </div>
 
-        <div class="form-group">
-            <label>一括設定 (平日のみ)</label>
-            <select id="bulkOutward" style="margin-bottom:5px;"><option value="">行き: 選択なし</option></select>
-            <select id="bulkReturn"><option value="">帰り: 選択なし</option></select>
-            <button class="bulk-action" onclick="applyBulk()">平日を一括設定する</button>
+        <div class="form-group"><label>対象年月</label><input type="month" id="targetMonth" onchange="updateTable()"></div>
+        <div class="form-group"><label>所属</label><input type="text" id="iptDept" placeholder="営業部" oninput="saveCurrentData()"></div>
+        <div class="form-group"><label>氏名</label><input type="text" id="iptName" placeholder="氏名" oninput="saveCurrentData()"></div>
+
+        <!-- ハンコ設定エリア (3つ) -->
+        <h3>💮 電子印鑑の設定</h3>
+        
+        <div class="seal-setting-box">
+            <span class="seal-title">承認印 (左枠)</span>
+            <input type="file" accept="image/*" class="seal-input" onchange="handleFileSelect(this, 'sealShonin')">
+            <img id="prev_sealShonin" class="seal-preview-mini">
+            <button class="btn-clear" onclick="clearSeal('sealShonin')">削除</button>
         </div>
 
-        <button class="print-btn" onclick="window.print()">🖨️ 印刷する</button>
+        <div class="seal-setting-box">
+            <span class="seal-title">確認印 (中枠)</span>
+            <input type="file" accept="image/*" class="seal-input" onchange="handleFileSelect(this, 'sealKakunin')">
+            <img id="prev_sealKakunin" class="seal-preview-mini">
+            <button class="btn-clear" onclick="clearSeal('sealKakunin')">削除</button>
+        </div>
+
+        <div class="seal-setting-box">
+            <span class="seal-title">担当印 (右枠)</span>
+            <input type="file" accept="image/*" class="seal-input" onchange="handleFileSelect(this, 'sealTanto')">
+            <img id="prev_sealTanto" class="seal-preview-mini">
+            <button class="btn-clear" onclick="clearSeal('sealTanto')">削除</button>
+            <div style="font-size:10px; color:#666; margin-top:5px;">
+                ※登録がない場合、共通設定のハンコが表示されます。
+            </div>
+        </div>
+
+        <hr>
+        <h3>🚗 経路マスタ</h3>
+        <div id="routeConfig"></div>
+        <button class="btn-primary" onclick="addRouteInput()" style="margin-top:5px; background:#6c757d; font-size:12px;">＋ 経路欄を追加</button>
+
+        <hr>
+        <h3>⚡ 一括入力 (平日)</h3>
+        <div class="form-group"><label>行き</label><select id="batchGo"></select></div>
+        <div class="form-group"><label>帰り</label><select id="batchBack"></select></div>
+        <button class="btn-primary" onclick="applyBatch()">平日に一括セット</button>
+
+        <button class="btn-print" onclick="window.print()">🖨️ 印刷する</button>
     </div>
 
-    <div class="preview-pane">
-        <div id="sheet">
-            <div class="s-title">通勤費精算書</div>
+    <!-- ▼ メイン帳票エリア ▼ -->
+    <div class="main-content">
+        <div class="sheet">
+            <div class="sheet-title">通勤費精算書</div>
             
-            <div class="s-header">
-                <div class="s-info">
-                    対象月：<span id="viewTargetMonth"></span><br>
-                    所　属：<span id="viewDept"></span><br>
-                    氏　名：<span id="viewName"></span>
-                    <div style="margin-top:5px; position:relative; width:50px; height:50px;">
-                        <img id="viewSeal" src="" style="width:100%; height:100%; object-fit:contain; display:none; opacity:0.8;">
-                        <div style="position:absolute; top:0; left:0; width:100%; height:100%; border:1px solid #ccc; display:flex; align-items:center; justify-content:center; color:#ccc; z-index:-1; font-size:10px;">(印)</div>
+            <div class="sheet-info">
+                <div class="info-left">
+                    <div>対象月： <span id="viewMonth"></span></div>
+                    <div>所　属： <span id="viewDept"></span></div>
+                    <div>氏　名： <span id="viewName" style="font-size:18px; font-weight:bold;"></span></div>
+                </div>
+                <div class="hanko-box">
+                    <!-- 承認印 -->
+                    <div class="hanko-cell">
+                        <span class="hanko-label">承認</span>
+                        <img id="view_sealShonin" class="seal-display">
+                        <span class="seal-dummy-text">(印)</span>
+                    </div>
+                    <!-- 確認印 -->
+                    <div class="hanko-cell">
+                        <span class="hanko-label">確認</span>
+                        <img id="view_sealKakunin" class="seal-display">
+                        <span class="seal-dummy-text">(印)</span>
+                    </div>
+                    <!-- 担当印 -->
+                    <div class="hanko-cell">
+                        <span class="hanko-label">担当</span>
+                        <img id="view_sealTanto" class="seal-display">
+                        <span class="seal-dummy-text">(印)</span>
                     </div>
                 </div>
-                
-                <div class="s-hanko-box">
-                    <div class="s-hanko"><div class="s-hanko-title">承認</div></div>
-                    <div class="s-hanko"><div class="s-hanko-title">確認</div></div>
-                    <div class="s-hanko"><div class="s-hanko-title">担当</div></div>
+            </div>
+
+            <div class="cols-container">
+                <div class="col-half">
+                    <table id="tableLeft">
+                        <thead><tr><th style="width:30px;">日</th><th style="width:30px;">曜</th><th>行き</th><th>帰り</th><th style="width:50px;">金額</th></tr></thead>
+                        <tbody></tbody>
+                    </table>
+                </div>
+                <div class="col-half">
+                    <table id="tableRight">
+                        <thead><tr><th style="width:30px;">日</th><th style="width:30px;">曜</th><th>行き</th><th>帰り</th><th style="width:50px;">金額</th></tr></thead>
+                        <tbody></tbody>
+                    </table>
                 </div>
             </div>
 
-            <div class="total-bar">
-                <div>出勤：<span id="viewDays">0</span> 日</div>
-                <div>合計：¥<span id="viewTotal">0</span></div>
+            <div class="total-box">合計金額： ¥ <span id="grandTotal">0</span></div>
+            
+            <div style="margin-top:10px; font-size:12px;">
+                備考：<br>
+                <textarea id="iptNote" style="width:100%; border:none; resize:none; background:#f9f9f9; height:50px;" placeholder="特記事項があれば入力" oninput="saveCurrentData()"></textarea>
+                <div id="viewNote" class="print-text" style="white-space:pre-wrap;"></div>
             </div>
-
-            <table class="c-table">
-                <thead>
-                    <tr>
-                        <th class="col-date">日</th>
-                        <th class="col-week">曜</th>
-                        <th class="col-check">出勤</th>
-                        <th class="col-route">区間・経路 (上:行き / 下:帰り)</th>
-                        <th class="col-price">金額</th>
-                        <th class="col-note">備考</th>
-                    </tr>
-                </thead>
-                <tbody id="tableBody">
-                    <!-- JSで生成 -->
-                </tbody>
-            </table>
         </div>
     </div>
 
     <script>
-        const KEY_USER = "my_tool_tsukin_user";
-        const KEY_ROUTES = "my_tool_tsukin_routes";
-        const KEY_DATA_PREFIX = "my_tool_tsukin_data_"; // + "2025-12"
-
-        let routeMaster = [];
-        let monthData = {}; // その月の日別データ { "1": {on:true, out:0, ret:0, note:""}, ... }
+        const KEY_USERS = "my_tool_tsukin_users";
+        const KEY_COMPANY = "my_tool_company_info";
         
-        // 祝日データ (簡易)
-        const HOLIDAYS = ["1-1", "1-2", "1-3", "2-11", "2-23", "3-20", "4-29", "5-3", "5-4", "5-5", "7-15", "8-11", "9-16", "9-23", "10-14", "11-3", "11-23"];
+        let currentUserIndex = 0;
+        let users = [];
+        let routes = [
+            { name: "自宅⇔会社 (下道)", cost: 420 },
+            { name: "自宅⇔会社 (高速)", cost: 1200 },
+            { name: "電車通勤", cost: 560 }
+        ];
+        const defaultRoutes = JSON.parse(JSON.stringify(routes));
 
-        window.addEventListener('load', function() {
-            // 初期月設定 (今月)
+        window.addEventListener('load', () => {
             const d = new Date();
-            const ym = d.getFullYear() + "-" + String(d.getMonth()+1).padStart(2,'0');
-            document.getElementById('iptMonthPicker').value = ym;
-
-            if (typeof applyCompanyData === 'function') applyCompanyData();
-            loadUserInfo();
-            loadRouteMaster();
-            changeMonth(); // データ読み込み＆描画
-            
-            setTimeout(() => {
-                const img = document.getElementById('viewSeal');
-                if(img.src && img.src.length > 10) img.style.display = 'block';
-            }, 500);
+            const ym = `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2, '0')}`;
+            document.getElementById('targetMonth').value = ym;
+            loadUsers();
+            renderRouteInputs();
+            updateTable();
         });
 
-        // --- 申請者情報 ---
-        function saveUserInfo() {
-            const data = {
-                dept: document.getElementById('iptUserDept').value,
-                name: document.getElementById('iptUserName').value
-            };
-            localStorage.setItem(KEY_USER, JSON.stringify(data));
-            alert("申請者情報を保存しました！");
-            updateHeader();
-        }
-        function loadUserInfo() {
-            const json = localStorage.getItem(KEY_USER);
-            if(json) {
-                const data = JSON.parse(json);
-                document.getElementById('iptUserDept').value = data.dept;
-                document.getElementById('iptUserName').value = data.name;
-                updateHeader();
-            }
-        }
-        function updateHeader() {
-            document.getElementById('viewDept').innerText = document.getElementById('iptUserDept').value;
-            document.getElementById('viewName').innerText = document.getElementById('iptUserName').value;
+        // --- ユーザー管理 ---
+        function loadUsers() {
+            const json = localStorage.getItem(KEY_USERS);
+            if (json) { users = JSON.parse(json); } 
+            else { users = [{ name: "自分用", dept: "", routes: defaultRoutes, data: {}, seals: {} }]; }
+            renderUserSelect();
+            loadUser();
         }
 
-        // --- 経路マスタ ---
-        function loadRouteMaster() {
-            const json = localStorage.getItem(KEY_ROUTES);
-            if(json) routeMaster = JSON.parse(json);
-            else routeMaster = []; // 初期値なし
-            renderRouteMaster();
-            updateSelectOptions();
-        }
-        function addRouteMaster() {
-            const name = document.getElementById('newRouteName').value;
-            const price = parseInt(document.getElementById('newRoutePrice').value);
-            if(!name || isNaN(price)) return alert("経路名と金額を入力してください");
-            routeMaster.push({name: name, price: price});
-            localStorage.setItem(KEY_ROUTES, JSON.stringify(routeMaster));
-            document.getElementById('newRouteName').value = "";
-            document.getElementById('newRoutePrice').value = "";
-            renderRouteMaster();
-            updateSelectOptions();
-        }
-        function deleteRoute(idx) {
-            routeMaster.splice(idx, 1);
-            localStorage.setItem(KEY_ROUTES, JSON.stringify(routeMaster));
-            renderRouteMaster();
-            updateSelectOptions();
-        }
-        function renderRouteMaster() {
-            const div = document.getElementById('routeList');
-            let html = "";
-            routeMaster.forEach((r, i) => {
-                html += `<div class="route-list-item"><span>${r.name} (¥${r.price})</span><button class="btn-mini btn-del" onclick="deleteRoute(${i})">削除</button></div>`;
+        function renderUserSelect() {
+            const sel = document.getElementById('userSelect');
+            sel.innerHTML = "";
+            users.forEach((u, idx) => {
+                const opt = document.createElement('option');
+                opt.value = idx;
+                opt.text = u.name;
+                sel.appendChild(opt);
             });
-            div.innerHTML = html;
-        }
-        function updateSelectOptions() {
-            // 一括設定用プルダウン更新
-            const opts = `<option value="">選択なし</option>` + routeMaster.map((r, i) => `<option value="${i}">${r.name} (¥${r.price})</option>`).join('');
-            document.getElementById('bulkOutward').innerHTML = "行き: " + opts;
-            document.getElementById('bulkReturn').innerHTML = "帰り: " + opts;
-            // テーブル内のプルダウンも更新が必要だが、再描画(renderTable)で対応
-            renderTable();
+            sel.value = currentUserIndex;
         }
 
-        // --- メイン処理 (月変更・データ読込) ---
-        function changeMonth() {
-            const ym = document.getElementById('iptMonthPicker').value;
-            if(!ym) return;
-            
-            const [y, m] = ym.split('-');
-            document.getElementById('viewTargetMonth').innerText = `${y}年 ${m}月度`;
-
-            // データ読み込み
-            const key = KEY_DATA_PREFIX + ym;
-            const json = localStorage.getItem(key);
-            monthData = json ? JSON.parse(json) : {}; // データなければ空
-
-            renderTable();
-        }
-
-        // テーブル描画
-        function renderTable() {
-            const ym = document.getElementById('iptMonthPicker').value;
-            if(!ym) return;
-            const [year, month] = ym.split('-').map(Number);
-            const lastDay = new Date(year, month, 0).getDate();
-            const tbody = document.getElementById('tableBody');
-            tbody.innerHTML = "";
-
-            const weeks = ["日", "月", "火", "水", "木", "金", "土"];
-            
-            // マスタの選択肢HTML作成
-            const options = `<option value="-1"></option>` + routeMaster.map((r, i) => `<option value="${i}">${r.name} (¥${r.price})</option>`).join('');
-
-            let total = 0;
-            let days = 0;
-
-            for(let d=1; d<=lastDay; d++) {
-                const dateObj = new Date(year, month-1, d);
-                const weekIdx = dateObj.getDay();
-                
-                // データ取得 (なければ初期値)
-                if(!monthData[d]) {
-                    monthData[d] = { active: false, outIdx: -1, retIdx: -1, note: "" };
-                }
-                const data = monthData[d];
-
-                // 行作成
-                const tr = document.createElement('tr');
-                if (weekIdx === 0 || isHoliday(month, d)) tr.classList.add('row-sun');
-                else if (weekIdx === 6) tr.classList.add('row-sat');
-                
-                if (!data.active) tr.classList.add('row-off');
-
-                // 金額計算
-                let dayPrice = 0;
-                if(data.active) {
-                    days++;
-                    if(data.outIdx >= 0) dayPrice += routeMaster[data.outIdx].price;
-                    if(data.retIdx >= 0) dayPrice += routeMaster[data.retIdx].price;
-                }
-                total += dayPrice;
-
-                tr.innerHTML = `
-                    <td class="col-date">${d}</td>
-                    <td class="col-week">${weeks[weekIdx]}</td>
-                    <td class="col-check" onclick="toggleActive(${d})">${data.active ? '出' : '休'}</td>
-                    <td class="col-route">
-                        <div class="split-cell">
-                            <div class="split-top">
-                                <select class="route-select" onchange="changeRoute(${d}, 'out', this.value)">${options}</select>
-                            </div>
-                            <div class="split-bottom">
-                                <select class="route-select" onchange="changeRoute(${d}, 'ret', this.value)">${options}</select>
-                            </div>
-                        </div>
-                    </td>
-                    <td class="col-price">${data.active ? dayPrice.toLocaleString() : '-'}</td>
-                    <td class="col-note"><input type="text" class="ipt-note" value="${data.note}" onchange="changeNote(${d}, this.value)"></td>
-                `;
-                
-                // プルダウンの選択状態を反映
-                const selects = tr.querySelectorAll('select');
-                selects[0].value = data.outIdx;
-                selects[1].value = data.retIdx;
-
-                tbody.appendChild(tr);
+        function addUser() {
+            const name = prompt("新しいメンバー名:");
+            if (name) {
+                users.push({ name: name, dept: "", routes: defaultRoutes, data: {}, seals: {} });
+                saveUsers();
+                currentUserIndex = users.length - 1;
+                renderUserSelect();
+                loadUser();
             }
-
-            document.getElementById('viewDays').innerText = days;
-            document.getElementById('viewTotal').innerText = total.toLocaleString();
         }
 
-        // データ操作＆保存
+        function deleteUser() {
+            if (users.length <= 1) return alert("削除できません");
+            if (confirm("削除しますか？")) {
+                users.splice(currentUserIndex, 1);
+                currentUserIndex = 0;
+                saveUsers();
+                renderUserSelect();
+                loadUser();
+            }
+        }
+
+        function saveUsers() { localStorage.setItem(KEY_USERS, JSON.stringify(users)); }
+
+        function loadUser() {
+            currentUserIndex = document.getElementById('userSelect').value;
+            const u = users[currentUserIndex];
+            document.getElementById('iptName').value = u.name;
+            document.getElementById('iptDept').value = u.dept || "";
+            document.getElementById('iptNote').value = u.note || "";
+            
+            if (u.routes) routes = u.routes;
+            
+            // ハンコ反映
+            if(!u.seals) u.seals = {};
+            applySeal('sealShonin', u.seals.shonin);
+            applySeal('sealKakunin', u.seals.kakunin);
+            applySeal('sealTanto', u.seals.tanto);
+
+            renderRouteInputs();
+            updateTable(); 
+        }
+
         function saveCurrentData() {
-            const ym = document.getElementById('iptMonthPicker').value;
-            localStorage.setItem(KEY_DATA_PREFIX + ym, JSON.stringify(monthData));
-            renderTable(); // 再描画して計算更新
+            const u = users[currentUserIndex];
+            u.name = document.getElementById('iptName').value;
+            u.dept = document.getElementById('iptDept').value;
+            u.note = document.getElementById('iptNote').value;
+            u.routes = getRoutesFromInput();
+            
+            const month = document.getElementById('targetMonth').value;
+            const dailyData = {};
+            document.querySelectorAll('tr[data-day]').forEach(row => {
+                dailyData[row.getAttribute('data-day')] = { 
+                    go: row.querySelector('.go-select').value, 
+                    back: row.querySelector('.back-select').value 
+                };
+            });
+            if (!u.data) u.data = {};
+            u.data[month] = dailyData;
+            
+            saveUsers();
+            
+            document.getElementById('viewName').innerText = u.name;
+            document.getElementById('viewDept').innerText = u.dept;
+            document.getElementById('viewNote').innerText = u.note;
+            calculateTotal();
         }
 
-        function toggleActive(day) {
-            monthData[day].active = !monthData[day].active;
-            saveCurrentData();
+        // --- ハンコ処理 ---
+        function handleFileSelect(input, type) {
+            if (input.files && input.files[0]) {
+                const reader = new FileReader();
+                reader.onload = function(e) {
+                    const dataUrl = e.target.result;
+                    const u = users[currentUserIndex];
+                    if(!u.seals) u.seals = {};
+                    
+                    if(type === 'sealShonin') u.seals.shonin = dataUrl;
+                    if(type === 'sealKakunin') u.seals.kakunin = dataUrl;
+                    if(type === 'sealTanto') u.seals.tanto = dataUrl;
+                    
+                    saveUsers();
+                    loadUser(); // 再描画
+                };
+                reader.readAsDataURL(input.files[0]);
+            }
         }
 
-        function changeRoute(day, type, value) {
-            if(type === 'out') monthData[day].outIdx = parseInt(value);
-            else monthData[day].retIdx = parseInt(value);
+        function clearSeal(type) {
+            const u = users[currentUserIndex];
+            if(!u.seals) return;
+            if(type === 'sealShonin') u.seals.shonin = null;
+            if(type === 'sealKakunin') u.seals.kakunin = null;
+            if(type === 'sealTanto') u.seals.tanto = null;
             
-            // 経路を選んだら自動で「出勤」にする
-            if(value != -1) monthData[day].active = true;
-            
-            saveCurrentData();
+            // inputタグもクリア
+            const inputs = document.querySelectorAll('.seal-input');
+            inputs.forEach(i => i.value = "");
+
+            saveUsers();
+            loadUser();
         }
 
-        function changeNote(day, value) {
-            monthData[day].note = value;
-            saveCurrentData(); // 再描画は不要だが保存はする
-        }
-
-        // 一括設定
-        function applyBulk() {
-            const outIdx = parseInt(document.getElementById('bulkOutward').value);
-            const retIdx = parseInt(document.getElementById('bulkReturn').value);
+        function applySeal(type, dataUrl) {
+            const imgView = document.getElementById('view_' + type);
+            const imgPrev = document.getElementById('prev_' + type);
             
-            if(isNaN(outIdx) && isNaN(retIdx)) return alert("経路を選択してください");
+            let src = dataUrl;
             
-            const ym = document.getElementById('iptMonthPicker').value;
-            const [year, month] = ym.split('-').map(Number);
-            const lastDay = new Date(year, month, 0).getDate();
-
-            for(let d=1; d<=lastDay; d++) {
-                const dateObj = new Date(year, month-1, d);
-                const weekIdx = dateObj.getDay();
-                // 平日のみ (土日祝以外)
-                if (weekIdx !== 0 && weekIdx !== 6 && !isHoliday(month, d)) {
-                    monthData[d].active = true;
-                    if(!isNaN(outIdx)) monthData[d].outIdx = outIdx;
-                    if(!isNaN(retIdx)) monthData[d].retIdx = retIdx;
+            // 担当印のみ、個別設定がなければ共通設定(index.html)を見る
+            if (type === 'sealTanto' && !src) {
+                const companyJson = localStorage.getItem(KEY_COMPANY);
+                if(companyJson) {
+                    const co = JSON.parse(companyJson);
+                    src = co.sealData || co.seal || co.stamp;
                 }
             }
-            saveCurrentData();
+
+            if (src && src.length > 50) {
+                imgView.src = src;
+                imgView.style.display = "block";
+                // プレビュー欄
+                imgPrev.src = src;
+                imgPrev.style.display = "block";
+                // ダミー文字を消す
+                imgView.nextElementSibling.style.display = "none";
+            } else {
+                imgView.style.display = "none";
+                imgPrev.style.display = "none";
+                // ダミー文字を出す
+                imgView.nextElementSibling.style.display = "block";
+            }
         }
 
-        // 簡易祝日判定 (年またぎや振替休日は非対応)
-        function isHoliday(m, d) { return HOLIDAYS.includes(`${m}-${d}`); }
+        // --- 以下、計算・描画ロジック ---
+        function renderRouteInputs() {
+            const container = document.getElementById('routeConfig');
+            container.innerHTML = "";
+            routes.forEach((r, i) => {
+                container.innerHTML += `<div class="route-row"><input type="text" value="${r.name}" class="r-name" onchange="saveCurrentData();updateBatchSelect()"><input type="number" value="${r.cost}" class="r-cost" onchange="saveCurrentData();updateTable()"></div>`;
+            });
+            updateBatchSelect();
+        }
+        function addRouteInput() { routes.push({ name: "", cost: 0 }); renderRouteInputs(); saveCurrentData(); }
+        function getRoutesFromInput() {
+            const newRoutes = [];
+            document.querySelectorAll('#routeConfig .route-row').forEach(row => {
+                const name = row.querySelector('.r-name').value;
+                const cost = parseInt(row.querySelector('.r-cost').value) || 0;
+                if(name) newRoutes.push({ name, cost });
+            });
+            return newRoutes;
+        }
+        function updateBatchSelect() {
+            const opts = `<option value="">(なし)</option>` + routes.map((r, i) => `<option value="${i}">${r.name} (¥${r.cost})</option>`).join('');
+            document.getElementById('batchGo').innerHTML = opts;
+            document.getElementById('batchBack').innerHTML = opts;
+            updateTable(false);
+        }
+        function updateTable(load = true) {
+            const ym = document.getElementById('targetMonth').value;
+            if(!ym) return;
+            const [year, month] = ym.split('-').map(Number);
+            document.getElementById('viewMonth').innerText = `${year}年 ${month}月度`;
+            document.getElementById('viewName').innerText = document.getElementById('iptName').value;
+            document.getElementById('viewDept').innerText = document.getElementById('iptDept').value;
+            
+            const u = users[currentUserIndex];
+            const savedData = (u.data && u.data[ym]) ? u.data[ym] : {};
+            const lastDay = new Date(year, month, 0).getDate();
+            const tbLeft = document.querySelector('#tableLeft tbody');
+            const tbRight = document.querySelector('#tableRight tbody');
+            tbLeft.innerHTML = ""; tbRight.innerHTML = "";
+            
+            const routeOpts = `<option value="">-</option>` + routes.map((r, i) => `<option value="${i}">${r.name}</option>`).join('');
 
-        document.getElementById('iptUserDept').addEventListener('input', updateHeader);
-        document.getElementById('iptUserName').addEventListener('input', updateHeader);
-
+            for (let d = 1; d <= lastDay; d++) {
+                const dateObj = new Date(year, month - 1, d);
+                const dow = dateObj.getDay();
+                let cls = ""; if(dow===0) cls="weekend"; if(dow===6) cls="saturday";
+                const saved = savedData[d] || { go: "", back: "" };
+                
+                const tr = document.createElement('tr');
+                tr.setAttribute('data-day', d); tr.setAttribute('data-dow', dow);
+                if(cls) tr.className = cls;
+                tr.innerHTML = `<td>${d}</td><td>${["日","月","火","水","木","金","土"][dow]}</td>
+                <td><select class="route-select go-select" onchange="calcRow(this)">${routeOpts}</select><span class="print-text go-text"></span></td>
+                <td><select class="route-select back-select" onchange="calcRow(this)">${routeOpts}</select><span class="print-text back-text"></span></td>
+                <td class="row-total">0</td>`;
+                
+                tr.querySelector('.go-select').value = saved.go;
+                tr.querySelector('.back-select').value = saved.back;
+                
+                if (d <= 15) tbLeft.appendChild(tr); else tbRight.appendChild(tr);
+                calcRow(tr.querySelector('.go-select'));
+            }
+            calculateTotal();
+        }
+        function calcRow(el) {
+            const tr = el.closest('tr');
+            const g = tr.querySelector('.go-select').value;
+            const b = tr.querySelector('.back-select').value;
+            let c = 0, gt = "-", bt = "-";
+            if(g!==""){ const r=routes[g]; if(r){c+=r.cost; gt=r.name;} }
+            if(b!==""){ const r=routes[b]; if(r){c+=r.cost; bt=r.name;} }
+            tr.querySelector('.row-total').innerText = c > 0 ? c.toLocaleString() : "-";
+            tr.querySelector('.go-text').innerText = gt;
+            tr.querySelector('.back-text').innerText = bt;
+            saveCurrentData();
+        }
+        function calculateTotal() {
+            let t = 0; document.querySelectorAll('.row-total').forEach(td => { const v = parseInt(td.innerText.replace(/,/g,'')); if(!isNaN(v)) t+=v; });
+            document.getElementById('grandTotal').innerText = t.toLocaleString();
+        }
+        function applyBatch() {
+            const g = document.getElementById('batchGo').value; const b = document.getElementById('batchBack').value;
+            document.querySelectorAll('tr[data-dow]').forEach(tr => {
+                const d = parseInt(tr.getAttribute('data-dow'));
+                if(d!==0 && d!==6){ tr.querySelector('.go-select').value = g; tr.querySelector('.back-select').value = b; calcRow(tr.querySelector('.go-select')); }
+            });
+            saveCurrentData();
+        }
     </script>
 </body>
 </html>

@@ -101,16 +101,6 @@
         .l-list-title { text-align: center; margin-bottom: 10px; font-weight: bold; }
         .l-list-box { border: 1px solid #333; padding: 20px 40px; margin: 0 20px; min-height: 150px; }
         
-        /* ▼▼▼ ハンコ用クラス（画面では薄く表示、印刷では消す） ▼▼▼ */
-        .seal-mark {
-            margin-top: 10px; 
-            color: #aaa; 
-            font-size: 40px; 
-            position: absolute; 
-            right: 30mm; 
-            opacity: 0.3; /* 透かし */
-        }
-
         /* --- 印刷時の設定 --- */
         @media print {
             body { display: block !important; background: none; margin: 0; padding: 0; }
@@ -122,9 +112,6 @@
                 page-break-after: always; position: relative;
             }
             .print-page:last-child { page-break-after: auto; }
-
-            /* ★印刷時はハンコマークを消す！★ */
-            .seal-mark { display: none !important; }
         }
     </style>
 </head>
@@ -215,8 +202,7 @@
                 <div class="l-sender">
                     <div class="sender-comp" id="prevIssuerName"></div>
                     <div id="prevIssuerRep"></div>
-                    <!-- ▼▼▼ 画面だけに見えるハンコマーク ▼▼▼ -->
-                    <div class="seal-mark">(印)</div>
+                    <!-- (印)マークは削除しました -->
                 </div>
             </div>
 
@@ -402,8 +388,6 @@
                             <div class="l-sender">
                                 <div class="sender-comp">${issuer}</div>
                                 <div>${rep}</div>
-                                <!-- ▼▼▼ 印刷用にもマークを入れるが、CSSで消える ▼▼▼ -->
-                                <div class="seal-mark">(印)</div>
                             </div>
                         </div>
                         <div class="l-title">${subject}</div>

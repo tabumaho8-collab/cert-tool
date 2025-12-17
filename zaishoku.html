@@ -5,166 +5,206 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>在職証明書作成ツール</title>
     <style>
-        body {
-            display: none;
-            font-family: "Helvetica Neue", Arial, sans-serif;
-            background-color: #f4f4f4;
-            margin: 0;
-            padding: 20px;
-            gap: 20px;
-            justify-content: center;
-            min-height: 100vh;
-        }
-
-        .editor-pane {
-            width: 350px;
-            background: #fff;
-            padding: 20px;
-            border-radius: 8px;
-            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
-            height: fit-content;
-        }
-
-        /* ▼▼▼ 追加：戻るボタンのデザイン ▼▼▼ */
-        .back-btn {
-            display: inline-block;
-            background-color: #6c757d;
-            color: white;
-            padding: 5px 10px;
-            text-decoration: none;
-            border-radius: 4px;
-            font-size: 12px;
-            margin-bottom: 15px;
-            cursor: pointer;
-        }
-        .back-btn:hover { background-color: #5a6268; }
-        /* ▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲ */
-
-        .editor-pane h2 { font-size: 18px; margin-bottom: 15px; border-bottom: 2px solid #ddd; padding-bottom: 5px; }
+        /* --- 全体レイアウト --- */
+        body { display: none; font-family: "Helvetica Neue", Arial, "Hiragino Kaku Gothic ProN", "Hiragino Sans", Meiryo, sans-serif; background-color: #f4f4f4; margin: 0; padding: 20px; gap: 20px; justify-content: center; min-height: 100vh; }
+        .editor-pane { width: 380px; background: #fff; padding: 20px; border-radius: 8px; box-shadow: 0 2px 10px rgba(0,0,0,0.1); height: fit-content; overflow-y: auto; max-height: 90vh; }
+        .back-btn { display: inline-block; background-color: #6c757d; color: white; padding: 5px 10px; text-decoration: none; border-radius: 4px; font-size: 12px; margin-bottom: 15px; cursor: pointer; }
         .form-group { margin-bottom: 15px; }
         .form-group label { display: block; font-size: 12px; font-weight: bold; margin-bottom: 5px; color: #555; }
-        .form-group input, .form-group textarea {
-            width: 100%; padding: 8px; box-sizing: border-box;
-            border: 1px solid #ccc; border-radius: 4px; font-size: 14px;
-        }
-        button.print-btn {
-            width: 100%; padding: 12px; background-color: #007bff;
-            color: white; border: none; border-radius: 4px; font-size: 16px;
-            cursor: pointer; font-weight: bold; margin-top: 10px;
-        }
-        button.print-btn:hover { background-color: #0056b3; }
-
+        .form-group input, .form-group textarea, .form-group select { width: 100%; padding: 8px; box-sizing: border-box; border: 1px solid #ccc; border-radius: 4px; font-size: 14px; }
+        .seal-switch { display: flex; align-items: center; gap: 5px; font-size: 12px; font-weight: normal; cursor: pointer; margin-top: 5px; }
+        
+        button.print-btn { width: 100%; padding: 12px; background-color: #343a40; color: white; border: none; border-radius: 4px; font-size: 16px; cursor: pointer; font-weight: bold; margin-top: 10px; }
+        
         .preview-pane { flex-grow: 1; display: flex; justify-content: center; }
         
-        #certificate {
-            width: 210mm; min-height: 297mm; background: white; padding: 20mm;
-            box-sizing: border-box; box-shadow: 0 5px 15px rgba(0,0,0,0.2); position: relative;
-            font-family: "Yu Mincho", "YuMincho", "Hiragino Mincho ProN", "HGS Mincho E", serif; color: #000;
+        #cert { width: 210mm; min-height: 297mm; background: white; padding: 25mm; box-sizing: border-box; box-shadow: 0 5px 15px rgba(0,0,0,0.2); position: relative; font-family: "Yu Mincho", "YuMincho", serif; color: #000; line-height: 1.8; }
+        
+        /* 在職証明書デザイン */
+        .c-title { text-align: center; font-size: 26px; font-weight: bold; margin-bottom: 40px; letter-spacing: 5px; text-decoration: underline; }
+        .c-intro { margin-bottom: 30px; font-size: 14px; }
+        
+        .c-table { width: 100%; border-collapse: collapse; margin-bottom: 40px; font-size: 14px; }
+        .c-table th, .c-table td { border: 1px solid #000; padding: 12px; vertical-align: middle; }
+        .c-table th { background-color: #f9f9f9; width: 120px; text-align: left; font-weight: normal; }
+        
+        /* フッター（発行日・会社情報） */
+        .c-footer { margin-top: 50px; }
+        .c-date { text-align: right; margin-bottom: 10px; font-size: 14px; }
+        
+        /* 発行者情報（右寄せ・左揃え・ハンコ付き） */
+        .issuer-info { 
+            width: max-content;
+            max-width: 60%;
+            margin-left: auto; /* 右に寄せる */
+            font-size: 14px; 
+            line-height: 1.6; 
+            text-align: left; /* 中身は左揃え */
         }
-
-        .cert-title {
-            text-align: center; font-size: 32px; font-weight: bold;
-            margin-bottom: 40px; letter-spacing: 5px; text-decoration: underline double;
+        
+        /* 社名とハンコのラッパー */
+        .name-seal-wrap {
+            position: relative;
+            width: fit-content; 
+            margin-bottom: 5px;
         }
-        .cert-date { text-align: right; margin-bottom: 30px; }
-        .cert-body { margin-bottom: 40px; line-height: 2; }
-
-        .cert-table { width: 100%; border-collapse: collapse; margin-bottom: 50px; border: 2px solid #333; }
-        .cert-table th, .cert-table td { border: 1px solid #333; padding: 12px 15px; vertical-align: middle; }
-        .cert-table th { width: 30%; background-color: #f9f9f9; text-align: left; font-weight: normal; }
-        .cert-table td { width: 70%; font-weight: bold; font-size: 18px; }
-
-        .cert-footer { margin-top: 50px; text-align: right; line-height: 1.6; }
-        .company-name { font-size: 20px; font-weight: bold; margin-top: 10px; }
-        .ceo-name { font-size: 18px; margin-top: 5px; }
-
-        @media print {
-            body { display: block !important; background: none; margin: 0; padding: 0; }
-            .editor-pane { display: none; }
-            .preview-pane { display: block; }
-            #certificate { box-shadow: none; width: 100%; height: 100%; margin: 0; padding: 20mm; page-break-after: always; }
-            @page { margin: 0; size: A4 portrait; }
+        .issuer-name { font-size: 16px; font-weight: bold; }
+        
+        /* ハンコの位置 */
+        .seal-container {
+            position: absolute;
+            top: -5px;
+            right: -55px; /* 社名の右端から55px右 */
+            width: 50px;
+            height: 50px;
+            z-index: 10;
         }
-        @media (max-width: 900px) {
-            body { flex-direction: column; align-items: center; }
-            .editor-pane { width: 100%; max-width: 500px; }
-            #certificate { width: 100%; font-size: 0.9em; padding: 10mm;}
+        .seal-img { width: 100%; height: 100%; object-fit: contain; opacity: 0.85; }
+        .seal-dummy { width: 100%; height: 100%; border: 1px solid #eee; display: flex; align-items: center; justify-content: center; color: #ddd; background: rgba(255,255,255,0.5); font-size: 10px; }
+
+        @media print { 
+            body { display: block !important; background: none; margin: 0; padding: 0; } 
+            .editor-pane { display: none; } 
+            .preview-pane { display: block; } 
+            #cert { box-shadow: none; width: 100%; height: 100%; margin: 0; padding: 25mm; page-break-after: always; } 
+            .seal-dummy { display: none !important; }
+            @page { margin: 0; size: A4 portrait; } 
         }
     </style>
 </head>
 <body>
-
     <script src="auth.js"></script>
     <script src="settings.js"></script>
     <script>
         if (typeof checkAuth === 'function') checkAuth(); else document.body.style.display = "flex";
         window.addEventListener('load', function() {
             if (typeof applyCompanyData === 'function') applyCompanyData();
+            document.getElementById('iptDate').valueAsDate = new Date();
+            toggleSeal(); update();
         });
     </script>
 
     <div class="editor-pane">
-        <!-- ▼▼▼ 戻るボタン ▼▼▼ -->
         <a href="index.html" class="back-btn">⬅ メニューに戻る</a>
-
-        <h2>入力フォーム</h2>
+        <h2>在職証明書 作成</h2>
         
-        <div class="form-group"><label>証明日 (発行日)</label><input type="date" id="issueDate"></div>
+        <div class="form-group"><label>氏名 (対象者)</label><input type="text" id="iptName" placeholder="山田 太郎" oninput="update()"></div>
+        <div class="form-group"><label>生年月日</label><input type="text" id="iptBirth" placeholder="1990年 1月 1日" oninput="update()"></div>
+        <div class="form-group"><label>住所</label><textarea id="iptAddr" rows="2" placeholder="東京都..." oninput="update()"></textarea></div>
         <hr>
-        <div class="form-group"><label>氏名</label><input type="text" id="name" placeholder="山田 太郎"></div>
-        <div class="form-group"><label>生年月日</label><input type="date" id="birthDate"></div>
-        <div class="form-group"><label>住所</label><input type="text" id="address" placeholder="東京都千代田区..."></div>
-        <div class="form-group"><label>在職期間 (開始)</label><input type="date" id="periodStart"></div>
-        <div class="form-group"><label>在職期間 (終了/現在)</label><input type="text" id="periodEnd" placeholder="現在に至る、または日付"></div>
-        <div class="form-group"><label>所属・役職</label><input type="text" id="department" placeholder="営業部 課長"></div>
-        <div class="form-group"><label>業務内容</label><textarea id="jobDesc" rows="2" placeholder="営業活動およびチームマネジメント"></textarea></div>
+        <div class="form-group"><label>採用年月日</label><input type="text" id="iptHireDate" placeholder="2020年 4月 1日" oninput="update()"></div>
+        <div class="form-group"><label>役職 / 所属</label><input type="text" id="iptPos" placeholder="営業部 課長" oninput="update()"></div>
+        <div class="form-group"><label>業務内容</label><input type="text" id="iptJob" placeholder="営業活動および管理業務" oninput="update()"></div>
+        <div class="form-group"><label>備考</label><textarea id="iptRemarks" rows="2" placeholder="特になし" oninput="update()">特になし</textarea></div>
+        
         <hr>
-        <div class="form-group"><label>会社住所</label><input type="text" id="compAddress" placeholder="東京都港区..."></div>
-        <div class="form-group"><label>会社名</label><input type="text" id="compName" placeholder="株式会社〇〇"></div>
-        <div class="form-group"><label>代表者名</label><input type="text" id="compRep" placeholder="代表取締役 佐藤 次郎"></div>
+        <h3>発行者情報</h3>
+        <div class="form-group"><label>証明日 (発行日)</label><input type="date" id="iptDate" oninput="update()"></div>
+        <div class="form-group"><label>会社名</label><input type="text" id="iptIssuerName" oninput="update()"></div>
+        <div class="form-group"><label>所在地</label><textarea id="iptIssuerAddr" rows="2" oninput="update()"></textarea></div>
+        <div class="form-group"><label>代表者名</label><input type="text" id="iptIssuerRep" placeholder="代表取締役 〇〇 〇〇" oninput="update()"></div>
+        
+        <div class="form-group">
+            <label class="seal-switch">
+                <input type="checkbox" id="chkSeal" checked onchange="toggleSeal()">
+                電子印鑑を表示する
+            </label>
+        </div>
 
-        <button class="print-btn" onclick="window.print()">🖨️ 印刷する / PDF保存</button>
+        <button class="print-btn" onclick="window.print()">🖨️ 証明書を印刷</button>
     </div>
 
     <div class="preview-pane">
-        <div id="certificate">
-            <div class="cert-title">在職証明書</div>
-            <div class="cert-date"><span id="viewIssueDate">令和〇年〇月〇日</span></div>
-            <div class="cert-body">下記の者は、当社に在職している（していた）ことを証明します。</div>
-            <table class="cert-table">
-                <tr><th>氏 名</th><td id="viewName"></td></tr>
-                <tr><th>生年月日</th><td id="viewBirthDate"></td></tr>
-                <tr><th>住 所</th><td id="viewAddress"></td></tr>
-                <tr><th>在職期間</th><td><span id="viewPeriodStart"></span> 〜 <span id="viewPeriodEnd"></span></td></tr>
-                <tr><th>所属・役職</th><td id="viewDepartment"></td></tr>
-                <tr><th>業務内容</th><td id="viewJobDesc"></td></tr>
+        <div id="cert">
+            <div class="c-title">在 職 証 明 書</div>
+            
+            <div class="c-intro">
+                下記の者は、当社において在職していることを証明いたします。
+            </div>
+            
+            <table class="c-table">
+                <tr>
+                    <th>氏　名</th>
+                    <td><span id="viewName"></span></td>
+                </tr>
+                <tr>
+                    <th>生年月日</th>
+                    <td><span id="viewBirth"></span></td>
+                </tr>
+                <tr>
+                    <th>住　所</th>
+                    <td><span id="viewAddr"></span></td>
+                </tr>
+                <tr>
+                    <th>採用年月日</th>
+                    <td><span id="viewHireDate"></span></td>
+                </tr>
+                <tr>
+                    <th>所属・役職</th>
+                    <td><span id="viewPos"></span></td>
+                </tr>
+                <tr>
+                    <th>業務内容</th>
+                    <td><span id="viewJob"></span></td>
+                </tr>
+                <tr>
+                    <th>備　考</th>
+                    <td><span id="viewRemarks" style="white-space: pre-wrap;"></span></td>
+                </tr>
             </table>
-            <div class="cert-footer">
-                <div id="viewCompAddress"></div>
-                <div class="company-name" id="viewCompName"></div>
-                <div class="ceo-name" id="viewCompRep"></div>
-                <div style="margin-top:20px; color:#ccc; font-size:12px;">(社印)</div>
+            
+            <div class="c-footer">
+                <div class="c-date" id="viewDate"></div>
+                
+                <div class="issuer-info">
+                    <div id="viewIssuerAddr" style="white-space: pre-wrap; margin-bottom:5px;"></div>
+                    
+                    <!-- 社名とハンコ -->
+                    <div class="name-seal-wrap">
+                        <div class="issuer-name" id="viewIssuerName"></div>
+                        <div class="seal-container">
+                            <img id="viewSeal" src="" class="seal-img" style="display:none;">
+                            <div id="dummySeal" class="seal-dummy">(印)</div>
+                        </div>
+                    </div>
+                    
+                    <div style="margin-top:5px;"><span id="viewIssuerRep"></span></div>
+                </div>
             </div>
         </div>
     </div>
 
     <script>
-        function formatDate(d){if(!d)return"";const D=new Date(d);return`${D.getFullYear()}年${D.getMonth()+1}月${D.getDate()}日`}
-        function updateCert(){
-            document.getElementById('viewIssueDate').innerText=document.getElementById('issueDate').value?formatDate(document.getElementById('issueDate').value):"令和　年　月　日";
-            document.getElementById('viewName').innerText=document.getElementById('name').value;
-            document.getElementById('viewBirthDate').innerText=formatDate(document.getElementById('birthDate').value);
-            document.getElementById('viewAddress').innerText=document.getElementById('address').value;
-            document.getElementById('viewPeriodStart').innerText=formatDate(document.getElementById('periodStart').value);
-            document.getElementById('viewPeriodEnd').innerText=document.getElementById('periodEnd').value;
-            document.getElementById('viewDepartment').innerText=document.getElementById('department').value;
-            document.getElementById('viewJobDesc').innerText=document.getElementById('jobDesc').value;
-            document.getElementById('viewCompAddress').innerText=document.getElementById('compAddress').value;
-            document.getElementById('viewCompName').innerText=document.getElementById('compName').value;
-            document.getElementById('viewCompRep').innerText=document.getElementById('compRep').value;
+        function toggleSeal() {
+            const isChecked = document.getElementById('chkSeal').checked;
+            const img = document.getElementById('viewSeal');
+            const dummy = document.getElementById('dummySeal');
+            if (img.src && img.src.length > 10 && isChecked) {
+                img.style.display = 'block';
+                dummy.style.display = 'none';
+            } else {
+                img.style.display = 'none';
+                dummy.style.display = 'flex';
+            }
         }
-        document.querySelectorAll('input, textarea').forEach(i=>i.addEventListener('input',updateCert));
-        document.getElementById('issueDate').valueAsDate=new Date();updateCert();
+        function formatDate(dateStr) { if(!dateStr) return ""; const d = new Date(dateStr); return `${d.getFullYear()}年${d.getMonth()+1}月${d.getDate()}日`; }
+        
+        function update() {
+            document.getElementById('viewName').innerText = document.getElementById('iptName').value;
+            document.getElementById('viewBirth').innerText = document.getElementById('iptBirth').value;
+            document.getElementById('viewAddr').innerText = document.getElementById('iptAddr').value;
+            
+            document.getElementById('viewHireDate').innerText = document.getElementById('iptHireDate').value;
+            document.getElementById('viewPos').innerText = document.getElementById('iptPos').value;
+            document.getElementById('viewJob').innerText = document.getElementById('iptJob').value;
+            document.getElementById('viewRemarks').innerText = document.getElementById('iptRemarks').value;
+            
+            document.getElementById('viewDate').innerText = formatDate(document.getElementById('iptDate').value);
+            document.getElementById('viewIssuerName').innerText = document.getElementById('iptIssuerName').value;
+            document.getElementById('viewIssuerAddr').innerText = document.getElementById('iptIssuerAddr').value;
+            document.getElementById('viewIssuerRep').innerText = document.getElementById('iptIssuerRep').value;
+        }
+        document.querySelectorAll('input, textarea').forEach(i => i.addEventListener('input', update));
     </script>
 </body>
 </html>

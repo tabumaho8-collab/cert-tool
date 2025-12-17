@@ -55,18 +55,18 @@
         }
         .issuer-name { font-size: 18px; font-weight: bold; margin-bottom: 5px; }
 
-        /* ▼▼▼ ハンコの位置（修正済み：35pxに下げました） ▼▼▼ */
+        /* ▼▼▼ ハンコの位置（ここを修正！） ▼▼▼ */
         .seal-container {
             position: absolute;
-            top: 50px;    /* ← 25px から 35px に変更（10px下げ） */
-            right: -15px; 
+            bottom: -5px;  /* 上からの％指定をやめて、底辺基準に固定 */
+            right: -20px;  /* 右に少しはみ出させる */
             
-            width: 40px; 
-            height: 40px; 
-            
+            width: 44px;   /* サイズを少し調整 */
+            height: 44px; 
             z-index: 10; 
+            pointer-events: none; /* クリックを透過させる */
         }
-        /* ▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲ */
+        /* ▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲ */
 
         .seal-img { width: 100%; height: 100%; object-fit: contain; opacity: 0.85; }
         .seal-dummy { width: 100%; height: 100%; border: 1px solid #eee; display: flex; align-items: center; justify-content: center; color: #ddd; font-size: 10px; }
@@ -78,6 +78,7 @@
             .preview-pane { display: block; } 
             #receipt { box-shadow: none; width: 100%; height: 100%; margin: 0; padding: 25mm; page-break-after: always; } 
             
+            /* 印刷時にダミー枠は消す */
             .seal-dummy { display: none !important; }
             
             @page { margin: 0; size: A4 portrait; } 
@@ -125,7 +126,7 @@
         <div class="form-group">
             <label class="seal-switch">
                 <input type="checkbox" id="chkSeal" checked onchange="toggleSeal()">
-                電子印鑑を表示する (※印刷時は非表示になります)
+                電子印鑑を表示する (手押しする場合は外す)
             </label>
         </div>
 
@@ -175,6 +176,8 @@
             const isChecked = document.getElementById('chkSeal').checked;
             const img = document.getElementById('viewSeal');
             const dummy = document.getElementById('dummySeal');
+            
+            // 画像データがあり、かつチェックされている場合のみ表示
             if (img.src && img.src.length > 10 && isChecked) {
                 img.style.display = 'block';
                 dummy.style.display = 'none';

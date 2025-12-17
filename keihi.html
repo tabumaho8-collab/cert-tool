@@ -5,17 +5,19 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>経費精算書作成ツール</title>
     <style>
+        /* --- 全体レイアウト --- */
         body { display: none; font-family: "Helvetica Neue", Arial, sans-serif; background-color: #f4f4f4; margin: 0; padding: 20px; gap: 20px; justify-content: center; min-height: 100vh; }
         .editor-pane { width: 400px; background: #fff; padding: 20px; border-radius: 8px; box-shadow: 0 2px 10px rgba(0,0,0,0.1); height: fit-content; overflow-y: auto; max-height: 90vh; }
         .back-btn { display: inline-block; background-color: #6c757d; color: white; padding: 5px 10px; text-decoration: none; border-radius: 4px; font-size: 12px; margin-bottom: 15px; cursor: pointer; }
         .form-group { margin-bottom: 15px; }
         .form-group label { display: block; font-size: 12px; font-weight: bold; margin-bottom: 5px; color: #555; }
         .form-group input, .form-group textarea, .form-group select { width: 100%; padding: 8px; box-sizing: border-box; border: 1px solid #ccc; border-radius: 4px; font-size: 14px; }
-        
+        .seal-switch { display: flex; align-items: center; gap: 5px; font-size: 12px; font-weight: normal; cursor: pointer; margin-top: 5px; }
+
         /* 明細行入力エリア */
         .item-row { display: flex; gap: 5px; margin-bottom: 8px; align-items: center; border-bottom: 1px dashed #eee; padding-bottom: 8px; }
         .item-row input { flex: 1; font-size: 13px; }
-        .w-date { width: 100px; flex: none !important; }
+        .w-date { width: 80px; flex: none !important; }
         .w-price { width: 80px; flex: none !important; text-align: right; }
         .w-dest { flex: 1.5 !important; }
         
@@ -25,18 +27,53 @@
         #sheet { width: 210mm; min-height: 297mm; background: white; padding: 20mm; box-sizing: border-box; box-shadow: 0 5px 15px rgba(0,0,0,0.2); position: relative; font-family: "Yu Mincho", "YuMincho", serif; color: #333; }
         
         /* デザイン */
-        .s-title { text-align: center; font-size: 28px; font-weight: bold; border-bottom: 2px solid #333; padding-bottom: 10px; margin-bottom: 20px; letter-spacing: 2px; }
+        .s-title { text-align: center; font-size: 28px; font-weight: bold; border-bottom: 2px solid #333; padding-bottom: 10px; margin-bottom: 30px; letter-spacing: 2px; }
         
-        .s-header { display: flex; justify-content: space-between; margin-bottom: 20px; }
-        .s-info { font-size: 14px; }
-        .s-hanko-box { display: flex; border: 1px solid #333; }
-        .s-hanko { width: 60px; height: 60px; border-left: 1px solid #333; position: relative; }
-        .s-hanko:first-child { border-left: none; }
-        .s-hanko-title { border-bottom: 1px solid #333; font-size: 10px; text-align: center; background: #f0f0f0; height: 15px; line-height: 15px; }
+        /* ヘッダーエリア */
+        .s-header { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 30px; }
+        .s-info { font-size: 14px; line-height: 1.8; }
         
-        .s-total-bar { display: flex; justify-content: flex-end; align-items: center; margin-bottom: 10px; font-size: 18px; font-weight: bold; }
-        .s-total-val { font-size: 24px; border-bottom: 2px solid #333; margin-left: 10px; padding: 0 10px; }
+        /* 名前とハンコの並び（修正版） */
+        .name-wrapper {
+            display: flex;
+            align-items: center; /* 垂直方向中央揃え */
+        }
+        
+        /* 名前とハンコのコンテナ */
+        .name-seal-box {
+            display: flex;         /* 横並びにする */
+            align-items: center;   /* 高さを合わせる */
+            margin-left: 5px;
+        }
 
+        .user-name-text {
+            font-size: 16px;
+            border-bottom: 1px solid #333;
+            min-width: 150px;
+            padding-left: 5px;
+            margin-right: 15px; /* ハンコとの隙間 */
+        }
+
+        /* ハンコの位置（相対配置に変更） */
+        .seal-container {
+            position: relative; /* 絶対配置をやめて、自然な並びに */
+            width: 45px;
+            height: 45px;
+            opacity: 0.85;
+        }
+        .seal-img { width: 100%; height: 100%; object-fit: contain; }
+        .seal-dummy { width: 100%; height: 100%; border: 1px solid #ddd; display: flex; align-items: center; justify-content: center; color: #ddd; font-size: 10px; background: rgba(255,255,255,0.6); }
+
+        /* 右側の承認印ボックス */
+        .stamp-box-table { border-collapse: collapse; font-size: 12px; text-align: center; }
+        .stamp-box-table th { border: 1px solid #000; background: #f0f0f0; width: 60px; padding: 2px; font-weight: normal; }
+        .stamp-box-table td { border: 1px solid #000; height: 60px; width: 60px; }
+        
+        /* 合計金額バー */
+        .s-total-bar { display: flex; justify-content: flex-end; align-items: center; margin-bottom: 10px; font-size: 16px; font-weight: bold; }
+        .s-total-val { font-size: 24px; border-bottom: 2px solid #333; margin-left: 10px; padding: 0 20px; min-width: 100px; text-align: right; }
+
+        /* 明細テーブル */
         .s-table { width: 100%; border-collapse: collapse; font-size: 12px; margin-bottom: 20px; }
         .s-table th, .s-table td { border: 1px solid #333; padding: 6px; vertical-align: middle; }
         .s-table th { background: #f0f0f0; text-align: center; font-weight: normal; }
@@ -44,12 +81,19 @@
         
         /* 列幅 */
         .tc-date { width: 40px; text-align: center; }
-        .tc-dest { width: 120px; }
+        .tc-dest { width: 150px; }
         .tc-route { }
-        .tc-price { width: 70px; text-align: right; }
+        .tc-price { width: 80px; text-align: right; }
         .tc-note { width: 80px; }
 
-        @media print { body { display: block !important; background: none; margin: 0; padding: 0; } .editor-pane { display: none; } .preview-pane { display: block; } #sheet { box-shadow: none; width: 100%; height: 100%; margin: 0; padding: 20mm; page-break-after: always; } @page { margin: 0; size: A4 portrait; } }
+        @media print { 
+            body { display: block !important; background: none; margin: 0; padding: 0; } 
+            .editor-pane { display: none; } 
+            .preview-pane { display: block; } 
+            #sheet { box-shadow: none; width: 100%; height: 100%; margin: 0; padding: 20mm; page-break-after: always; } 
+            .seal-dummy { display: none !important; }
+            @page { margin: 0; size: A4 portrait; } 
+        }
     </style>
 </head>
 <body>
@@ -60,6 +104,9 @@
         window.addEventListener('load', function() {
             if (typeof applyCompanyData === 'function') applyCompanyData();
             document.getElementById('iptDate').valueAsDate = new Date();
+            // 共通設定のハンコを読み込む
+            loadSeal();
+            toggleSeal();
             update();
         });
     </script>
@@ -73,7 +120,14 @@
         
         <hr>
         <div class="form-group"><label>所属</label><input type="text" id="iptDept" placeholder="営業部" oninput="update()"></div>
-        <div class="form-group"><label>氏名</label><input type="text" id="iptIssuerRep" oninput="update()"></div> <!-- settings.jsと連携 -->
+        <div class="form-group"><label>氏名 (申請者)</label><input type="text" id="iptIssuerRep" oninput="update()"></div>
+        
+        <div class="form-group">
+            <label class="seal-switch">
+                <input type="checkbox" id="chkSeal" checked onchange="toggleSeal()">
+                電子印鑑を表示する
+            </label>
+        </div>
         
         <hr>
         <label>明細入力 (日付 / 訪問先・内容 / 経路 / 金額)</label>
@@ -87,22 +141,40 @@
             <div class="s-title">交通費・経費精算書</div>
             
             <div class="s-header">
+                <!-- 左側：情報エリア -->
                 <div class="s-info">
-                    提出日：<span id="viewDate"></span><br>
-                    対象期間：<span id="viewPeriod"></span><br>
-                    所　属：<span id="viewDept"></span><br>
-                    氏　名：<span id="viewName"></span>
-                    <div style="margin-top:5px; position:relative; width:50px; height:50px;">
-                        <img id="viewSeal" src="" style="width:100%; height:100%; object-fit:contain; display:none; opacity:0.8;">
-                        <div style="position:absolute; top:0; left:0; width:100%; height:100%; border:1px solid #ccc; display:flex; align-items:center; justify-content:center; color:#ccc; z-index:-1; font-size:10px;">(印)</div>
+                    <div>提出日：<span id="viewDate"></span></div>
+                    <div>期間　：<span id="viewPeriod"></span></div>
+                    <div>所　属：<span id="viewDept"></span></div>
+                    
+                    <!-- 名前とハンコのセット (横並び) -->
+                    <div class="name-wrapper">
+                        <div>氏　名：</div>
+                        <div class="name-seal-box">
+                            <span class="user-name-text" id="viewName"></span>
+                            
+                            <!-- ハンココンテナ (名前の右横に配置) -->
+                            <div class="seal-container">
+                                <img id="viewSeal" src="" class="seal-img" style="display:none;">
+                                <div id="dummySeal" class="seal-dummy">(印)</div>
+                            </div>
+                        </div>
                     </div>
                 </div>
                 
-                <div class="s-hanko-box">
-                    <div class="s-hanko"><div class="s-hanko-title">承認</div></div>
-                    <div class="s-hanko"><div class="s-hanko-title">審査</div></div>
-                    <div class="s-hanko"><div class="s-hanko-title">係</div></div>
-                </div>
+                <!-- 右側：承認印ボックス -->
+                <table class="stamp-box-table">
+                    <tr>
+                        <th>承認</th>
+                        <th>審査</th>
+                        <th>係</th>
+                    </tr>
+                    <tr>
+                        <td></td>
+                        <td></td>
+                        <td></td>
+                    </tr>
+                </table>
             </div>
 
             <div class="s-total-bar">
@@ -147,16 +219,44 @@
             }
             
             document.getElementById('iptDate').valueAsDate = new Date();
+            
+            // 共通設定(settings.js)の読み込み
             if (typeof applyCompanyData === 'function') applyCompanyData();
             
-            // ハンコ表示（settings.jsから読み込まれた後）
+            // 画像ロード（少し待ってから反映）
             setTimeout(() => {
-                const img = document.getElementById('viewSeal');
-                if(img.src && img.src.length > 10) img.style.display = 'block';
+                loadSeal();
+                update();
             }, 500);
-
+            
             update();
         };
+
+        function loadSeal() {
+            const companyData = localStorage.getItem("my_tool_company_info");
+            if (companyData) {
+                const data = JSON.parse(companyData);
+                const sealSrc = data.sealData || data.seal || data.stamp;
+                if (sealSrc) {
+                    document.getElementById('viewSeal').src = sealSrc;
+                }
+            }
+            toggleSeal();
+        }
+
+        function toggleSeal() {
+            const isChecked = document.getElementById('chkSeal').checked;
+            const img = document.getElementById('viewSeal');
+            const dummy = document.getElementById('dummySeal');
+            
+            if (img.src && img.src.length > 100 && isChecked) {
+                img.style.display = 'block';
+                dummy.style.display = 'none';
+            } else {
+                img.style.display = 'none';
+                dummy.style.display = 'flex';
+            }
+        }
 
         function formatDate(dateStr) { if(!dateStr) return ""; const d = new Date(dateStr); return `${d.getFullYear()}年${d.getMonth()+1}月${d.getDate()}日`; }
         function fmt(num) { return num.toLocaleString(); }
@@ -178,7 +278,6 @@
                 const priceVal = row.querySelector('.ipt-price').value;
                 const price = parseInt(priceVal) || 0;
 
-                // 入力がある行だけ計算・表示（空行も枠は出す）
                 if (day || dest || route || priceVal) {
                     total += price;
                     html += `
@@ -191,7 +290,6 @@
                         </tr>
                     `;
                 } else {
-                    // 空行
                     html += `<tr><td class="tc-date"></td><td></td><td></td><td></td><td></td></tr>`;
                 }
             });
