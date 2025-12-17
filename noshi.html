@@ -1,0 +1,314 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>のし紙作成ツール</title>
+    
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Yuji+Syuku&display=swap" rel="stylesheet">
+    
+    <style>
+        /* --- 全体レイアウト --- */
+        body { display: none; font-family: sans-serif; background-color: #f4f4f4; margin: 0; padding: 20px; gap: 20px; justify-content: center; min-height: 100vh; }
+        .editor-pane { width: 350px; background: #fff; padding: 20px; border-radius: 8px; box-shadow: 0 2px 10px rgba(0,0,0,0.1); height: fit-content; }
+        .back-btn { display: inline-block; background-color: #6c757d; color: white; padding: 5px 10px; text-decoration: none; border-radius: 4px; font-size: 12px; margin-bottom: 15px; cursor: pointer; }
+        .form-group { margin-bottom: 15px; }
+        .form-group label { display: block; font-size: 12px; font-weight: bold; margin-bottom: 5px; color: #555; }
+        .form-group input, .form-group select { width: 100%; padding: 8px; box-sizing: border-box; border: 1px solid #ccc; border-radius: 4px; font-size: 14px; }
+        
+        button.print-btn { width: 100%; padding: 12px; background-color: #e74c3c; color: white; border: none; border-radius: 4px; font-size: 16px; cursor: pointer; font-weight: bold; margin-top: 10px; }
+        
+        /* フォント切り替えスイッチ */
+        .font-switch { display: flex; align-items: center; gap: 5px; font-size: 12px; margin-top: 5px; cursor: pointer; color: #333; }
+        
+        .preview-pane { flex-grow: 1; display: flex; justify-content: center; align-items: center; }
+        
+        /* のし紙（A4横） */
+        #noshi-paper { 
+            width: 297mm; height: 210mm; 
+            background: white; 
+            box-shadow: 0 5px 15px rgba(0,0,0,0.2); 
+            position: relative; 
+            overflow: hidden;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            color: #000;
+            
+            /* デフォルトは筆文字 */
+            font-family: "Yuji Syuku", serif;
+        }
+
+        /* 標準フォント（明朝体）クラス - 正しい字形を優先 */
+        .std-font {
+            font-family: "Yu Mincho", "YuMincho", "Hiragino Mincho ProN", serif !important;
+        }
+
+        /* 薄墨モード */
+        .usuzumi-mode { color: #666 !important; }
+
+        /* --- 水引 (CSS描画) --- */
+        .mizuhiki-line {
+            width: 100%;
+            height: 4px;
+            background: repeating-linear-gradient(to bottom, #d93025 0%, #d93025 33%, #fff 33%, #fff 66%, #d93025 66%, #d93025 100%);
+            position: absolute;
+            top: 50%;
+            left: 0;
+            z-index: 1;
+        }
+        .mizuhiki-knot {
+            position: absolute;
+            top: 50%; left: 50%;
+            transform: translate(-50%, -50%);
+            width: 100px; height: 60px;
+            z-index: 2;
+            background: white; 
+        }
+        .knot-img {
+            width: 100%; height: 100%;
+            background-repeat: no-repeat;
+            background-position: center;
+            background-size: contain;
+        }
+
+        /* --- のし飾り (右上) --- */
+        .noshi-icon {
+            position: absolute;
+            top: 20mm; right: 20mm;
+            width: 30mm; height: 50mm;
+            border: 1px solid #d93025;
+            display: flex; align-items: center; justify-content: center;
+            color: #d93025; font-size: 24px;
+            background: #fff;
+        }
+        .noshi-inner {
+            border: 1px solid #d93025; width: 60%; height: 60%; transform: rotate(45deg);
+            background: #d93025;
+        }
+        
+        /* --- 文字エリア --- */
+        .text-area {
+            position: absolute;
+            left: 50%;
+            transform: translateX(-50%);
+            text-align: center;
+            z-index: 3;
+            width: 240mm;
+            height: 180mm;
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+        }
+
+        .text-top {
+            flex: 1;
+            display: flex;
+            align-items: flex-end; 
+            justify-content: center;
+            padding-bottom: 20px;
+        }
+        .title-text {
+            font-size: 70px;
+            font-weight: bold;
+            letter-spacing: 0.2em;
+        }
+
+        .text-bottom {
+            flex: 1;
+            display: flex;
+            flex-direction: column; 
+            align-items: center; 
+            justify-content: flex-start; 
+            padding-top: 30px;
+        }
+        .name-text {
+            font-size: 45px;
+            letter-spacing: 0.1em;
+            line-height: 1.4;
+            margin-bottom: 10px;
+        }
+        .rep-text {
+            font-size: 28px; 
+            letter-spacing: 0.05em;
+        }
+
+        @media print {
+            body { display: block !important; background: none; margin: 0; padding: 0; }
+            .editor-pane { display: none; }
+            .preview-pane { display: block; }
+            #noshi-paper { box-shadow: none; margin: 0; page-break-after: always; }
+            @page { margin: 0; size: A4 landscape; }
+        }
+    </style>
+</head>
+<body>
+    <script src="auth.js"></script>
+    <script src="settings.js"></script>
+    <script>
+        if (typeof checkAuth === 'function') checkAuth(); else document.body.style.display = "flex";
+        window.addEventListener('load', function() {
+            if (typeof applyCompanyData === 'function') applyCompanyData();
+            const co = localStorage.getItem("my_tool_company_info");
+            if(co) {
+                const data = JSON.parse(co);
+                document.getElementById('iptName').value = data.name || "";
+                document.getElementById('iptRep').value = data.rep || ""; 
+            }
+            update();
+        });
+    </script>
+
+    <div class="editor-pane">
+        <a href="index.html" class="back-btn">⬅ メニューに戻る</a>
+        <h2>のし紙 作成</h2>
+        
+        <div class="form-group">
+            <label>表書き (上段)</label>
+            <select id="selTitle" onchange="applyTitle()">
+                <option value="御祝">御祝</option>
+                <option value="内祝">内祝</option>
+                <option value="御礼">御礼</option>
+                <option value="粗品" selected>粗品</option>
+                <option value="御中元">御中元</option>
+                <option value="御歳暮">御歳暮</option>
+                <hr>
+                <option value="御見舞">御見舞 (薄墨・結び切り)</option>
+                <option value="御霊前">御霊前 (薄墨・仏事)</option>
+                <option value="御仏前">御仏前 (薄墨・仏事)</option>
+                <option value="">(自由入力)</option>
+            </select>
+            <input type="text" id="iptTitle" value="粗品" oninput="update()" style="margin-top:5px;" placeholder="自由に入力">
+        </div>
+
+        <div class="form-group">
+            <label>名入れ (会社名など)</label>
+            <input type="text" id="iptName" oninput="update()" placeholder="株式会社〇〇">
+            <!-- ▼▼▼ フォント切り替えスイッチ ▼▼▼ -->
+            <label class="font-switch">
+                <input type="checkbox" id="chkStdFont" onchange="toggleNameFont()"> 
+                筆文字が崩れる場合は標準フォントにする
+            </label>
+        </div>
+        
+        <div class="form-group">
+            <label>代表者名 (必要な場合)</label>
+            <input type="text" id="iptRep" oninput="update()" placeholder="代表取締役 〇〇">
+        </div>
+
+        <hr>
+        <div class="form-group">
+            <label>水引の種類</label>
+            <select id="selMizuhiki" onchange="updateStyle()">
+                <option value="red_cho">紅白・蝶結び (一般・お祝い)</option>
+                <option value="red_kiri">紅白・結び切り (お見舞い・婚礼)</option>
+                <option value="bw_kiri">黒白・結び切り (仏事)</option>
+            </select>
+        </div>
+
+        <div class="form-group">
+            <label>墨の色</label>
+            <select id="selInk" onchange="updateStyle()">
+                <option value="black">濃墨 (通常)</option>
+                <option value="gray">薄墨 (お悔やみ・お見舞い)</option>
+            </select>
+        </div>
+
+        <button class="print-btn" onclick="window.print()">🖨️ 印刷する</button>
+    </div>
+
+    <div class="preview-pane">
+        <div id="noshi-paper">
+            <div class="noshi-icon" id="noshiMark"><div class="noshi-inner"></div></div>
+            <div class="mizuhiki-line" id="line"></div>
+            <div class="mizuhiki-knot" id="knot"><div class="knot-img" id="knotImg"></div></div>
+
+            <div class="text-area" id="textArea">
+                <div class="text-top"><div class="title-text" id="viewTitle">粗品</div></div>
+                <div class="text-bottom">
+                    <div class="name-text" id="viewName"></div>
+                    <div class="rep-text" id="viewRep"></div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const SVG_CHO = `data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 60'%3E%3Cpath d='M10,10 Q30,50 50,30 Q70,50 90,10' fill='none' stroke='%23d93025' stroke-width='3'/%3E%3Cpath d='M10,20 Q30,60 50,40 Q70,60 90,20' fill='none' stroke='%23d93025' stroke-width='3'/%3E%3Cpath d='M50,10 L50,50' fill='none' stroke='%23d93025' stroke-width='3'/%3E%3C/svg%3E`;
+        const SVG_KIRI_RED = `data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 60'%3E%3Cpath d='M10,30 L90,30' fill='none' stroke='%23d93025' stroke-width='4'/%3E%3C/svg%3E`;
+        const SVG_KIRI_BK = `data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 60'%3E%3Cpath d='M10,30 L90,30' fill='none' stroke='%23333' stroke-width='4'/%3E%3C/svg%3E`;
+
+        function applyTitle() {
+            const val = document.getElementById('selTitle').value;
+            const ipt = document.getElementById('iptTitle');
+            const selMizuhiki = document.getElementById('selMizuhiki');
+            const selInk = document.getElementById('selInk');
+
+            if(val) ipt.value = val;
+
+            if (val === "御見舞") {
+                selMizuhiki.value = "red_kiri"; 
+                selInk.value = "gray";        
+            } else if (val === "御霊前" || val === "御仏前") {
+                selMizuhiki.value = "bw_kiri";  
+                selInk.value = "gray";        
+            } else if (val === "御祝" || val === "内祝" || val === "粗品") {
+                selMizuhiki.value = "red_cho";  
+                selInk.value = "black";       
+            }
+            update();
+            updateStyle();
+        }
+
+        function update() {
+            document.getElementById('viewTitle').innerText = document.getElementById('iptTitle').value;
+            document.getElementById('viewName').innerText = document.getElementById('iptName').value;
+            document.getElementById('viewRep').innerText = document.getElementById('iptRep').value;
+        }
+
+        // フォント切り替え処理
+        function toggleNameFont() {
+            const isChecked = document.getElementById('chkStdFont').checked;
+            const viewName = document.getElementById('viewName');
+            const viewRep = document.getElementById('viewRep');
+            
+            if (isChecked) {
+                viewName.classList.add('std-font');
+                viewRep.classList.add('std-font');
+            } else {
+                viewName.classList.remove('std-font');
+                viewRep.classList.remove('std-font');
+            }
+        }
+
+        function updateStyle() {
+            const type = document.getElementById('selMizuhiki').value;
+            const ink = document.getElementById('selInk').value;
+            const line = document.getElementById('line');
+            const knotImg = document.getElementById('knotImg');
+            const noshiMark = document.getElementById('noshiMark');
+            const paper = document.getElementById('noshi-paper');
+
+            if (ink === 'gray') paper.classList.add('usuzumi-mode');
+            else paper.classList.remove('usuzumi-mode');
+
+            if (type === 'red_cho') {
+                line.style.background = "repeating-linear-gradient(to bottom, #d93025 0%, #d93025 33%, #fff 33%, #fff 66%, #d93025 66%, #d93025 100%)";
+                knotImg.style.backgroundImage = `url("${SVG_CHO}")`;
+                noshiMark.style.display = "flex"; 
+            } else if (type === 'red_kiri') {
+                line.style.background = "repeating-linear-gradient(to bottom, #d93025 0%, #d93025 33%, #fff 33%, #fff 66%, #d93025 66%, #d93025 100%)";
+                knotImg.style.backgroundImage = `url("${SVG_KIRI_RED}")`;
+                noshiMark.style.display = "flex"; 
+            } else {
+                line.style.background = "repeating-linear-gradient(to bottom, #333 0%, #333 33%, #fff 33%, #fff 66%, #333 66%, #333 100%)";
+                knotImg.style.backgroundImage = `url("${SVG_KIRI_BK}")`;
+                noshiMark.style.display = "none"; 
+            }
+        }
+    </script>
+</body>
+</html>
