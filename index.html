@@ -11,8 +11,12 @@
             background-color: #f0f2f5;
             margin: 0;
             padding: 0;
-            display: none; /* セキュリティ用初期非表示 */
+            display: none; /* 初期非表示 */
             color: #333;
+            /* Flex崩れ防止: 強制的に縦並びにする */
+            display: flex !important; 
+            flex-direction: column !important;
+            min-height: 100vh;
         }
 
         /* --- ヘッダー --- */
@@ -29,20 +33,24 @@
             position: sticky;
             top: 0;
             z-index: 100;
+            flex-shrink: 0;
         }
         h1 { margin: 0; font-size: 20px; font-weight: bold; }
 
-        /* --- メインレイアウト (左右分割) --- */
+        /* --- メインレイアウト --- */
         .dashboard-container {
             display: flex;
             max-width: 1400px;
             margin: 0 auto;
             padding: 20px;
             gap: 20px;
-            align-items: flex-start; /* 上揃え */
+            align-items: flex-start;
+            box-sizing: border-box;
+            width: 100%;
+            flex-grow: 1;
         }
 
-        /* --- 左サイドバー (設定エリア) --- */
+        /* --- 左サイドバー --- */
         .sidebar {
             width: 320px;
             background: white;
@@ -50,9 +58,11 @@
             border-radius: 8px;
             box-shadow: 0 2px 5px rgba(0,0,0,0.05);
             border-top: 4px solid #2c517c;
-            flex-shrink: 0; /* 幅を固定 */
-            position: sticky; /* PCで見やすいように追従 */
+            flex-shrink: 0;
+            position: sticky;
             top: 80px;
+            max-height: 85vh;
+            overflow-y: auto;
         }
         .sidebar h3 { margin-top: 0; font-size: 16px; color: #2c517c; border-bottom: 1px solid #eee; padding-bottom: 10px; margin-bottom: 15px; }
         .sidebar label { display: block; font-size: 12px; font-weight: bold; margin-bottom: 4px; color: #555; }
@@ -60,28 +70,28 @@
         
         .save-btn {
             background-color: #2c517c; color: white; border: none; 
-            padding: 10px; width: 100%; border-radius: 4px; 
+            padding: 12px; width: 100%; border-radius: 4px; 
             font-weight: bold; cursor: pointer; margin-top: 10px;
             transition: background 0.2s;
+            font-size: 14px;
         }
         .save-btn:hover { background-color: #1a3655; }
 
-        /* ハンコエリア */
-        .seal-area { background: #f9f9f9; padding: 10px; border-radius: 4px; border: 1px dashed #ccc; text-align: center; }
-        #previewSeal { width: 80px; height: 80px; object-fit: contain; margin-top: 5px; display: none; margin-left: auto; margin-right: auto; }
+        .seal-area { background: #f9f9f9; padding: 10px; border-radius: 4px; border: 1px dashed #ccc; text-align: center; margin-bottom: 15px; }
+        .seal-preview { width: 60px; height: 60px; object-fit: contain; margin: 5px auto; display: none; border: 1px solid #ddd; background: white; }
 
         /* --- 右メイン (ツール一覧) --- */
         .main-content {
             flex-grow: 1;
             display: grid;
-            grid-template-columns: repeat(auto-fill, minmax(260px, 1fr)); /* 自動で折り返し */
+            grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
             gap: 20px;
+            width: 100%;
         }
 
-        /* カードデザイン */
         .card {
             background: white;
-            padding: 25px;
+            padding: 20px;
             border-radius: 12px;
             text-align: center;
             text-decoration: none;
@@ -101,23 +111,21 @@
             box-shadow: 0 8px 15px rgba(0,0,0,0.1);
             border-color: #007bff;
         }
-        .card-icon { font-size: 36px; margin-bottom: 15px; display: block; }
-        .card-title { font-size: 16px; font-weight: bold; display: block; margin-bottom: 8px; }
-        .card-desc { font-size: 12px; color: #666; line-height: 1.4; }
+        .card-icon { font-size: 32px; margin-bottom: 10px; display: block; }
+        .card-title { font-size: 15px; font-weight: bold; display: block; margin-bottom: 6px; }
+        .card-desc { font-size: 11px; color: #666; line-height: 1.4; }
 
-        /* セクション見出し */
         .section-title {
-            grid-column: 1 / -1; /* 横幅いっぱいに */
+            grid-column: 1 / -1;
             font-size: 14px; font-weight: bold; color: #777; 
             margin-top: 20px; margin-bottom: 10px; padding-left: 5px;
             border-left: 4px solid #ccc; line-height: 1;
         }
         .section-title:first-child { margin-top: 0; }
 
-        /* --- レスポンシブ (スマホ対応) --- */
         @media (max-width: 900px) {
-            .dashboard-container { flex-direction: column; } /* 縦並びにする */
-            .sidebar { width: 100%; position: static; order: 2; /* 設定を下に持っていくなら2、上なら0 */ }
+            .dashboard-container { flex-direction: column; }
+            .sidebar { width: 100%; position: static; order: 2; }
             .main-content { width: 100%; order: 1; }
         }
     </style>
@@ -127,7 +135,7 @@
     <!-- ヘッダー -->
     <header>
         <h1>社内書類作成ツール</h1>
-        <div style="font-size:12px; opacity:0.8;">v2.1</div>
+        <div style="font-size:12px; opacity:0.8;">v5.3</div>
     </header>
 
     <!-- ダッシュボードエリア -->
@@ -138,24 +146,31 @@
             <h3>⚙️ 会社・基本情報</h3>
             
             <label>会社名</label>
-            <input type="text" id="setCompName" placeholder="株式会社〇〇">
+            <input type="text" id="setIssuerName" placeholder="株式会社〇〇">
             
             <label>住所・TEL</label>
-            <textarea id="setCompAddr" rows="3" placeholder="〒000-0000..."></textarea>
+            <textarea id="setIssuerAddr" rows="3" placeholder="〒000-0000..."></textarea>
             
             <label>代表者/担当者</label>
-            <input type="text" id="setCompRep" placeholder="代表取締役...">
+            <input type="text" id="setIssuerRep" placeholder="代表取締役...">
             
             <label>登録番号(T)</label>
             <input type="text" id="setRegNo" placeholder="T1234567890123">
 
-            <label>電子印鑑 (透過PNG)</label>
+            <!-- ハンコ2つ登録対応 -->
+            <label style="margin-top:10px;">🔲 会社印 (角印)</label>
             <div class="seal-area">
-                <input type="file" id="setSealFile" accept="image/*" style="font-size:11px;">
-                <img id="previewSeal">
+                <input type="file" id="fileSealCompany" accept="image/*" style="font-size:11px;" onchange="previewSeal(this, 'prevCompany')">
+                <img id="prevCompany" class="seal-preview">
             </div>
 
-            <button onclick="saveCompanyData()" class="save-btn">設定を保存する</button>
+            <label style="margin-top:10px;">🔴 個人印 (認印)</label>
+            <div class="seal-area">
+                <input type="file" id="fileSealPersonal" accept="image/*" style="font-size:11px;" onchange="previewSeal(this, 'prevPersonal')">
+                <img id="prevPersonal" class="seal-preview" style="width:50px; height:50px; border-radius:50%;">
+            </div>
+
+            <button onclick="handleSave()" class="save-btn">設定を保存する</button>
             <p style="font-size:10px; color:#666; margin-top:10px; text-align:center;">
                 ※ここで保存すると全ツールに反映されます
             </p>
@@ -166,56 +181,48 @@
             
             <div class="section-title">事務・経理</div>
 
-            <!-- 在職証明書 -->
-            <a href="zaishoku.html" class="card">
-                <span class="card-icon">📄</span>
-                <span class="card-title">在職証明書</span>
-                <span class="card-desc">氏名・期間を入力して<br>即時発行</span>
-            </a>
-
-            <!-- 領収証（詳細） -->
-            <a href="ryoshusho.html" class="card">
-                <span class="card-icon">¥</span>
-                <span class="card-title">領収証 (詳細)</span>
-                <span class="card-desc">インボイス対応・明細付き<br>自動計算</span>
-            </a>
-
-            <!-- 領収証（簡易） -->
-            <a href="ryoshusho_simple.html" class="card">
-                <span class="card-icon">🧾</span>
-                <span class="card-title">領収書 (簡易)</span>
-                <span class="card-desc">合計金額のみ入力<br>スピード作成</span>
-            </a>
-
-            <!-- 請求書 -->
             <a href="seikyu.html" class="card">
                 <span class="card-icon">💰</span>
                 <span class="card-title">請求書 作成</span>
                 <span class="card-desc">振込先保存・計算自動<br>消費税区分対応</span>
             </a>
 
-             <!-- 見積書 -->
             <a href="mitsumori.html" class="card">
-                <span class="card-icon">📊</span>
+                <span class="card-icon">🧮</span>
                 <span class="card-title">見積書 作成</span>
                 <span class="card-desc">有効期限付き<br>緑色のフォーマット</span>
             </a>
 
-            <!-- 納品書 -->
             <a href="nohin.html" class="card">
                 <span class="card-icon">📦</span>
                 <span class="card-title">納品書 作成</span>
                 <span class="card-desc">受領印欄あり<br>オレンジ色のフォーマット</span>
             </a>
 
-             <!-- 稟議書 -->
+            <a href="ryoshusho.html" class="card">
+                <span class="card-icon">¥</span>
+                <span class="card-title">領収証 (詳細)</span>
+                <span class="card-desc">インボイス対応・明細付き<br>自動計算</span>
+            </a>
+
+            <a href="ryoshusho_simple.html" class="card">
+                <span class="card-icon">🧾</span>
+                <span class="card-title">領収書 (簡易)</span>
+                <span class="card-desc">合計金額のみ入力<br>スピード作成</span>
+            </a>
+
+            <a href="zaishoku.html" class="card">
+                <span class="card-icon">📄</span>
+                <span class="card-title">在職証明書</span>
+                <span class="card-desc">氏名・期間を入力して<br>即時発行</span>
+            </a>
+
             <a href="ringi.html" class="card">
                 <span class="card-icon">🈸</span>
                 <span class="card-title">稟議書 作成</span>
                 <span class="card-desc">承認印枠付き<br>起案者印は自動</span>
             </a>
             
-            <!-- 会議議事録 (NEW!) -->
             <a href="gijiroku.html" class="card">
                 <span class="card-icon">📝</span>
                 <span class="card-title">会議議事録</span>
@@ -225,35 +232,30 @@
 
             <div class="section-title">発送・贈答</div>
             
-            <!-- FAX -->
             <a href="fax.html" class="card">
                 <span class="card-icon">📠</span>
                 <span class="card-title">FAX 送付状</span>
                 <span class="card-desc">見やすい太字デザイン<br>インク節約仕様</span>
             </a>
 
-            <!-- 送付状 -->
             <a href="sofujo.html" class="card">
                 <span class="card-icon">✉️</span>
                 <span class="card-title">送付状 (単発)</span>
                 <span class="card-desc">社外・社内切替可<br>挨拶文自動挿入</span>
             </a>
 
-            <!-- 一括送付状 -->
             <a href="sofujo_multi.html" class="card">
                 <span class="card-icon">📚</span>
                 <span class="card-title">一括 送付状</span>
                 <span class="card-desc">支店・関連会社へ一斉作成<br>宛先リスト管理</span>
             </a>
 
-            <!-- 封筒印刷 -->
             <a href="envelope.html" class="card">
                 <span class="card-icon">📮</span>
                 <span class="card-title">封筒 宛名印刷</span>
                 <span class="card-desc">長形3号サイズ<br>横書き・敬称切替</span>
             </a>
 
-            <!-- のし紙 (NEW!) -->
             <a href="noshi.html" class="card">
                 <span class="card-icon">🎁</span>
                 <span class="card-title">のし紙 作成</span>
@@ -263,28 +265,26 @@
 
             <div class="section-title">勤怠・精算</div>
 
-             <!--  勤怠管理  -->
              <a href="kintai.html" class="card">
                 <span class="card-icon">📅</span>
                 <span class="card-title">勤怠・有給計画</span>
                 <span class="card-desc">年間110日・連休取得の<br>シミュレーション</span>
             </a>
 
-             <!-- 通勤費精算 -->
             <a href="tsukin.html" class="card">
                 <span class="card-icon">🚗</span>
                 <span class="card-title">通勤費精算書</span>
                 <span class="card-desc">毎日の通勤費管理<br>カレンダー形式・例外対応</span>
             </a>
 
-              <!-- 経費精算 -->
             <a href="keihi.html" class="card">
                 <span class="card-icon">🚃</span>
                 <span class="card-title">経費精算書</span>
                 <span class="card-desc">交通費・経費の計算<br>自動合計・15行対応</span>
             </a>
        
-                <!-- 設定バックアップ -->
+            <div class="section-title">管理</div>
+
             <a href="backup.html" class="card">
                     <span class="card-icon">💾</span>
                     <span class="card-title">バックアップ</span>
@@ -299,15 +299,24 @@
     <script src="settings.js"></script>
     
     <script>
-        // ログインチェックと表示
-        if (typeof isLoggedin === 'function' && isLoggedin()) {
-            document.body.style.display = "block"; // flexではなくblockにして中身でレイアウトする
-            if(typeof loadSettingsDisplay === 'function') {
-                loadSettingsDisplay();
+        // ログインチェック
+        if (typeof checkAuth === 'function') checkAuth();
+
+        // ページ読み込み時の処理
+        window.addEventListener('load', () => {
+            // 設定値を復元
+            if(typeof loadSettingsToInputs === 'function') {
+                loadSettingsToInputs();
             }
-        } else {
-            if(typeof login === 'function') login();
-            else document.body.style.display = "block";
+        });
+
+        // 保存ボタン処理（エラーハンドリング付き）
+        function handleSave() {
+            if (typeof saveSettings === 'function') {
+                saveSettings();
+            } else {
+                alert("❌ エラー: 'settings.js' が古いか、読み込まれていません。\nsettings.js を最新版に更新してください。");
+            }
         }
     </script>
 </body>

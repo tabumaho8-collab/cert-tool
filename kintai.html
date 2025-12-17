@@ -5,406 +5,334 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>年間勤怠・有給計画</title>
     <style>
-        /* --- 全体設定 --- */
-        body {
-            display: none; /* セキュリティ用 */
-            font-family: "Helvetica Neue", Arial, sans-serif;
-            background-color: #f4f4f4;
-            margin: 0;
-            padding: 0;
-            min-height: 100vh;
-            color: #333;
-        }
-
-        /* --- レイアウト枠 --- */
-        .layout-container {
-            display: flex;
-            height: 100vh;
-            overflow: hidden; 
-        }
-
-        /* --- 左サイドバー (固定) --- */
-        .sidebar {
-            width: 300px;
-            background: white;
-            padding: 20px;
-            box-shadow: 2px 0 10px rgba(0,0,0,0.1);
-            overflow-y: auto;
-            flex-shrink: 0;
-            z-index: 10;
-        }
-
-        /* --- 右メイン (カレンダーエリア) --- */
-        .main-content {
-            flex-grow: 1;
-            padding: 20px;
-            overflow-y: auto;
-            background-color: #e9ecef;
-        }
-
-        /* 戻るボタン */
-        .back-btn {
-            display: inline-block; background-color: #6c757d; color: white;
-            padding: 6px 12px; text-decoration: none; border-radius: 4px;
-            font-size: 12px; margin-bottom: 15px; cursor: pointer;
-        }
-
-        h2 { margin-top: 0; border-bottom: 2px solid #ddd; padding-bottom: 10px; font-size: 18px; margin-bottom: 15px;}
-        h3 { font-size: 14px; margin-top: 20px; border-left: 5px solid #28a745; padding-left: 8px; margin-bottom: 10px;}
-
-        /* ステータスパネル */
-        .status-item {
-            background: #fff; padding: 12px; border-radius: 6px; border: 1px solid #ddd; margin-bottom: 10px;
-        }
-        .status-item.ok { border-color: #28a745; background-color: #d4edda; color: #155724; }
-        .status-label { font-size: 11px; font-weight: bold; display: block; color: #666; margin-bottom: 2px; }
-        .status-val { font-size: 22px; font-weight: bold; }
-        .status-sub { font-size: 12px; margin-left: 5px; }
-
-        /* 有給入力 */
-        .paid-input-box { background: #fff3cd; padding: 12px; border-radius: 6px; border: 1px solid #ffeeba; }
-        .paid-input-box input { width: 60px; padding: 5px; font-size: 16px; text-align: center; border-radius: 4px; border: 1px solid #ccc; }
-
-        /* --- カレンダーグリッド (超ワイド化！) --- */
-        .year-selector { text-align: center; margin-bottom: 15px; font-size: 20px; font-weight: bold; }
+        body { font-family: "Helvetica Neue", Arial, sans-serif; background-color: #f0f2f5; margin: 0; padding: 20px; display: flex; gap: 20px; height: 100vh; box-sizing: border-box; }
         
-        .calendar-grid {
-            display: grid;
-            /* ★ここを変更！PCなら横に6個並べる（6ヶ月×2行＝1年）★ */
-            grid-template-columns: repeat(6, 1fr); 
-            gap: 15px;
-            width: 100%;
-            padding-bottom: 50px;
-        }
+        /* 左サイドバー（集計エリア） */
+        .sidebar { width: 300px; background: white; padding: 20px; border-radius: 8px; box-shadow: 0 2px 10px rgba(0,0,0,0.1); display: flex; flex-direction: column; gap: 20px; overflow-y: auto; flex-shrink: 0; }
+        .back-btn { display: inline-block; background-color: #6c757d; color: white; padding: 5px 10px; text-decoration: none; border-radius: 4px; font-size: 12px; margin-bottom: 10px; width: fit-content; }
+        
+        h2 { font-size: 18px; margin: 0 0 10px 0; border-bottom: 2px solid #28a745; padding-bottom: 5px; color: #333; }
+        
+        /* 年切り替え */
+        .year-selector { display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px; font-size: 20px; font-weight: bold; }
+        .year-btn { cursor: pointer; background: none; border: 1px solid #ccc; border-radius: 4px; padding: 2px 10px; }
 
-        .month-box {
-            background: white; border: 1px solid #ccc; border-radius: 8px; overflow: hidden;
-            box-shadow: 0 4px 8px rgba(0,0,0,0.05);
-            display: flex; flex-direction: column; /* 中身を縦に伸ばす */
-        }
-        .month-header {
-            background: #333; color: white; text-align: center; padding: 8px; font-weight: bold; font-size: 18px; /* 月名さらに大きく */
-        }
-        .month-days {
-            display: grid; grid-template-columns: repeat(7, 1fr); text-align: center; font-size: 14px;
-            flex-grow: 1; /* 高さいっぱいに広げる */
-        }
-        .day-cell {
-            padding: 0;
-            height: 45px; /* ★さらに大きく！押しやすく */
-            line-height: 45px;
-            border-bottom: 1px solid #eee; border-right: 1px solid #eee;
-            cursor: pointer; user-select: none;
+        /* カード共通スタイル */
+        .stat-card { background: #f8f9fa; border: 1px solid #ddd; border-radius: 6px; padding: 15px; }
+        .stat-title { font-size: 12px; font-weight: bold; color: #555; margin-bottom: 5px; border-left: 4px solid #28a745; padding-left: 8px; }
+        .stat-value { font-size: 24px; font-weight: bold; color: #333; }
+        .stat-sub { font-size: 12px; color: #666; }
+        
+        /* アラート表示用 */
+        .alert-msg { font-size: 12px; color: #dc3545; font-weight: bold; margin-top: 5px; display: none; align-items: center; gap: 5px; }
+        .stat-card.warning { border-color: #dc3545; background-color: #fff8f8; }
+        .stat-card.warning .stat-title { border-left-color: #dc3545; }
+        .stat-card.success { border-color: #28a745; background-color: #f0fff4; }
+        
+        /* 入力フォーム */
+        .input-group { margin-bottom: 5px; }
+        .input-group label { display: block; font-size: 11px; margin-bottom: 2px; }
+        .input-group input { width: 60px; padding: 5px; border-radius: 4px; border: 1px solid #ccc; }
+
+        /* 凡例 */
+        .legend { display: flex; gap: 10px; font-size: 12px; margin-top: auto; }
+        .legend-item { display: flex; align-items: center; gap: 5px; }
+        .box { width: 12px; height: 12px; border-radius: 2px; }
+        .box-work { border: 1px solid #ddd; background: white; }
+        .box-holiday { background-color: #ffcccc; }
+        .box-paid { background-color: #cce5ff; }
+
+        /* 右メイン（カレンダーエリア） */
+        .main-calendar { flex: 1; overflow-y: auto; background: white; border-radius: 8px; padding: 20px; box-shadow: 0 2px 10px rgba(0,0,0,0.1); }
+        
+        /* グリッド設定：幅を少し広げてゆったり配置 */
+        .calendar-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(220px, 1fr)); gap: 20px; }
+        
+        /* 月カレンダー */
+        .month-card { border: 1px solid #eee; border-radius: 4px; overflow: hidden; display: flex; flex-direction: column; }
+        .month-header { background: #333; color: white; text-align: center; padding: 8px; font-weight: bold; font-size: 16px; }
+        .week-header { display: grid; grid-template-columns: repeat(7, 1fr); text-align: center; font-size: 12px; background: #f9f9f9; padding: 5px 0; border-bottom: 1px solid #eee; font-weight:bold; }
+        .day-grid { display: grid; grid-template-columns: repeat(7, 1fr); flex-grow: 1; }
+        
+        /* ▼▼▼ ここを大きくしました ▼▼▼ */
+        .day-cell { 
+            height: 60px; /* 高さ倍増 (30px -> 60px) */
+            border-bottom: 1px solid #f0f0f0; 
+            border-right: 1px solid #f0f0f0; 
+            font-size: 16px; /* 文字サイズUP (12px -> 16px) */
+            font-weight: 500;
+            display: flex; 
+            align-items: center; 
+            justify-content: center; 
+            cursor: pointer; 
+            user-select: none;
             transition: background 0.1s;
-            font-size: 16px; /* 日付文字も大きく */
-            font-weight: bold;
         }
-        .day-cell:hover { filter: brightness(0.95); }
+        .day-cell:hover { background-color: #f5f5f5; }
+        /* ▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲ */
 
-        .day-header { 
-            background: #f8f9fa; font-weight: bold; color: #555; pointer-events: none; 
-            height: 30px; line-height: 30px; font-size: 12px;
-        }
+        .day-cell:nth-child(7n), .day-cell:nth-child(7n+1) { color: #d9534f; } /* 土日は赤文字 */
         
-        .col-sun { color: red; }
-        .col-sat { color: blue; }
-        .type-work { background: white; color: #333; }
-        .type-holiday { background: #ffcccc; color: #d00; font-weight: bold; }
-        .type-paid { background: #ffeeba; color: #856404; font-weight: bold; }
+        /* 状態ごとの色 */
+        .status-holiday { background-color: #ffcccc; color: #a00 !important; font-weight: bold; }
+        .status-paid { background-color: #cce5ff; color: #0056b3 !important; font-weight: bold; }
+        .status-work { background-color: white; }
 
-        .legend { margin-top: 20px; font-size: 12px; display: flex; gap: 15px; justify-content: center; }
-        .legend span { display: inline-block; width: 16px; height: 16px; margin-right: 4px; border: 1px solid #ccc; vertical-align: middle; }
+        /* 3連休以上の強調線 */
+        .consecutive-3 { border-bottom: 4px solid #ffa500; }
+        .consecutive-5 { border-bottom: 4px solid #dc3545; }
 
-        /* --- レスポンシブ (画面サイズに合わせて列数を減らす) --- */
-        /* ノートPCサイズ (1400px以下) なら4列 */
-        @media (max-width: 1600px) {
-            .calendar-grid { grid-template-columns: repeat(4, 1fr); }
-        }
-        /* タブレットサイズ (1100px以下) なら3列 */
-        @media (max-width: 1100px) {
-            .calendar-grid { grid-template-columns: repeat(3, 1fr); }
-        }
-        /* スマホサイズ (900px以下) なら縦並び */
-        @media (max-width: 900px) {
-            .layout-container { flex-direction: column; height: auto; overflow: visible; }
-            .sidebar { width: 100%; position: static; height: auto; box-sizing: border-box; }
-            .calendar-grid { grid-template-columns: repeat(1, 1fr); }
-            .day-cell { height: 50px; line-height: 50px; font-size: 18px; } /* スマホは特大サイズ */
-        }
     </style>
 </head>
 <body>
-
     <script src="auth.js"></script>
     <script src="settings.js"></script>
     <script>
-        if (typeof checkAuth === 'function') checkAuth(); else document.body.style.display = "block";
+        if (typeof checkAuth === 'function') checkAuth(); 
+        
+        const KEY_KINTAI_DATA = "my_tool_kintai_data";
+        const KEY_KINTAI_STOCK = "my_tool_kintai_stock";
     </script>
 
-    <div class="layout-container">
-        <!-- 左サイドバー -->
-        <div class="sidebar">
-            <a href="index.html" class="back-btn">⬅ メニュー</a>
-            <h2>勤怠・有給管理</h2>
+    <!-- サイドバー -->
+    <div class="sidebar">
+        <a href="index.html" class="back-btn">⬅ メニュー</a>
+        <h2>勤怠・有給管理</h2>
+        
+        <div class="year-selector">
+            <button class="year-btn" onclick="changeYear(-1)">◀</button>
+            <span id="displayYear">2025</span> 年
+            <button class="year-btn" onclick="changeYear(1)">▶</button>
+        </div>
 
-            <div class="year-selector">
-                <button onclick="changeYear(-1)" style="padding:5px 10px; cursor:pointer;">◀</button>
-                <span id="displayYear" style="margin:0 10px;">2025</span>年
-                <button onclick="changeYear(1)" style="padding:5px 10px; cursor:pointer;">▶</button>
+        <!-- 有給残日数 -->
+        <div class="stat-card">
+            <div class="stat-title">有給休暇 残数管理</div>
+            <div class="input-group">
+                <label>今年度の有給総数</label>
+                <input type="number" id="iptStock" value="20" onchange="updateStats()"> 日
             </div>
-
-            <h3>有給休暇 残数管理</h3>
-            <div class="status-item paid-input-box">
-                <span class="status-label">今年度の有給総数</span>
-                <div style="display:flex; align-items:center; gap:5px; margin-top:5px;">
-                    <input type="number" id="iptPaidStock" value="20" onchange="saveData()"> 日
-                </div>
-                <div style="margin-top:8px; font-size:13px;">
-                    使用数: <strong id="val_paid_used" style="color:#d00;">0</strong> 日<br>
-                    <span style="font-size:15px; font-weight:bold; color:#28a745;">残り: <span id="val_paid_remain">20</span> 日</span>
-                </div>
-            </div>
-
-            <h3>年間休日目標</h3>
-            <div class="status-item" id="st_total">
-                <span class="status-label">年間休日 (公休+有給)</span>
-                <span class="status-val" id="val_total">0</span> 日
-                <span class="status-sub">/ 110日</span>
-            </div>
-            
-            <h3>連休取得チェック</h3>
-            <div class="status-item" id="st_ren3">
-                <span class="status-label">3連休以上</span>
-                <span class="status-val" id="val_ren3">0</span> 回
-                <span class="status-sub">/ 2回</span>
-            </div>
-            <div class="status-item" id="st_ren5">
-                <span class="status-label">5連休以上</span>
-                <span class="status-val" id="val_ren5">0</span> 回
-                <span class="status-sub">/ 1回</span>
-            </div>
-
-            <h3>半期ごとの有給</h3>
-            <div style="display:flex; gap:5px;">
-                <div class="status-item" id="st_paid1" style="flex:1;">
-                    <span class="status-label">上期(1-6)</span>
-                    <span class="status-val" id="val_paid1">0</span>
-                    <span class="status-sub">/2</span>
-                </div>
-                <div class="status-item" id="st_paid2" style="flex:1;">
-                    <span class="status-label">下期(7-12)</span>
-                    <span class="status-val" id="val_paid2">0</span>
-                    <span class="status-sub">/2</span>
-                </div>
-            </div>
-
-            <div class="legend">
-                <div><span style="background:white;"></span>出勤</div>
-                <div><span style="background:#ffcccc;"></span>公休</div>
-                <div><span style="background:#ffeeba;"></span>有給</div>
+            <div style="margin-top:5px; font-size:13px;">
+                使用数: <span id="valUsed" style="font-weight:bold;">0</span> 日<br>
+                残り: <span id="valRemain" style="color:#28a745; font-weight:bold;">20</span> 日
             </div>
         </div>
 
-        <!-- 右メイン (カレンダー) -->
-        <div class="main-content">
-            <div id="calendarArea" class="calendar-grid"></div>
+        <!-- 年間休日 -->
+        <div class="stat-card" id="cardHoliday">
+            <div class="stat-title">年間休日目標 (110日)</div>
+            <div class="stat-value"><span id="valTotalHoliday">0</span> <span style="font-size:14px; font-weight:normal;">日</span></div>
+            <div class="stat-sub">公休 + 有給</div>
+            <div class="alert-msg" id="alertHoliday">⚠️ あと <span id="remHoliday">0</span> 日不足</div>
+        </div>
+
+        <!-- 連休チェック -->
+        <div class="stat-card" id="cardRenkyu3">
+            <div class="stat-title">3連休以上 (目標:3回)</div>
+            <div class="stat-value"><span id="valRenkyu3">0</span> <span style="font-size:14px; font-weight:normal;">回</span></div>
+            <div class="alert-msg" id="alertRenkyu3">⚠️ あと <span id="remRenkyu3">0</span> 回不足</div>
+        </div>
+        
+        <div class="stat-card" id="cardRenkyu5">
+            <div class="stat-title">5連休以上 (目標:1回)</div>
+            <div class="stat-value"><span id="valRenkyu5">0</span> <span style="font-size:14px; font-weight:normal;">回</span></div>
+            <div class="alert-msg" id="alertRenkyu5">⚠️ まだ取得できていません</div>
+        </div>
+
+        <!-- 半期ごとの有給 -->
+        <div class="stat-card" id="cardHanki">
+            <div class="stat-title">半期ごとの有給 (目標:各2回)</div>
+            <div style="display:flex; justify-content:space-between; margin-bottom:5px;">
+                <div>上期(1-6): <span id="valFirstHalf" style="font-weight:bold;">0</span></div>
+                <div>下期(7-12): <span id="valSecondHalf" style="font-weight:bold;">0</span></div>
+            </div>
+            <div class="alert-msg" id="alertHanki">⚠️ <span id="txtHanki">上期・下期ともに不足</span></div>
+        </div>
+
+        <div class="legend">
+            <div class="legend-item"><div class="box box-work"></div>出勤</div>
+            <div class="legend-item"><div class="box box-holiday"></div>公休</div>
+            <div class="legend-item"><div class="box box-paid"></div>有給</div>
         </div>
     </div>
 
-    <script>
-        const KEY_DATA = "my_tool_kintai_data";
-        const KEY_PAID_STOCK = "my_tool_kintai_stock";
+    <!-- メインカレンダー -->
+    <div class="main-calendar">
+        <div id="calendarGrid" class="calendar-grid"></div>
+    </div>
 
-        let currentYear = new Date().getFullYear();
-        let attendanceData = {};
-        const AUTO_SUNDAY = true;
+    <script>
+        let currentYear = 2025;
+        let kintaiData = {}; 
 
         window.onload = function() {
-            loadData();
-            renderAll();
-        };
+            const savedData = localStorage.getItem(KEY_KINTAI_DATA);
+            if (savedData) kintaiData = JSON.parse(savedData);
+            
+            const savedStock = localStorage.getItem(KEY_KINTAI_STOCK);
+            if (savedStock) document.getElementById('iptStock').value = savedStock;
 
-        function loadData() {
-            const json = localStorage.getItem(KEY_DATA);
-            if (json) attendanceData = JSON.parse(json);
-            const stock = localStorage.getItem(KEY_PAID_STOCK);
-            if (stock) document.getElementById('iptPaidStock').value = stock;
-        }
-
-        function saveData() {
-            localStorage.setItem(KEY_DATA, JSON.stringify(attendanceData));
-            const stock = document.getElementById('iptPaidStock').value;
-            localStorage.setItem(KEY_PAID_STOCK, stock);
+            renderCalendar();
             updateStats();
-        }
+        };
 
         function changeYear(offset) {
             currentYear += offset;
             document.getElementById('displayYear').innerText = currentYear;
-            renderAll();
-        }
-
-        function renderAll() {
-            const container = document.getElementById('calendarArea');
-            container.innerHTML = "";
-            document.getElementById('displayYear').innerText = currentYear;
-
-            for (let m = 1; m <= 12; m++) {
-                container.appendChild(createMonthHTML(currentYear, m));
-            }
+            renderCalendar();
             updateStats();
         }
 
-        function createMonthHTML(year, month) {
-            const box = document.createElement('div');
-            box.className = 'month-box';
+        function renderCalendar() {
+            const grid = document.getElementById('calendarGrid');
+            grid.innerHTML = "";
+            const weeks = ["日","月","火","水","木","金","土"];
 
-            const header = document.createElement('div');
-            header.className = 'month-header';
-            header.innerText = `${month}月`;
-            box.appendChild(header);
-
-            const grid = document.createElement('div');
-            grid.className = 'month-days';
-
-            const weeks = ['日','月','火','水','木','金','土'];
-            weeks.forEach((w, i) => {
-                const el = document.createElement('div');
-                el.className = 'day-header';
-                if(i===0) el.classList.add('col-sun');
-                if(i===6) el.classList.add('col-sat');
-                el.innerText = w;
-                grid.appendChild(el);
-            });
-
-            const firstDay = new Date(year, month - 1, 1).getDay();
-            for(let i=0; i<firstDay; i++) {
-                const empty = document.createElement('div');
-                empty.className = 'day-cell';
-                grid.appendChild(empty);
-            }
-
-            const lastDate = new Date(year, month, 0).getDate();
-            for(let d=1; d<=lastDate; d++) {
-                const dateKey = `${year}-${String(month).padStart(2,'0')}-${String(d).padStart(2,'0')}`;
-                const dateObj = new Date(year, month-1, d);
-                const dayOfWeek = dateObj.getDay();
-
-                const cell = document.createElement('div');
-                cell.className = 'day-cell';
-                cell.innerText = d;
+            for (let m = 1; m <= 12; m++) {
+                const monthDiv = document.createElement('div');
+                monthDiv.className = "month-card";
                 
-                if(dayOfWeek === 0) cell.classList.add('col-sun');
-                if(dayOfWeek === 6) cell.classList.add('col-sat');
+                let html = `<div class="month-header">${m}月</div>`;
+                html += `<div class="week-header">` + weeks.map(w => `<div>${w}</div>`).join('') + `</div>`;
+                html += `<div class="day-grid">`;
 
-                let status = attendanceData[dateKey];
-                if (!status) {
-                    status = (AUTO_SUNDAY && dayOfWeek === 0) ? "holiday" : "work";
+                const firstDay = new Date(currentYear, m-1, 1).getDay();
+                const lastDate = new Date(currentYear, m, 0).getDate();
+                for(let i=0; i<firstDay; i++) {
+                    html += `<div class="day-cell"></div>`;
                 }
 
-                applyStatusClass(cell, status);
+                for(let d=1; d<=lastDate; d++) {
+                    const key = `${currentYear}-${m}-${d}`;
+                    let status = "work";
+                    const w = new Date(currentYear, m-1, d).getDay();
+                    if (w === 0 || w === 6) status = "holiday";
+                    
+                    if (kintaiData[key]) status = kintaiData[key];
 
-                cell.onclick = function() {
-                    const next = getNextStatus(status);
-                    status = next;
-                    attendanceData[dateKey] = status;
-                    applyStatusClass(cell, status);
-                    saveData();
-                };
-
-                grid.appendChild(cell);
+                    const className = `status-${status}`;
+                    html += `<div class="day-cell ${className}" id="cell-${key}" onclick="toggleStatus('${key}')">${d}</div>`;
+                }
+                html += `</div>`;
+                monthDiv.innerHTML = html;
+                grid.appendChild(monthDiv);
             }
-            box.appendChild(grid);
-            return box;
         }
 
-        function applyStatusClass(el, status) {
-            el.classList.remove('type-work', 'type-holiday', 'type-paid');
-            if (status === 'holiday') el.classList.add('type-holiday');
-            else if (status === 'paid') el.classList.add('type-paid');
-            else el.classList.add('type-work');
+        function toggleStatus(key) {
+            const current = kintaiData[key] || getDefaultStatus(key);
+            let next = "work";
+            if (current === "work") next = "holiday";
+            else if (current === "holiday") next = "paid";
+            else if (current === "paid") next = "work";
+
+            kintaiData[key] = next;
+            localStorage.setItem(KEY_KINTAI_DATA, JSON.stringify(kintaiData));
+            
+            const cell = document.getElementById(`cell-${key}`);
+            cell.className = `day-cell status-${next}`;
+            updateStats();
         }
 
-        function getNextStatus(current) {
-            if (current === 'work') return 'holiday';
-            if (current === 'holiday') return 'paid';
-            return 'work';
+        function getDefaultStatus(key) {
+            const parts = key.split('-');
+            const date = new Date(parts[0], parts[1]-1, parts[2]);
+            const w = date.getDay();
+            return (w === 0 || w === 6) ? "holiday" : "work";
         }
 
         function updateStats() {
-            let countTotalOff = 0;
-            let countPaid1 = 0;
-            let countPaid2 = 0;
-            let countPaidYear = 0; 
+            let totalHoliday = 0;
+            let totalPaid = 0;
+            let firstHalfPaid = 0;
+            let secondHalfPaid = 0;
             
-            const daysMap = [];
-            const start = new Date(currentYear, 0, 1);
-            const end = new Date(currentYear, 11, 31);
+            // 日付データをリスト化して走査
+            const dayStatusList = [];
+            const jan1 = new Date(currentYear, 0, 1);
+            const dec31 = new Date(currentYear, 11, 31);
             
-            for (let d = new Date(start); d <= end; d.setDate(d.getDate() + 1)) {
+            for (let d = new Date(jan1); d <= dec31; d.setDate(d.getDate() + 1)) {
                 const y = d.getFullYear();
                 const m = d.getMonth() + 1;
                 const day = d.getDate();
-                const dateKey = `${y}-${String(m).padStart(2,'0')}-${String(day).padStart(2,'0')}`;
-                const week = d.getDay();
+                const key = `${y}-${m}-${day}`;
+                
+                const status = kintaiData[key] || getDefaultStatus(key);
+                dayStatusList.push({ key, status, m });
 
-                let status = attendanceData[dateKey];
-                if (!status) {
-                    status = (AUTO_SUNDAY && week === 0) ? 'holiday' : 'work';
+                if (status === "holiday") totalHoliday++;
+                if (status === "paid") {
+                    totalPaid++;
+                    if (m <= 6) firstHalfPaid++; else secondHalfPaid++;
                 }
-
-                const isOff = (status === 'holiday' || status === 'paid');
-                const isPaid = (status === 'paid');
-
-                if (isOff) countTotalOff++;
-                if (isPaid) {
-                    countPaidYear++;
-                    if (m <= 6) countPaid1++; else countPaid2++;
-                }
-                daysMap.push(isOff ? 1 : 0);
             }
 
-            let streak3 = 0;
-            let streak5 = 0;
+            // 連休計算
+            let count3 = 0;
+            let count5 = 0;
             let currentStreak = 0;
-            for (let i = 0; i < daysMap.length; i++) {
-                if (daysMap[i] === 1) {
+
+            dayStatusList.forEach((item, index) => {
+                const isOff = (item.status === "holiday" || item.status === "paid");
+                if (isOff) {
                     currentStreak++;
                 } else {
-                    if (currentStreak >= 5) streak5++;
-                    else if (currentStreak >= 3) streak3++;
+                    if (currentStreak >= 5) count5++;
+                    if (currentStreak >= 3) count3++;
                     currentStreak = 0;
                 }
-            }
-            if (currentStreak >= 5) streak5++;
-            else if (currentStreak >= 3) streak3++;
-            const totalRen3 = streak3 + streak5;
+            });
+            if (currentStreak >= 5) count5++;
+            if (currentStreak >= 3) count3++;
 
-            document.getElementById('val_total').innerText = countTotalOff;
-            document.getElementById('val_ren3').innerText = totalRen3;
-            document.getElementById('val_ren5').innerText = streak5;
-            document.getElementById('val_paid1').innerText = countPaid1;
-            document.getElementById('val_paid2').innerText = countPaid2;
+            const totalOff = totalHoliday + totalPaid;
+            const stock = parseInt(document.getElementById('iptStock').value) || 20;
+            localStorage.setItem(KEY_KINTAI_STOCK, stock);
+            document.getElementById('valUsed').innerText = totalPaid;
+            document.getElementById('valRemain').innerText = stock - totalPaid;
 
-            const stock = parseInt(document.getElementById('iptPaidStock').value) || 0;
-            const remain = stock - countPaidYear;
-            document.getElementById('val_paid_used').innerText = countPaidYear;
-            document.getElementById('val_paid_remain').innerText = remain;
+            // アラート更新
+            document.getElementById('valTotalHoliday').innerText = totalOff;
+            checkAlert('cardHoliday', 'alertHoliday', totalOff < 110);
+            if(totalOff < 110) document.getElementById('remHoliday').innerText = (110 - totalOff);
+
+            document.getElementById('valRenkyu3').innerText = count3;
+            checkAlert('cardRenkyu3', 'alertRenkyu3', count3 < 3);
+            if(count3 < 3) document.getElementById('remRenkyu3').innerText = (3 - count3);
+
+            document.getElementById('valRenkyu5').innerText = count5;
+            checkAlert('cardRenkyu5', 'alertRenkyu5', count5 < 1);
+
+            document.getElementById('valFirstHalf').innerText = firstHalfPaid;
+            document.getElementById('valSecondHalf').innerText = secondHalfPaid;
             
-            const elRemain = document.getElementById('val_paid_remain');
-            if(remain < 0) elRemain.style.color = "red";
-            else elRemain.style.color = "#28a745";
-
-            setStatus('st_total', countTotalOff >= 110);
-            setStatus('st_ren3', totalRen3 >= 2);
-            setStatus('st_ren5', streak5 >= 1);
-            setStatus('st_paid1', countPaid1 >= 2);
-            setStatus('st_paid2', countPaid2 >= 2);
+            let hankiMsg = "";
+            let isHankiAlert = false;
+            if (firstHalfPaid < 2 && secondHalfPaid < 2) {
+                hankiMsg = "上期・下期ともに不足"; isHankiAlert = true;
+            } else if (firstHalfPaid < 2) {
+                hankiMsg = "上期があと " + (2 - firstHalfPaid) + "回 不足"; isHankiAlert = true;
+            } else if (secondHalfPaid < 2) {
+                hankiMsg = "下期があと " + (2 - secondHalfPaid) + "回 不足"; isHankiAlert = true;
+            }
+            
+            checkAlert('cardHanki', 'alertHanki', isHankiAlert);
+            if(isHankiAlert) document.getElementById('txtHanki').innerText = hankiMsg;
         }
 
-        function setStatus(id, isOk) {
-            const el = document.getElementById(id);
-            if (isOk) el.classList.add('ok'); else el.classList.remove('ok');
+        function checkAlert(cardId, msgId, isError) {
+            const card = document.getElementById(cardId);
+            const msg = document.getElementById(msgId);
+            if (isError) {
+                card.classList.add("warning");
+                card.classList.remove("success");
+                msg.style.display = "flex";
+            } else {
+                card.classList.remove("warning");
+                card.classList.add("success");
+                msg.style.display = "none";
+            }
         }
     </script>
 </body>

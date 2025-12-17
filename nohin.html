@@ -7,12 +7,22 @@
     <style>
         /* --- 全体レイアウト --- */
         body { display: none; font-family: "Helvetica Neue", Arial, "Hiragino Kaku Gothic ProN", "Hiragino Sans", Meiryo, sans-serif; background-color: #f4f4f4; margin: 0; padding: 20px; gap: 20px; justify-content: center; min-height: 100vh; }
+        
+        /* エディタエリア */
         .editor-pane { width: 380px; background: #fff; padding: 20px; border-radius: 8px; box-shadow: 0 2px 10px rgba(0,0,0,0.1); height: fit-content; overflow-y: auto; max-height: 90vh; }
         .back-btn { display: inline-block; background-color: #6c757d; color: white; padding: 5px 10px; text-decoration: none; border-radius: 4px; font-size: 12px; margin-bottom: 15px; cursor: pointer; }
+        
         .form-group { margin-bottom: 15px; }
         .form-group label { display: block; font-size: 12px; font-weight: bold; margin-bottom: 5px; color: #555; }
         .form-group input, .form-group textarea, .form-group select { width: 100%; padding: 8px; box-sizing: border-box; border: 1px solid #ccc; border-radius: 4px; font-size: 14px; }
+        
+        /* スイッチ類 */
         .seal-switch { display: flex; align-items: center; gap: 5px; font-size: 12px; font-weight: normal; cursor: pointer; margin-top: 5px; }
+        .auto-no-switch { display: flex; align-items: center; gap: 5px; margin-bottom: 5px; font-size: 12px; cursor: pointer; }
+        .seal-type-group { background:#fff3e0; padding:8px; border-radius:4px; font-size:12px; margin-bottom:10px; border:1px solid #ffcc80; }
+        .seal-type-label { margin-right:15px; cursor:pointer; }
+
+        /* 明細行 */
         .item-row { display: flex; gap: 5px; margin-bottom: 5px; align-items: center; }
         .item-row input { flex: 1; }
         .item-row .w-qty { width: 50px; flex: none; text-align: right; }
@@ -20,54 +30,44 @@
         .item-row .w-price { width: 80px; flex: none; text-align: right; }
         .item-row .w-tax { width: 60px; flex: none; }
         
-        /* 納品書カラー: オレンジ */
+        /* 印刷ボタン (オレンジ) */
         button.print-btn { width: 100%; padding: 12px; background-color: #e67e22; color: white; border: none; border-radius: 4px; font-size: 16px; cursor: pointer; font-weight: bold; margin-top: 10px; }
-        .auto-no-switch { display: flex; align-items: center; gap: 5px; margin-bottom: 5px; font-size: 12px; cursor: pointer; }
         
+        /* プレビューエリア */
         .preview-pane { flex-grow: 1; display: flex; justify-content: center; }
         
+        /* 納品書デザイン */
         #invoice { width: 210mm; min-height: 297mm; background: white; padding: 20mm; box-sizing: border-box; box-shadow: 0 5px 15px rgba(0,0,0,0.2); position: relative; font-family: "Yu Mincho", "YuMincho", serif; color: #333; }
         
-        /* 納品書デザイン */
         .header-top { display: flex; justify-content: space-between; align-items: flex-end; margin-bottom: 10px; border-bottom: 2px solid #e67e22; padding-bottom: 5px; }
         .doc-title { font-size: 32px; font-weight: bold; color: #e67e22; letter-spacing: 5px; }
         .doc-no-date { text-align: right; font-size: 12px; }
         
         .info-section { display: flex; justify-content: space-between; margin-bottom: 30px; margin-top: 20px;}
-        .client-info { width: 55%; }
+        .client-info { width: 50%; }
         .client-name { font-size: 22px; margin-bottom: 5px; border-bottom: 1px solid #333; display: inline-block; min-width: 250px;}
         
-        /* ▼▼▼ 発行者情報（改良版） ▼▼▼ */
+        /* 発行者情報 (統一レイアウト) */
         .issuer-info { 
             width: max-content;
-            max-width: 45%;
-            margin-left: auto; /* 右に寄せる */
+            max-width: 50%;
+            margin-left: auto; 
             font-size: 13px; 
             line-height: 1.5; 
-            text-align: left; /* 中身は左揃え */
+            text-align: left; 
+            position: relative; 
         }
-        
-        /* 社名とハンコをまとめる枠（fit-contentが重要！） */
-        .name-seal-wrap {
-            position: relative;
-            width: fit-content; 
-            margin-bottom: 5px;
-        }
+        .issuer-name { font-size: 16px; font-weight: bold; margin-bottom: 5px; }
 
-        .issuer-name { font-size: 16px; font-weight: bold; }
-
-        /* ハンコの位置（社名の右横） */
+        /* ハンコの位置 (右端固定) */
         .seal-container {
             position: absolute;
-            top: -5px;
-            right: -55px; /* 社名の端から55px右 */
-            width: 50px;
-            height: 50px;
-            z-index: 10;
-            transform: rotate(-10deg);
+            top: 45px;    
+            right: -10px; 
+            width: 40px;  
+            height: 40px; 
+            z-index: 10; 
         }
-        /* ▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲ */
-
         .seal-img { width: 100%; height: 100%; object-fit: contain; opacity: 0.85; }
         .seal-dummy { width: 100%; height: 100%; border: 1px solid #eee; display: flex; align-items: center; justify-content: center; color: #ddd; background: rgba(255,255,255,0.5); font-size: 10px; }
 
@@ -86,7 +86,7 @@
         
         .bottom-section { display: flex; justify-content: space-between; margin-top:30px; }
         
-        /* 受領印エリア */
+        /* 納品書特有：受領印エリア */
         .receipt-stamp-box { width: 50%; border-top: 1px solid #333; padding-top: 5px; font-size: 12px; }
         .stamp-area { margin-top: 10px; border: 1px solid #ccc; height: 80px; width: 100%; display: flex; align-items: center; justify-content: center; color: #ccc; }
 
@@ -103,6 +103,7 @@
             .preview-pane { display: block; } 
             #invoice { box-shadow: none; width: 100%; height: 100%; margin: 0; padding: 20mm; page-break-after: always; } 
             .seal-dummy { display: none !important; }
+            .seal-container { position: absolute; top: 45px; right: -10px; }
             @page { margin: 0; size: A4 portrait; } 
         }
     </style>
@@ -114,6 +115,12 @@
         if (typeof checkAuth === 'function') checkAuth(); else document.body.style.display = "flex";
         window.addEventListener('load', function() {
             if (typeof applyCompanyData === 'function') applyCompanyData();
+            
+            // 会社データがあればデフォルトは「会社印」を選択
+            if (window.companyData) {
+                changeSealType('company');
+            }
+
             initAutoNumber(); toggleSeal(); update();
         });
     </script>
@@ -136,12 +143,19 @@
         <div class="form-group"><label>住所・TEL</label><textarea id="iptIssuerAddr" rows="3" oninput="update()"></textarea></div>
         <div class="form-group"><label>担当者</label><input type="text" id="iptIssuerRep" oninput="update()"></div>
         
+        <!-- ▼▼▼ ハンコ選択＆ON/OFF ▼▼▼ -->
+        <div class="form-group seal-type-group">
+            <label style="margin-bottom:5px;">印鑑の種類:</label>
+            <label class="seal-type-label"><input type="radio" name="sealType" value="company" checked onchange="changeSealType('company')"> 会社印(角)</label>
+            <label class="seal-type-label"><input type="radio" name="sealType" value="personal" onchange="changeSealType('personal')"> 個人印(丸)</label>
+        </div>
         <div class="form-group">
             <label class="seal-switch">
                 <input type="checkbox" id="chkSeal" checked onchange="toggleSeal()">
-                電子印鑑を表示する
+                電子印鑑を表示する (※印刷時は非表示)
             </label>
         </div>
+        <!-- ▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲ -->
 
         <button class="print-btn" onclick="handlePrint()">🖨️ 納品書を印刷</button>
     </div>
@@ -152,19 +166,17 @@
             <div class="info-section">
                 <div class="client-info"><div class="client-name" id="viewClient"></div><div style="margin-top:5px; font-size:14px;">件名：<span id="viewSubject"></span></div><div style="margin-top:10px; font-size:12px;">下記の通り納品いたしました。</div></div>
                 
+                <!-- 発行者情報 (統一スタイル) -->
                 <div class="issuer-info">
-                    <!-- ★ここに注目: 社名とハンコをひとまとめにする -->
-                    <div class="name-seal-wrap">
-                        <div class="issuer-name" id="viewIssuerName"></div>
-                        <!-- ハンコ -->
-                        <div class="seal-container">
-                            <img id="viewSeal" src="" class="seal-img" style="display:none;">
-                            <div id="dummySeal" class="seal-dummy">(印)</div>
-                        </div>
-                    </div>
-
+                    <div class="issuer-name" id="viewIssuerName"></div>
                     <div id="viewIssuerAddr" style="white-space: pre-wrap;"></div>
                     <div style="margin-top:5px;">担当：<span id="viewIssuerRep"></span></div>
+                    
+                    <!-- ハンコエリア -->
+                    <div class="seal-container">
+                        <img id="viewSeal" src="" class="seal-img" style="display:none;">
+                        <div id="dummySeal" class="seal-dummy">(印)</div>
+                    </div>
                 </div>
             </div>
             
@@ -202,9 +214,25 @@
                 container.appendChild(div);
             }
             document.getElementById('iptDate').valueAsDate = new Date();
+            
             if (typeof applyCompanyData === 'function') applyCompanyData();
+            if (window.companyData) changeSealType('company');
+
             initAutoNumber(); toggleSeal(); update();
         };
+
+        // ▼▼▼ ハンコ切り替えロジック ▼▼▼
+        function changeSealType(type) {
+            const img = document.getElementById('viewSeal');
+            if (!window.companyData) return;
+
+            if (type === 'company') {
+                img.src = window.companyData.sealCompany || "";
+            } else {
+                img.src = window.companyData.sealPersonal || "";
+            }
+            toggleSeal();
+        }
 
         function toggleSeal() {
             const isChecked = document.getElementById('chkSeal').checked;

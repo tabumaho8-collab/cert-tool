@@ -7,15 +7,19 @@
     <style>
         /* --- 全体のレイアウト --- */
         body { display: none; font-family: "Helvetica Neue", Arial, "Hiragino Kaku Gothic ProN", "Hiragino Sans", Meiryo, sans-serif; background-color: #f4f4f4; margin: 0; padding: 20px; gap: 20px; justify-content: center; min-height: 100vh; }
-        .editor-pane { width: 350px; background: #fff; padding: 20px; border-radius: 8px; box-shadow: 0 2px 10px rgba(0,0,0,0.1); height: fit-content; }
+        
+        .editor-pane { width: 350px; background: #fff; padding: 20px; border-radius: 8px; box-shadow: 0 2px 10px rgba(0,0,0,0.1); height: fit-content; overflow-y: auto; max-height: 90vh; }
         .back-btn { display: inline-block; background-color: #6c757d; color: white; padding: 5px 10px; text-decoration: none; border-radius: 4px; font-size: 12px; margin-bottom: 15px; cursor: pointer; }
         .back-btn:hover { background-color: #5a6268; }
+        
         .form-group { margin-bottom: 15px; }
         .form-group label { display: block; font-size: 12px; font-weight: bold; margin-bottom: 5px; color: #555; }
         .form-group input, .form-group textarea { width: 100%; padding: 10px; box-sizing: border-box; border: 1px solid #ccc; border-radius: 4px; font-size: 14px; }
         .input-money { font-size: 16px; font-weight: bold; text-align: right; }
         
-        /* ハンコスイッチ */
+        /* ハンコ切替スイッチのデザイン (統一) */
+        .seal-type-group { background:#eef2f6; padding:8px; border-radius:4px; font-size:12px; margin-bottom:10px; border:1px solid #dbe5f1; }
+        .seal-type-label { margin-right:15px; cursor:pointer; }
         .seal-switch { display: flex; align-items: center; gap: 5px; font-size: 12px; font-weight: normal; cursor: pointer; margin-top: 5px; }
         .seal-switch input { width: auto; margin: 0; cursor: pointer; }
 
@@ -55,18 +59,16 @@
         }
         .issuer-name { font-size: 18px; font-weight: bold; margin-bottom: 5px; }
 
-        /* ▼▼▼ ハンコの位置（ここを修正！） ▼▼▼ */
+        /* ハンコの位置 (シンプル版も下揃えで統一) */
         .seal-container {
             position: absolute;
-            bottom: -5px;  /* 上からの％指定をやめて、底辺基準に固定 */
-            right: -20px;  /* 右に少しはみ出させる */
-            
-            width: 44px;   /* サイズを少し調整 */
+            bottom: -5px;  
+            right: -20px;  
+            width: 44px;   
             height: 44px; 
             z-index: 10; 
-            pointer-events: none; /* クリックを透過させる */
+            pointer-events: none;
         }
-        /* ▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲ */
 
         .seal-img { width: 100%; height: 100%; object-fit: contain; opacity: 0.85; }
         .seal-dummy { width: 100%; height: 100%; border: 1px solid #eee; display: flex; align-items: center; justify-content: center; color: #ddd; font-size: 10px; }
@@ -83,7 +85,6 @@
             
             @page { margin: 0; size: A4 portrait; } 
         }
-        @media (max-width: 900px) { body { flex-direction: column; align-items: center; } .editor-pane { width: 100%; max-width: 500px; } #receipt { width: 100%; font-size: 0.8em; padding: 10mm; } }
     </style>
 </head>
 <body>
@@ -94,6 +95,12 @@
         if (typeof checkAuth === 'function') checkAuth(); else document.body.style.display = "flex";
         window.addEventListener('load', function() {
             if (typeof applyCompanyData === 'function') applyCompanyData();
+            
+            // 会社データがあればデフォルトは「会社印」を選択
+            if (window.companyData) {
+                changeSealType('company');
+            }
+
             document.getElementById('iptDate').valueAsDate = new Date();
             toggleSeal();
             update();
@@ -122,13 +129,19 @@
         <div class="form-group"><label>登録番号</label><input type="text" id="iptRegNo" placeholder="T12345..." oninput="update()"></div>
         <div class="form-group"><label>担当者</label><input type="text" id="iptIssuerRep" placeholder="山田 太郎" oninput="update()"></div>
 
-        <!-- ハンコスイッチ -->
+        <!-- ▼▼▼ ハンコ選択＆ON/OFF（ここを追加） ▼▼▼ -->
+        <div class="form-group seal-type-group">
+            <label style="margin-bottom:5px;">印鑑の種類:</label>
+            <label class="seal-type-label"><input type="radio" name="sealType" value="company" checked onchange="changeSealType('company')"> 会社印(角)</label>
+            <label class="seal-type-label"><input type="radio" name="sealType" value="personal" onchange="changeSealType('personal')"> 個人印(丸)</label>
+        </div>
         <div class="form-group">
             <label class="seal-switch">
                 <input type="checkbox" id="chkSeal" checked onchange="toggleSeal()">
-                電子印鑑を表示する (手押しする場合は外す)
+                電子印鑑を表示する (※印刷時は非表示)
             </label>
         </div>
+        <!-- ▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲ -->
 
         <button class="print-btn" onclick="window.print()">🖨️ 印刷する</button>
     </div>
@@ -171,6 +184,20 @@
     <script>
         function fmt(num) { return num.toLocaleString(); }
         function formatDate(dateStr) { if(!dateStr) return ""; const d = new Date(dateStr); return `${d.getFullYear()}/${d.getMonth()+1}/${d.getDate()}`; }
+
+        // ▼▼▼ ハンコ切り替えロジック (追加) ▼▼▼
+        function changeSealType(type) {
+            const img = document.getElementById('viewSeal');
+            if (!window.companyData) return;
+
+            if (type === 'company') {
+                img.src = window.companyData.sealCompany || "";
+            } else {
+                img.src = window.companyData.sealPersonal || "";
+            }
+            toggleSeal();
+        }
+        // ▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲
 
         function toggleSeal() {
             const isChecked = document.getElementById('chkSeal').checked;
