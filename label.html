@@ -12,7 +12,7 @@
         .editor-pane { width: 380px; background: #fff; padding: 20px; border-radius: 8px; box-shadow: 0 2px 10px rgba(0,0,0,0.1); height: fit-content; max-height: 90vh; overflow-y: auto; }
         .back-btn { display: inline-block; background-color: #6c757d; color: white; padding: 5px 10px; text-decoration: none; border-radius: 4px; font-size: 12px; margin-bottom: 15px; }
         
-        /* 差出人設定エリア (新設) */
+        /* 差出人設定エリア */
         .sender-box { background: #e8f5e9; padding: 10px; border-radius: 6px; border: 1px solid #c8e6c9; margin-bottom: 20px; }
         .sender-title { font-size: 13px; font-weight: bold; color: #2e7d32; margin-bottom: 8px; display: flex; align-items: center; gap: 5px; }
         .sender-row { display: flex; gap: 5px; margin-bottom: 5px; }
@@ -78,7 +78,7 @@
     </style>
 </head>
 <body>
-    <script src="auth.js"></script>
+    <script src="lock.js"></script>
     <script src="settings.js"></script>
     <script>if (typeof checkAuth === 'function') checkAuth(); else document.body.style.display="flex";</script>
 
@@ -86,26 +86,26 @@
         <a href="index.html" class="back-btn">⬅ メニュー</a>
         <h2>宛名ラベル (12面)</h2>
         
-        <!-- ▼ 差出人・返信設定エリア (ここを変更) ▼ -->
+        <!-- ▼ 差出人設定 -->
         <div class="sender-box">
             <div class="sender-title">🏢 差出人・返信設定</div>
             <p style="font-size:10px; margin:0 0 5px 0;">ここで編集してボタンを押すと、全てのラベルに反映されます。</p>
             <div class="input-row">
-                <input type="text" id="sendZip" placeholder="〒" onblur="toHalfWidth(this)" style="width:30%;">
-                <input type="text" id="sendAddr" placeholder="住所">
+                <input type="text" id="sendZip" placeholder="〒" aria-label="差出人郵便番号" onblur="toHalfWidth(this)" style="width:30%;">
+                <input type="text" id="sendAddr" placeholder="住所" aria-label="差出人住所">
             </div>
-            <input type="text" id="sendName" placeholder="氏名 / 会社名">
+            <input type="text" id="sendName" placeholder="氏名 / 会社名" aria-label="差出人氏名">
             <div class="input-row" style="align-items:center;">
-                <label style="font-size:11px;">敬称:</label>
+                <label style="font-size:11px;" for="sendSuffix">敬称:</label>
                 <input type="text" id="sendSuffix" value="宛" style="width:50px; text-align:center;">
                 <button class="mode-btn" onclick="applySenderToAll()" style="margin-top:0; flex:1; background:#2e7d32; color:white; border:none;">全ラベルに反映</button>
             </div>
         </div>
 
-        <!-- CSV取り込み -->
+        <!-- ▼ CSV取り込み -->
         <div class="csv-box">
             <div class="csv-title">📂 CSVファイルから取り込み</div>
-            <input type="file" id="csvFile" accept=".csv" style="font-size:11px; width:100%;">
+            <input type="file" id="csvFile" accept=".csv" aria-label="CSVファイル選択" style="font-size:11px; width:100%;">
             <button class="mode-btn" onclick="loadCSV()" style="color:#1565c0; border-color:#1565c0;">読み込む</button>
             <div class="csv-note">
                 [A:〒] [B:住所] [C:会社名] [D:役職] [E:氏名] [F:件名]
@@ -114,13 +114,17 @@
 
         <button class="mode-btn" onclick="clearAll()" style="margin-bottom:15px;">🗑️ 全てクリア</button>
         
-        <div id="inputs-list"></div>
+        <div id="inputs-list">
+            <!-- JSで12個の入力欄を生成 -->
+        </div>
 
         <button class="print-btn" onclick="window.print()">🖨️ 印刷する</button>
     </div>
 
     <div class="preview-pane">
-        <div id="sheet"></div>
+        <div id="sheet">
+            <!-- JSで12個のセルを生成 -->
+        </div>
     </div>
 
     <script>
@@ -128,26 +132,21 @@
 
         window.onload = function() {
             createInputs();
-            // 初期値としてsettings.jsのデータを差出人欄に入れておく
             if (typeof localStorage !== 'undefined') {
                 const json = localStorage.getItem("my_tool_company_info");
                 if(json) {
                     const data = JSON.parse(json);
-                    // 郵便番号と住所が分かれてないので住所欄にまとめる
                     document.getElementById('sendAddr').value = data.addr || "";
                     document.getElementById('sendName').value = data.name || "";
                 }
             }
         };
 
-        // 半角変換関数
         function toHalfWidth(elm) {
             let val = elm.value;
-            // 全角数字を半角に
             val = val.replace(/[０-９]/g, function(s) {
                 return String.fromCharCode(s.charCodeAt(0) - 0xFEE0);
             });
-            // ハイフンも半角に統一
             val = val.replace(/[ー−]/g, '-');
             elm.value = val;
         }
@@ -165,16 +164,15 @@
                 div.innerHTML = `
                     <span class="form-label-title">ラベル ${i+1}</span>
                     <div class="input-row">
-                        <input type="text" id="zip_${i}" placeholder="〒" onblur="toHalfWidth(this); update(${i})" oninput="update(${i})" style="width:30%;">
-                        <input type="text" id="addr_${i}" placeholder="住所" oninput="update(${i})">
+                        <input type="text" id="zip_${i}" placeholder="〒" aria-label="ラベル${i+1} 郵便番号" onblur="toHalfWidth(this); update(${i})" oninput="update(${i})" style="width:30%;">
+                        <input type="text" id="addr_${i}" placeholder="住所" aria-label="ラベル${i+1} 住所" oninput="update(${i})">
                     </div>
-                    <input type="text" id="comp_${i}" placeholder="会社名" oninput="update(${i})">
+                    <input type="text" id="comp_${i}" placeholder="会社名" aria-label="ラベル${i+1} 会社名" oninput="update(${i})">
                     <div class="input-row">
-                        <input type="text" id="post_${i}" placeholder="役職" oninput="update(${i})" style="width:40%;">
-                        <input type="text" id="name_${i}" placeholder="氏名" oninput="update(${i})">
+                        <input type="text" id="post_${i}" placeholder="役職" aria-label="ラベル${i+1} 役職" oninput="update(${i})" style="width:40%;">
+                        <input type="text" id="name_${i}" placeholder="氏名" aria-label="ラベル${i+1} 氏名" oninput="update(${i})">
                     </div>
-                    <input type="text" id="subj_${i}" placeholder="件名" oninput="update(${i})">
-                    <!-- 敬称の手動上書き用（隠しデータ） -->
+                    <input type="text" id="subj_${i}" placeholder="件名" aria-label="ラベル${i+1} 件名" oninput="update(${i})">
                     <input type="hidden" id="suffix_${i}" value="">
                 `;
                 inputList.appendChild(div);
@@ -207,8 +205,7 @@
             const comp = document.getElementById(`comp_${i}`).value;
             document.getElementById(`v_name_${i}`).innerText = name;
             
-            // 敬称ロジック
-            const forcedSuffix = document.getElementById(`suffix_${i}`).value; // 強制指定（差出人時）
+            const forcedSuffix = document.getElementById(`suffix_${i}`).value;
             const honEl = document.getElementById(`v_hon_${i}`);
             
             if (forcedSuffix) {
@@ -221,7 +218,6 @@
                 honEl.innerText = "";
             }
 
-            // 件名
             const subj = document.getElementById(`subj_${i}`).value;
             const subjEl = document.getElementById(`v_subj_${i}`);
             if(subj) {
@@ -232,10 +228,8 @@
             }
         }
 
-        // ▼ 差出人情報の一括反映
         function applySenderToAll() {
             const zip = document.getElementById('sendZip').value;
-            // 郵便番号の半角化
             const zipHalf = zip.replace(/[０-９]/g, s => String.fromCharCode(s.charCodeAt(0) - 0xFEE0)).replace(/[ー−]/g, '-');
             
             const addr = document.getElementById('sendAddr').value;
@@ -245,20 +239,16 @@
             for(let i=0; i<LABEL_COUNT; i++) {
                 document.getElementById(`zip_${i}`).value = zipHalf;
                 document.getElementById(`addr_${i}`).value = addr;
-                // 会社名か氏名か、どちらかの欄に入れる（ここでは氏名欄に入れます）
                 document.getElementById(`comp_${i}`).value = "";
                 document.getElementById(`post_${i}`).value = "";
                 document.getElementById(`name_${i}`).value = name;
                 document.getElementById(`subj_${i}`).value = "";
                 
-                // 敬称を強制指定
                 document.getElementById(`suffix_${i}`).value = suffix;
-                
                 update(i);
             }
         }
 
-        // CSV読み込み
         function loadCSV() {
             const fileInput = document.getElementById('csvFile');
             const file = fileInput.files[0];
@@ -280,8 +270,6 @@
                     const cols = row.split(',').map(c => c.replace(/^"|"$/g, ''));
                     if(cols.length < 2) continue;
 
-                    // 1:〒, 2:住所, 3:会社名, 4:役職, 5:氏名, 6:件名
-                    // 郵便番号は半角変換をかける
                     let z = cols[0] || "";
                     z = z.replace(/[０-９]/g, s => String.fromCharCode(s.charCodeAt(0) - 0xFEE0)).replace(/[ー−]/g, '-');
 
@@ -291,7 +279,7 @@
                     document.getElementById(`post_${count}`).value = cols[3] || "";
                     document.getElementById(`name_${count}`).value = cols[4] || "";
                     document.getElementById(`subj_${count}`).value = cols[5] || "";
-                    document.getElementById(`suffix_${count}`).value = ""; // CSV読み込み時は自動判定に戻す
+                    document.getElementById(`suffix_${count}`).value = "";
                     
                     update(count);
                     count++;

@@ -4,21 +4,17 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Phone Memo 💖</title>
-    <!-- Google Fonts: 丸ゴシック体 -->
     <link href="https://fonts.googleapis.com/css2?family=M+PLUS+Rounded+1c:wght@400;700&display=swap" rel="stylesheet">
     <style>
         :root {
             --main-pink: #ff9eb5;
             --light-pink: #fff0f5;
-            --accent-blue: #a2d2ff;
             --text-color: #5d4037;
-            --shadow: 3px 3px 0px rgba(255, 182, 193, 0.5);
         }
 
         body {
             font-family: "M PLUS Rounded 1c", sans-serif;
             background-color: #fff0f6;
-            /* かわいいドット柄の背景 */
             background-image: radial-gradient(#ffcdd2 20%, transparent 20%), radial-gradient(#ffcdd2 20%, transparent 20%);
             background-size: 20px 20px;
             background-position: 0 0, 10px 10px;
@@ -37,7 +33,6 @@
             max-width: 950px;
         }
         
-        /* --- エディタエリア --- */
         .editor-pane {
             flex: 1;
             background: rgba(255, 255, 255, 0.95);
@@ -45,10 +40,8 @@
             border-radius: 25px;
             border: 3px solid #fff;
             box-shadow: 0 10px 20px rgba(255, 105, 180, 0.15);
-            position: relative;
         }
 
-        /* 戻るボタン */
         .back-btn {
             display: inline-block;
             background-color: #b2ebf2;
@@ -69,20 +62,23 @@
             margin-top: 0;
             font-size: 22px;
             text-align: center;
-            text-shadow: 1px 1px 0 #fff;
             border-bottom: 2px dashed #ff9eb5;
             padding-bottom: 10px;
         }
 
         .form-group { margin-bottom: 18px; }
-        .form-group label {
-            display: block;
+        
+        /* ★修正: 直下の子要素(>)だけに限定することで、チェックボックスへの影響を防ぐ */
+        .form-group > label {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
             font-size: 13px;
             font-weight: bold;
             margin-bottom: 6px;
             color: #ff6b81;
         }
-        .form-group label::before { content: "♥ "; color: #ff9eb5; }
+        .form-group > label span::before { content: "♥ "; color: #ff9eb5; }
 
         input, textarea {
             width: 100%;
@@ -102,130 +98,100 @@
             box-shadow: 0 0 0 3px rgba(255, 158, 181, 0.2);
         }
 
-        /* --- チェックボックスのかわいいデザイン --- */
-        .check-group { display: flex; flex-direction: column; gap: 12px; }
+        /* --- メンバーリスト（チップ）の改良 --- */
+        .member-list { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 5px; margin-bottom: 5px; }
         
-        .check-item {
-            border: 2px solid #ffe0e9;
-            border-radius: 18px;
-            padding: 12px;
-            background: #fff;
-            transition: 0.2s;
+        .member-chip {
+            background-color: #fff0f5;
+            border: 1px solid #ff9eb5;
+            color: #ff6b81;
+            padding: 4px 8px 4px 12px; /* 右側（×ボタン）の余白調整 */
+            border-radius: 20px;
+            font-size: 12px;
+            font-weight: bold;
             cursor: pointer;
-        }
-        
-        /* 選択された時 */
-        .check-item:has(input:checked) {
-            background: #fff0f5;
-            border-color: #ff9eb5;
-            transform: scale(1.02);
-            box-shadow: 0 4px 10px rgba(255, 182, 193, 0.2);
-        }
-        
-        .check-label {
+            transition: 0.2s;
+            user-select: none;
             display: flex;
             align-items: center;
-            gap: 10px;
-            font-size: 14px;
-            font-weight: bold;
-            color: var(--text-color);
-            cursor: pointer;
+            gap: 8px;
+        }
+        .member-chip:hover {
+            background-color: #ffe0e9;
+            transform: translateY(-2px);
         }
         
-        /* チェックボックス自体のカスタム（アクセントカラー） */
-        input[type="checkbox"] {
-            accent-color: #ff6b81;
+        /* 削除ボタン(×)のデザイン */
+        .chip-delete {
             width: 18px;
             height: 18px;
-            cursor: pointer;
+            background: rgba(255, 255, 255, 0.5);
+            border-radius: 50%;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            color: #ff6b81;
+            font-size: 10px;
+            line-height: 1;
+        }
+        .chip-delete:hover {
+            background: #ff6b81;
+            color: white;
         }
 
-        /* 追加入力エリア（吹き出し風） */
-        .sub-input {
-            margin-top: 10px;
-            margin-left: 28px;
-            display: none;
-            position: relative;
+        /* 設定エリア */
+        .member-settings {
+            background: #fdf2f4; padding: 10px; border-radius: 10px; margin-top: 5px;
+            border: 1px dashed #ff9eb5; display: none;
         }
-        .check-item:has(input:checked) .sub-input { display: block; animation: popIn 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275); }
+        .add-row { display: flex; gap: 5px; }
+        .add-row input { padding: 8px; font-size: 12px; border-radius: 8px; }
+        .small-btn {
+            padding: 8px 12px; background: #ff9eb5; color: white; border: none;
+            border-radius: 8px; font-weight: bold; cursor: pointer; font-size: 12px; white-space: nowrap;
+        }
+        .edit-toggle { font-size: 11px; cursor: pointer; color: #aaa; text-decoration: underline; }
+        .edit-toggle:hover { color: #ff6b81; }
+
+        /* チェックボックス */
+        .check-group { display: flex; flex-direction: column; gap: 12px; }
+        .check-item { border: 2px solid #ffe0e9; border-radius: 18px; padding: 12px; background: #fff; transition: 0.2s; cursor: pointer; }
+        .check-item:has(input:checked) { background: #fff0f5; border-color: #ff9eb5; transform: scale(1.02); box-shadow: 0 4px 10px rgba(255, 182, 193, 0.2); }
         
+        /* ★修正: 左寄せを強制 */
+        .check-label { 
+            display: flex; 
+            align-items: center; 
+            gap: 10px; 
+            font-size: 14px; 
+            font-weight: bold; 
+            color: var(--text-color); 
+            cursor: pointer;
+            justify-content: flex-start !important; /* 絶対に左寄せ */
+        }
+        
+        input[type="checkbox"] { accent-color: #ff6b81; width: 18px; height: 18px; cursor: pointer; }
+
+        .sub-input { margin-top: 10px; margin-left: 28px; display: none; animation: popIn 0.3s; }
+        .check-item:has(input:checked) .sub-input { display: block; }
         @keyframes popIn { from { opacity: 0; transform: translateY(-5px); } to { opacity: 1; transform: translateY(0); } }
 
-        /* --- 右側：プレビューエリア --- */
+        #saveMsg { font-size: 11px; color: #4caf50; margin-top: 5px; text-align: right; display: none; font-weight: bold; }
+
         .preview-pane { width: 380px; display: flex; flex-direction: column; gap: 15px; }
-        
-        .result-container {
-            background: #fff;
-            padding: 10px;
-            border-radius: 20px;
-            /* マスキングテープ風の装飾 */
-            border-top: 8px solid rgba(255, 182, 193, 0.5);
-            box-shadow: 0 5px 15px rgba(0,0,0,0.05);
-        }
-
-        .result-box {
-            background: #fffcf0; /* クリーム色 */
-            color: #5d4037;
-            padding: 20px;
-            border-radius: 10px;
-            font-family: "M PLUS Rounded 1c", monospace;
-            line-height: 1.7;
-            white-space: pre-wrap;
-            font-size: 13px;
-            min-height: 300px;
-            border: 2px dashed #e0e0e0; /* ステッチ風 */
-        }
-        
-        /* コピーボタン（キラキラ） */
-        .copy-btn {
-            width: 100%;
-            padding: 15px;
-            background: linear-gradient(45deg, #ff9eb5, #ff6b81);
-            color: white;
-            border: none;
-            border-radius: 50px;
-            font-size: 16px;
-            font-weight: bold;
-            font-family: inherit;
-            cursor: pointer;
-            box-shadow: 0 4px 10px rgba(255, 107, 129, 0.4);
-            transition: transform 0.2s, box-shadow 0.2s;
-            position: relative;
-            overflow: hidden;
-        }
-        .copy-btn:hover {
-            transform: translateY(-3px);
-            box-shadow: 0 6px 15px rgba(255, 107, 129, 0.6);
-        }
-        .copy-btn::after {
-            content: "✨";
-            position: absolute;
-            right: 20px;
-            top: 50%;
-            transform: translateY(-50%);
-        }
-        
-        .reset-btn {
-            background: #fff;
-            border: 2px solid #eee;
-            color: #aaa;
-            padding: 5px 15px;
-            border-radius: 20px;
-            cursor: pointer;
-            font-size: 12px;
-            float: right;
-            font-weight: bold;
-        }
-        .reset-btn:hover { border-color: #ff9eb5; color: #ff6b81; }
-
+        .result-container { background: #fff; padding: 10px; border-radius: 20px; border-top: 8px solid rgba(255, 182, 193, 0.5); box-shadow: 0 5px 15px rgba(0,0,0,0.05); }
+        .result-box { background: #fffcf0; color: #5d4037; padding: 20px; border-radius: 10px; font-family: "M PLUS Rounded 1c", monospace; line-height: 1.7; white-space: pre-wrap; font-size: 13px; min-height: 300px; border: 2px dashed #e0e0e0; }
+        .copy-btn { width: 100%; padding: 15px; background: linear-gradient(45deg, #ff9eb5, #ff6b81); color: white; border: none; border-radius: 50px; font-size: 16px; font-weight: bold; font-family: inherit; cursor: pointer; box-shadow: 0 4px 10px rgba(255, 107, 129, 0.4); transition: transform 0.2s; position: relative; overflow: hidden; }
+        .copy-btn:hover { transform: translateY(-3px); box-shadow: 0 6px 15px rgba(255, 107, 129, 0.6); }
+        .copy-btn::after { content: "✨"; position: absolute; right: 20px; top: 50%; transform: translateY(-50%); }
+        .reset-btn { background: #fff; border: 2px solid #eee; color: #aaa; padding: 5px 15px; border-radius: 20px; cursor: pointer; font-size: 12px; float: right; font-weight: bold; }
         .helper-text { font-size: 11px; text-align: center; color: #ff6b81; font-weight: bold; }
 
-        /* スマホ対応 */
         @media (max-width: 700px) { .container { flex-direction: column; } .preview-pane { width: 100%; } }
     </style>
 </head>
 <body>
-    <script src="auth.js"></script>
+    <script src="lock.js"></script>
     <script>if (typeof checkAuth === 'function') checkAuth(); else document.body.style.display="flex";</script>
 
     <div class="container">
@@ -235,60 +201,68 @@
             <h2>💖 Phone Memo 💖</h2>
 
             <div class="form-group">
-                <label>お相手 (会社名・氏名)</label>
+                <label><span>お相手 (会社名・氏名)</span></label>
                 <input type="text" id="iptFrom" placeholder="例：〇〇商事 田中様" oninput="update()">
             </div>
 
+            <!-- 宛先 (To) -->
             <div class="form-group">
-                <label>社内の誰宛？</label>
-                <input type="text" id="iptTo" placeholder="例：佐藤さん" oninput="update()">
+                <label>
+                    <span>社内の誰宛？</span>
+                    <!-- ⚙️は設定エリアの開閉のみに使用 -->
+                    <span class="edit-toggle" onclick="toggleSettingsBox('to')">⚙️追加</span>
+                </label>
+                
+                <div id="settingsTo" class="member-settings">
+                    <div class="add-row">
+                        <input type="text" id="newMemberTo" placeholder="例：佐藤さん">
+                        <button class="small-btn" onclick="addMember('to')">追加する</button>
+                    </div>
+                </div>
+
+                <div id="memberListTo" class="member-list"></div>
+                <input type="text" id="iptTo" placeholder="入力または上のボタンを選択" oninput="update()">
             </div>
 
             <div class="form-group">
-                <label>どうする？ (複数えらべるよ)</label>
+                <label><span>どうする？ (複数えらべるよ)</span></label>
                 <div class="check-group">
-                    
-                    <!-- 1. 折り返し -->
                     <div class="check-item">
-                        <label class="check-label">
-                            <input type="checkbox" id="chkCallback" onchange="update()">
-                            📞 折り返し電話してほしい
-                        </label>
-                        <div class="sub-input">
-                            <input type="text" id="iptTel" placeholder="相手の番号: 03-0000-0000" oninput="update()">
-                        </div>
+                        <label class="check-label"><input type="checkbox" id="chkCallback" onchange="update()"> 📞 折り返し電話してほしい</label>
+                        <div class="sub-input"><input type="text" id="iptTel" placeholder="相手の番号: 03-0000-0000" oninput="update()"></div>
                     </div>
-
-                    <!-- 2. また電話する -->
                     <div class="check-item">
-                        <label class="check-label">
-                            <input type="checkbox" id="chkAgain" onchange="update()">
-                            🔁 また掛け直すそうです
-                        </label>
-                        <div class="sub-input">
-                            <input type="text" id="iptTime" placeholder="いつ頃？ (例: 本日15時頃)" oninput="update()">
-                        </div>
+                        <label class="check-label"><input type="checkbox" id="chkAgain" onchange="update()"> 🔁 また掛け直すそうです</label>
+                        <div class="sub-input"><input type="text" id="iptTime" placeholder="いつ頃？ (例: 本日15時頃)" oninput="update()"></div>
                     </div>
-
-                    <!-- 3. 電話あったことだけ伝える -->
                     <div class="check-item">
-                        <label class="check-label">
-                            <input type="checkbox" id="chkReceived" onchange="update()">
-                            📱 電話があったことだけ報告
-                        </label>
+                        <label class="check-label"><input type="checkbox" id="chkReceived" onchange="update()"> 📱 電話があったことだけ報告</label>
                     </div>
-
                 </div>
             </div>
 
             <div class="form-group">
-                <label>伝言メモ (くわしく)</label>
+                <label><span>伝言メモ (くわしく)</span></label>
                 <textarea id="iptMsg" rows="4" placeholder="例：見積書の件について確認したいそうです。" oninput="update()"></textarea>
             </div>
             
+            <!-- 受電者 (Me) -->
             <div class="form-group">
-                <label>電話とった人 (自分)</label>
-                <input type="text" id="iptMe" placeholder="自分の名前" oninput="update()">
+                <label>
+                    <span>電話とった人 (自分)</span>
+                    <span class="edit-toggle" onclick="toggleSettingsBox('me')">⚙️追加</span>
+                </label>
+                
+                <div id="settingsMe" class="member-settings">
+                    <div class="add-row">
+                        <input type="text" id="newMemberMe" placeholder="例：自分(田中)">
+                        <button class="small-btn" onclick="addMember('me')">追加する</button>
+                    </div>
+                </div>
+
+                <div id="memberListMe" class="member-list"></div>
+                <input type="text" id="iptMe" placeholder="自分の名前" oninput="update(); saveName();">
+                <div id="saveMsg">✅ 次回からこの名前になります</div>
             </div>
         </div>
 
@@ -302,36 +276,128 @@
     </div>
 
     <script>
+        const KEY_PHONE_ME = "my_tool_phone_receiver";
+        const KEY_COMPANY = "my_tool_company_info";
+        const KEY_MEMBERS_TO = "my_tool_phone_members_to";
+        const KEY_MEMBERS_ME = "my_tool_phone_members_me";
+
+        window.onload = function() {
+            let initialName = localStorage.getItem(KEY_PHONE_ME);
+            if (!initialName) {
+                const savedCompany = localStorage.getItem(KEY_COMPANY);
+                if (savedCompany) {
+                    try {
+                        const data = JSON.parse(savedCompany);
+                        if (data.rep) initialName = data.rep;
+                    } catch(e) {}
+                }
+            }
+            if(initialName) document.getElementById('iptMe').value = initialName;
+            
+            renderMembers('to');
+            renderMembers('me');
+            update();
+        };
+
+        function getMembers(type) {
+            const key = (type === 'to') ? KEY_MEMBERS_TO : KEY_MEMBERS_ME;
+            const json = localStorage.getItem(key);
+            return json ? JSON.parse(json) : [];
+        }
+
+        // ★修正: チップと削除ボタンを分離
+        function renderMembers(type) {
+            const list = getMembers(type);
+            const container = document.getElementById(type === 'to' ? 'memberListTo' : 'memberListMe');
+            container.innerHTML = "";
+
+            list.forEach((name, index) => {
+                const chip = document.createElement("div");
+                chip.className = "member-chip";
+                
+                // 名前部分
+                const nameSpan = document.createElement("span");
+                nameSpan.innerText = name;
+                nameSpan.style.flex = "1";
+                nameSpan.onclick = () => {
+                    const targetId = (type === 'to') ? 'iptTo' : 'iptMe';
+                    document.getElementById(targetId).value = name;
+                    if(type === 'me') saveName();
+                    update();
+                };
+
+                // 削除ボタン部分 (×)
+                const deleteBtn = document.createElement("span");
+                deleteBtn.className = "chip-delete";
+                deleteBtn.innerText = "×";
+                deleteBtn.onclick = (e) => {
+                    e.stopPropagation(); // 親のクリックイベントを止める
+                    removeMember(type, index);
+                };
+
+                chip.appendChild(nameSpan);
+                chip.appendChild(deleteBtn);
+                container.appendChild(chip);
+            });
+        }
+
+        function toggleSettingsBox(type) {
+            const box = document.getElementById(type === 'to' ? 'settingsTo' : 'settingsMe');
+            box.style.display = (box.style.display === "block") ? "none" : "block";
+        }
+
+        function addMember(type) {
+            const inputId = (type === 'to') ? 'newMemberTo' : 'newMemberMe';
+            const input = document.getElementById(inputId);
+            const name = input.value.trim();
+            if(!name) return;
+
+            const list = getMembers(type);
+            list.push(name);
+            localStorage.setItem((type === 'to') ? KEY_MEMBERS_TO : KEY_MEMBERS_ME, JSON.stringify(list));
+            
+            input.value = "";
+            renderMembers(type);
+        }
+
+        function removeMember(type, index) {
+            if(!confirm("削除していい？")) return;
+            const list = getMembers(type);
+            list.splice(index, 1);
+            localStorage.setItem((type === 'to') ? KEY_MEMBERS_TO : KEY_MEMBERS_ME, JSON.stringify(list));
+            renderMembers(type);
+        }
+
+        function saveName() {
+            const me = document.getElementById('iptMe').value;
+            localStorage.setItem(KEY_PHONE_ME, me);
+            const msg = document.getElementById('saveMsg');
+            msg.style.display = "block";
+            setTimeout(() => { msg.style.display = "none"; }, 3000);
+        }
+
         function update() {
             const date = new Date();
             const timeStr = `${date.getHours()}:${String(date.getMinutes()).padStart(2, '0')}`;
-            
             const to = document.getElementById('iptTo').value || "〇〇さん";
             const from = document.getElementById('iptFrom').value || "お客様";
             const me = document.getElementById('iptMe').value;
             const msg = document.getElementById('iptMsg').value;
 
-            // --- ビジネス文書生成ロジック (中身は真面目) ---
             let text = `【電話メモ】 ${timeStr} 受電\n`;
             text += `${to} 殿\n`;
             text += `--------------------------------\n`;
             text += `先ほど、\n`;
-            text += `【 ${from} 】よりお電話がありました。\n`;
-            text += `\n`;
+            text += `【 ${from} 】よりお電話がありました。\n\n`;
 
             let actions = [];
-            
-            if (document.getElementById('chkReceived').checked) {
-                actions.push("・お電話があった旨、お伝えします。");
-            }
-
+            if (document.getElementById('chkReceived').checked) actions.push("・お電話があった旨、お伝えします。");
             if (document.getElementById('chkCallback').checked) {
                 const tel = document.getElementById('iptTel').value;
                 let line = "・折り返しお電話をいただきたいとのことです。";
                 if(tel) line += `\n  (連絡先: ${tel})`;
                 actions.push(line);
             }
-
             if (document.getElementById('chkAgain').checked) {
                 const time = document.getElementById('iptTime').value;
                 let line = "・また改めますとのことです。";
@@ -345,9 +411,7 @@
             }
 
             if (msg.trim() !== "") {
-                text += `【伝言・詳細】\n`;
-                text += `${msg}\n`;
-                text += `\n`;
+                text += `【伝言・詳細】\n${msg}\n\n`;
             } else if (actions.length === 0) {
                 text += `(用件の入力をお待ちしています)\n\n`;
             }
@@ -373,12 +437,12 @@
         }
 
         function resetForm() {
+            const me = document.getElementById('iptMe').value;
             document.querySelectorAll('input[type="text"], textarea').forEach(e => e.value = "");
             document.querySelectorAll('input[type="checkbox"]').forEach(e => e.checked = false);
+            document.getElementById('iptMe').value = me;
             update();
         }
-
-        update();
     </script>
 </body>
 </html>

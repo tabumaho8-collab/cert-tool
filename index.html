@@ -4,136 +4,140 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>社内ツール ポータル</title>
+    <link href="https://fonts.googleapis.com/css2?family=M+PLUS+Rounded+1c:wght@400;700&family=Noto+Sans+JP:wght@400;700&display=swap" rel="stylesheet">
+    
     <style>
-        /* --- リセット & 基本設定 --- */
+        /* CSS変数はそのまま維持 */
+        :root {
+            /* Stylish (Default) */
+            --bg-color: #f4f7f6;
+            --bg-image: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
+            --font-family: "Helvetica Neue", "Noto Sans JP", Arial, sans-serif;
+            --text-color: #2d3436;
+            --text-sub: #636e72;
+            --accent-color: #6c5ce7;
+            --accent-hover: #5649c0;
+            --sidebar-bg: rgba(255, 255, 255, 0.7);
+            --card-bg: rgba(255, 255, 255, 0.8);
+            --border-radius: 12px;
+            --border-style: 1px solid rgba(255,255,255,0.6);
+            --shadow: 0 8px 32px 0 rgba(31, 38, 135, 0.1);
+            --backdrop-filter: blur(8px);
+            --header-bg: #2d3436;
+            --header-text: #ffffff;
+            --card-border-left: 4px solid var(--accent-color);
+            --btn-radius: 6px;
+            --section-line: 1px solid #b2bec3;
+            --header-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+
+        /* Kawaii */
+        body.theme-kawaii {
+            --bg-color: #fff0f5;
+            --bg-image: radial-gradient(#ffcdd2 20%, transparent 20%), radial-gradient(#ffcdd2 20%, transparent 20%); 
+            --font-family: "M PLUS Rounded 1c", sans-serif;
+            --text-color: #5d4037;
+            --text-sub: #8d6e63;
+            --accent-color: #ff9eb5;
+            --accent-hover: #ff7eb3;
+            --sidebar-bg: #ffffff;
+            --card-bg: #fffcf0;
+            --border-radius: 25px;
+            --border-style: 3px solid #fff;
+            --shadow: 3px 3px 0px rgba(255, 182, 193, 0.5);
+            --backdrop-filter: none;
+            --header-bg: #ff9eb5;
+            --header-text: #ffffff;
+            --card-border-left: none;
+            --btn-radius: 30px;
+            --section-line: 2px dashed #ff9eb5;
+            --header-shadow: 0 2px 5px rgba(255, 182, 193, 0.5);
+        }
+
+        /* Cyber Glass (Dark) */
+        body.theme-dark {
+            --bg-color: #050508;
+            --bg-image: linear-gradient(rgba(0, 229, 255, 0.05) 1px, transparent 1px), linear-gradient(90deg, rgba(0, 229, 255, 0.05) 1px, transparent 1px);
+            --font-family: "Helvetica Neue", "Noto Sans JP", Arial, sans-serif;
+            --text-color: #e0f7fa;
+            --text-sub: #80deea;
+            --accent-color: #00e5ff;
+            --accent-hover: #00b8d4;
+            --sidebar-bg: rgba(15, 23, 42, 0.7);
+            --card-bg: rgba(20, 30, 50, 0.6);
+            --border-radius: 6px;
+            --border-style: 1px solid rgba(0, 229, 255, 0.2);
+            --shadow: 0 4px 30px rgba(0, 0, 0, 0.5), inset 0 0 20px rgba(0, 229, 255, 0.05);
+            --backdrop-filter: blur(10px);
+            --header-bg: rgba(5, 10, 20, 0.9);
+            --header-text: var(--accent-color);
+            --card-border-left: 1px solid var(--accent-color);
+            --btn-radius: 4px;
+            --section-line: 1px solid rgba(0, 229, 255, 0.2);
+            --header-shadow: 0 1px 0px rgba(0, 229, 255, 0.3);
+        }
+
         body {
-            font-family: "Helvetica Neue", Arial, sans-serif;
-            background-color: #f0f2f5;
-            margin: 0;
-            padding: 0;
-            display: none; /* ★重要: 初期状態は非表示(ロック) */
-            color: #333;
+            font-family: var(--font-family);
+            background-color: var(--bg-color);
+            background-image: var(--bg-image);
+            background-size: cover;
+            margin: 0; padding: 0;
+            display: none; /* 初期非表示 */
+            color: var(--text-color);
             display: flex !important; 
             flex-direction: column !important;
             min-height: 100vh;
+            transition: background 0.3s, color 0.3s;
         }
+        body.theme-kawaii { background-size: 20px 20px; background-position: 0 0, 10px 10px; }
+        body.theme-dark { background-size: 40px 40px; }
 
-        /* --- ヘッダー --- */
         header {
-            background-color: #333;
-            color: white;
-            width: 100%;
-            padding: 10px 20px;
-            box-sizing: border-box;
-            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-            position: sticky;
-            top: 0;
-            z-index: 100;
-            flex-shrink: 0;
+            background-color: var(--header-bg); color: var(--header-text); width: 100%; padding: 12px 25px; box-sizing: border-box; box-shadow: var(--header-shadow); border-bottom: var(--border-style); display: flex; align-items: center; justify-content: space-between; position: sticky; top: 0; z-index: 100; flex-shrink: 0; transition: 0.3s; backdrop-filter: blur(5px);
         }
-        h1 { margin: 0; font-size: 18px; font-weight: bold; }
+        body.theme-dark h1 { text-shadow: 0 0 10px rgba(0, 229, 255, 0.7); }
+        h1 { margin: 0; font-size: 18px; font-weight: bold; letter-spacing: 1px; }
 
-        /* ログアウトボタン */
-        .logout-btn {
-            background: #555;
-            color: #fff;
-            border: 1px solid #777;
-            padding: 5px 12px;
-            border-radius: 4px;
-            font-size: 12px;
-            cursor: pointer;
-        }
-        .logout-btn:hover { background: #777; }
+        .header-btns { display: flex; gap: 10px; }
+        .theme-btn { background: rgba(255,255,255,0.1); color: inherit; border: 1px solid rgba(255,255,255,0.3); padding: 6px 15px; border-radius: 20px; font-size: 12px; cursor: pointer; transition: 0.2s; font-weight: bold; }
+        body.theme-dark .theme-btn { border-color: var(--accent-color); color: var(--accent-color); border-radius: 4px; box-shadow: 0 0 5px rgba(0, 229, 255, 0.4); }
+        .theme-btn:hover { background: rgba(255,255,255,0.2); transform: scale(1.05); }
+        .logout-btn { background: rgba(128,128,128,0.3); color: inherit; border: none; padding: 6px 12px; border-radius: 4px; font-size: 11px; cursor: pointer; }
+        .logout-btn:hover { background: rgba(128,128,128,0.5); }
 
-        /* --- メインレイアウト --- */
-        .dashboard-container {
-            display: flex;
-            max-width: 1400px;
-            margin: 0 auto;
-            padding: 20px;
-            gap: 20px;
-            align-items: flex-start;
-            box-sizing: border-box;
-            width: 100%;
-            flex-grow: 1;
-        }
+        .dashboard-container { display: flex; max-width: 1400px; margin: 0 auto; padding: 25px; gap: 25px; align-items: flex-start; box-sizing: border-box; width: 100%; flex-grow: 1; }
 
-        /* --- 左サイドバー --- */
-        .sidebar {
-            width: 300px; /* 少しスリムに */
-            background: white;
-            padding: 20px;
-            border-radius: 8px;
-            box-shadow: 0 2px 5px rgba(0,0,0,0.05);
-            border-top: 4px solid #2c517c;
-            flex-shrink: 0;
-            position: sticky;
-            top: 70px; /* ヘッダー分 */
-            max-height: 90vh;
-            overflow-y: auto;
-        }
-        .sidebar h3 { margin-top: 0; font-size: 16px; color: #2c517c; border-bottom: 1px solid #eee; padding-bottom: 10px; margin-bottom: 15px; }
-        .sidebar label { display: block; font-size: 12px; font-weight: bold; margin-bottom: 4px; color: #555; }
-        .sidebar input, .sidebar textarea { width: 100%; padding: 8px; box-sizing: border-box; border: 1px solid #ccc; border-radius: 4px; font-size: 13px; margin-bottom: 10px; }
+        .sidebar { width: 300px; background: var(--sidebar-bg); backdrop-filter: var(--backdrop-filter); padding: 25px; border-radius: var(--border-radius); box-shadow: var(--shadow); border: var(--border-style); flex-shrink: 0; position: sticky; top: 80px; max-height: 85vh; overflow-y: auto; transition: 0.3s; }
+        .sidebar h3 { margin-top: 0; font-size: 15px; color: var(--accent-color); border-bottom: var(--section-line); padding-bottom: 10px; margin-bottom: 20px; text-shadow: var(--text-shadow); }
+        body.theme-dark .sidebar h3 { text-shadow: 0 0 8px var(--accent-color); }
+        .sidebar label { display: block; font-size: 12px; font-weight: bold; margin-bottom: 5px; color: var(--text-color); opacity: 0.9; }
+        .sidebar input, .sidebar textarea { width: 100%; padding: 10px; box-sizing: border-box; border: 1px solid #ddd; border-radius: var(--btn-radius); font-size: 13px; margin-bottom: 15px; background: rgba(255,255,255,0.9); color: #333; font-family: inherit; }
+        body.theme-dark .sidebar input, body.theme-dark .sidebar textarea { background: rgba(0, 0, 0, 0.5); color: #fff; border: 1px solid var(--accent-color); box-shadow: inset 0 0 5px rgba(0, 229, 255, 0.2); }
         
-        .save-btn {
-            background-color: #2c517c; color: white; border: none; 
-            padding: 12px; width: 100%; border-radius: 4px; 
-            font-weight: bold; cursor: pointer; margin-top: 10px;
-            transition: background 0.2s;
-            font-size: 14px;
-        }
-        .save-btn:hover { background-color: #1a3655; }
+        .save-btn { background-color: var(--accent-color); color: white; border: none; padding: 12px; width: 100%; border-radius: var(--btn-radius); font-weight: bold; cursor: pointer; margin-top: 10px; transition: 0.2s; font-size: 14px; box-shadow: 0 4px 6px rgba(0,0,0,0.1); }
+        body.theme-dark .save-btn { background-color: rgba(0, 229, 255, 0.1); color: var(--accent-color); border: 1px solid var(--accent-color); box-shadow: 0 0 10px rgba(0, 229, 255, 0.2); }
+        .save-btn:hover { background-color: var(--accent-hover); transform: translateY(-2px); }
+        body.theme-dark .save-btn:hover { background-color: var(--accent-color); color: #000; box-shadow: 0 0 20px var(--accent-color); }
 
-        .seal-area { background: #f9f9f9; padding: 10px; border-radius: 4px; border: 1px dashed #ccc; text-align: center; margin-bottom: 15px; }
-        .seal-preview { width: 60px; height: 60px; object-fit: contain; margin: 5px auto; display: none; border: 1px solid #ddd; background: white; }
+        .seal-area { background: rgba(255,255,255,0.5); padding: 10px; border-radius: 8px; border: 1px dashed #aaa; text-align: center; margin-bottom: 15px; }
+        body.theme-dark .seal-area { background: rgba(0,0,0,0.3); border-color: var(--accent-color); border-style: dashed; }
+        .seal-preview { width: 60px; height: 60px; object-fit: contain; margin: 5px auto; display: none; background: white; border: 1px solid #eee; }
 
-        /* --- 右メイン (ツール一覧) --- */
-        .main-content {
-            flex-grow: 1;
-            display: grid;
-            /* ★変更点: 最小幅を200pxにして4列入りやすくしました */
-            grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
-            gap: 15px; /* 隙間を少し詰める */
-            width: 100%;
-        }
+        .main-content { flex-grow: 1; display: grid; grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); gap: 20px; width: 100%; }
+        .card { background: var(--card-bg); backdrop-filter: var(--backdrop-filter); padding: 20px; border-radius: var(--border-radius); text-align: center; text-decoration: none; color: var(--text-color); box-shadow: var(--shadow); border: var(--border-style); border-left: var(--card-border-left); transition: all 0.3s ease; display: flex; flex-direction: column; align-items: center; justify-content: center; height: 100%; box-sizing: border-box; position: relative; overflow: hidden; }
+        .card:hover { transform: translateY(-5px); box-shadow: 0 12px 20px rgba(0,0,0,0.2); }
+        body.theme-dark .card:hover { border-color: var(--accent-color); box-shadow: 0 0 20px rgba(0, 229, 255, 0.4), inset 0 0 10px rgba(0, 229, 255, 0.1); background-color: rgba(20, 30, 50, 0.8); }
+        body.theme-kawaii .card:hover { transform: scale(1.05) rotate(1deg); }
 
-        .card {
-            background: white;
-            padding: 15px; /* 余白を減らしてコンパクトに */
-            border-radius: 8px;
-            text-align: center;
-            text-decoration: none;
-            color: #333;
-            box-shadow: 0 2px 4px rgba(0,0,0,0.05);
-            transition: transform 0.2s, box-shadow 0.2s;
-            border: 1px solid #e0e0e0;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            justify-content: center;
-            height: 100%;
-            box-sizing: border-box;
-        }
-        .card:hover {
-            transform: translateY(-3px);
-            box-shadow: 0 5px 15px rgba(0,0,0,0.1);
-            border-color: #007bff;
-        }
-        /* アイコンと文字サイズも少し調整 */
-        .card-icon { font-size: 28px; margin-bottom: 8px; display: block; }
-        .card-title { font-size: 14px; font-weight: bold; display: block; margin-bottom: 4px; }
-        .card-desc { font-size: 11px; color: #666; line-height: 1.3; }
+        .card-icon { font-size: 32px; margin-bottom: 12px; display: block; transition: 0.3s; }
+        body.theme-dark .card-icon { text-shadow: 0 0 10px rgba(255,255,255,0.3); }
+        .card:hover .card-icon { transform: scale(1.1); }
+        .card-title { font-size: 15px; font-weight: bold; display: block; margin-bottom: 6px; }
+        .card-desc { font-size: 11px; color: var(--text-sub); line-height: 1.4; }
 
-        .section-title {
-            grid-column: 1 / -1;
-            font-size: 13px; font-weight: bold; color: #777; 
-            margin-top: 15px; margin-bottom: 5px; padding-left: 5px;
-            border-left: 4px solid #ccc; line-height: 1;
-        }
+        .section-title { grid-column: 1 / -1; font-size: 14px; font-weight: bold; color: var(--text-sub); margin-top: 20px; margin-bottom: 5px; padding-left: 10px; border-left: var(--section-line); line-height: 1; }
+        body.theme-dark .section-title { color: var(--accent-color); border-left: 4px solid var(--accent-color); text-shadow: 0 0 5px var(--accent-color); }
         .section-title:first-child { margin-top: 0; }
 
         @media (max-width: 900px) {
@@ -145,216 +149,147 @@
 </head>
 <body>
 
-    <!-- ヘッダー -->
     <header>
-        <h1>社内書類作成ツール <span style="font-size:11px; font-weight:normal;">v5.5</span></h1>
-        <!-- ログアウトボタン -->
-        <button onclick="logout()" class="logout-btn">ログアウト</button>
+        <h1>社内ツール <span style="font-size:11px; opacity:0.7; font-weight:normal;">Portal</span></h1>
+        <div class="header-btns">
+            <button onclick="toggleTheme()" id="themeBtn" class="theme-btn">🎨 テーマ変更</button>
+            <button onclick="logout()" class="logout-btn">ログアウト</button>
+        </div>
     </header>
 
-    <!-- ダッシュボードエリア -->
     <div class="dashboard-container">
-        
-        <!-- ▼ 左サイドバー：設定エリア ▼ -->
         <aside class="sidebar">
             <h3>⚙️ 会社・基本情報</h3>
-            
-            <label>会社名</label>
-            <input type="text" id="setIssuerName" placeholder="株式会社〇〇">
-            
-            <label>住所・TEL</label>
-            <textarea id="setIssuerAddr" rows="3" placeholder="〒000-0000..."></textarea>
-            
-            <label>代表者/担当者</label>
-            <input type="text" id="setIssuerRep" placeholder="代表取締役...">
-            
-            <label>登録番号(T)</label>
-            <input type="text" id="setRegNo" placeholder="T1234567890123">
-
+            <label>会社名</label><input type="text" id="setIssuerName" placeholder="株式会社〇〇">
+            <label>住所・TEL</label><textarea id="setIssuerAddr" rows="3" placeholder="〒000-0000..."></textarea>
+            <label>代表者/担当者</label><input type="text" id="setIssuerRep" placeholder="代表取締役...">
+            <label>登録番号(T)</label><input type="text" id="setRegNo" placeholder="T1234567890123">
             <label style="margin-top:10px;">🔲 会社印 (角印)</label>
             <div class="seal-area">
                 <input type="file" id="fileSealCompany" accept="image/*" style="font-size:11px;" onchange="previewSeal(this, 'prevCompany')">
                 <img id="prevCompany" class="seal-preview">
             </div>
-
             <label style="margin-top:10px;">🔴 個人印 (認印)</label>
             <div class="seal-area">
                 <input type="file" id="fileSealPersonal" accept="image/*" style="font-size:11px;" onchange="previewSeal(this, 'prevPersonal')">
                 <img id="prevPersonal" class="seal-preview" style="width:50px; height:50px; border-radius:50%;">
             </div>
-
             <button onclick="handleSave()" class="save-btn">設定を保存する</button>
-            <p style="font-size:10px; color:#666; margin-top:10px; text-align:center;">
-                ※ここで保存すると全ツールに反映されます
-            </p>
         </aside>
 
-        <!-- ▼ 右メイン：ツール一覧 ▼ -->
         <main class="main-content">
-            
             <div class="section-title">事務・経理</div>
-
-            <a href="seikyu.html" class="card">
-                <span class="card-icon">💰</span>
-                <span class="card-title">請求書 作成</span>
-                <span class="card-desc">振込先保存・計算自動<br>消費税区分対応</span>
-            </a>
-
-            <a href="mitsumori.html" class="card">
-                <span class="card-icon">🧮</span>
-                <span class="card-title">見積書 作成</span>
-                <span class="card-desc">有効期限付き<br>緑色のフォーマット</span>
-            </a>
-            
-            <a href="chumon.html" class="card">
-                <span class="card-icon">🛍️</span>
-                <span class="card-title">注文書 (発注書)</span>
-                <span class="card-desc">納期・場所指定可能<br>紫色のフォーマット</span>
-            </a>
-
-            <a href="nohin.html" class="card">
-                <span class="card-icon">📦</span>
-                <span class="card-title">納品書 作成</span>
-                <span class="card-desc">受領印欄あり<br>オレンジ色のフォーマット</span>
-            </a>
-
-            <a href="ryoshusho.html" class="card">
-                <span class="card-icon">¥</span>
-                <span class="card-title">領収証 (詳細)</span>
-                <span class="card-desc">インボイス対応・明細付き<br>自動計算</span>
-            </a>
-
-            <a href="ryoshusho_simple.html" class="card">
-                <span class="card-icon">🧾</span>
-                <span class="card-title">領収書 (簡易)</span>
-                <span class="card-desc">合計金額のみ入力<br>スピード作成</span>
-            </a>
-
-            <a href="zaishoku.html" class="card">
-                <span class="card-icon">📄</span>
-                <span class="card-title">在職証明書</span>
-                <span class="card-desc">氏名・期間を入力して<br>即時発行</span>
-            </a>
-
-            <a href="ringi.html" class="card">
-                <span class="card-icon">🈸</span>
-                <span class="card-title">稟議書 作成</span>
-                <span class="card-desc">承認印枠付き<br>起案者印は自動</span>
-            </a>
-            
-            <a href="gijiroku.html" class="card">
-                <span class="card-icon">📝</span>
-                <span class="card-title">会議議事録</span>
-                <span class="card-desc">決定事項・ToDo管理<br>行追加機能付き</span>
-            </a>
-
-            <!-- 電話メモ -->
-            <a href="phone.html" class="card">
-                <span class="card-icon">📞</span>
-                <span class="card-title">電話メモ</span>
-                <span class="card-desc">受電内容を即コピー<br>チャット貼り付け用</span>
-            </a>
+            <a href="seikyu.html" class="card"><span class="card-icon">💰</span><span class="card-title">請求書 作成</span><span class="card-desc">振込先保存・計算自動</span></a>
+            <a href="mitsumori.html" class="card"><span class="card-icon">🧮</span><span class="card-title">見積書 作成</span><span class="card-desc">有効期限付き</span></a>
+            <a href="chumon.html" class="card"><span class="card-icon">🛍️</span><span class="card-title">注文書 (発注)</span><span class="card-desc">納期・場所指定可能</span></a>
+            <a href="nohin.html" class="card"><span class="card-icon">📦</span><span class="card-title">納品書 作成</span><span class="card-desc">受領印エリア付き</span></a>
+            <a href="ryoshusho.html" class="card"><span class="card-icon">¥</span><span class="card-title">領収証 (詳細)</span><span class="card-desc">明細付き・インボイス対応</span></a>
+            <a href="ryoshusho_simple.html" class="card"><span class="card-icon">🧾</span><span class="card-title">領収書 (簡易)</span><span class="card-desc">合計のみ・スピード作成</span></a>
+            <a href="zaishoku.html" class="card"><span class="card-icon">📄</span><span class="card-title">在職証明書</span><span class="card-desc">公的文書スタイル</span></a>
+            <a href="ringi.html" class="card"><span class="card-icon">🈸</span><span class="card-title">稟議書 作成</span><span class="card-desc">承認印枠付き</span></a>
+            <a href="gijiroku.html" class="card"><span class="card-icon">📝</span><span class="card-title">会議議事録</span><span class="card-desc">ToDo管理・行追加</span></a>
+            <a href="phone.html" class="card"><span class="card-icon">📞</span><span class="card-title">電話メモ</span><span class="card-desc">受電内容を即コピー</span></a>
         
-
             <div class="section-title">発送・贈答</div>
-            
-
-            <a href="fax.html" class="card">
-                <span class="card-icon">📠</span>
-                <span class="card-title">FAX 送付状</span>
-                <span class="card-desc">見やすい太字デザイン<br>インク節約仕様</span>
-            </a>
-
-            <a href="sofujo.html" class="card">
-                <span class="card-icon">✉️</span>
-                <span class="card-title">送付状 (単発)</span>
-                <span class="card-desc">社外・社内切替可<br>挨拶文自動挿入</span>
-            </a>
-
-            <a href="sofujo_multi.html" class="card">
-                <span class="card-icon">📚</span>
-                <span class="card-title">一括 送付状</span>
-                <span class="card-desc">支店・関連会社へ一斉作成<br>宛先リスト管理</span>
-            </a>
-
-            <a href="envelope.html" class="card">
-                <span class="card-icon">📮</span>
-                <span class="card-title">封筒 宛名印刷</span>
-                <span class="card-desc">長形3号サイズ<br>横書き・敬称切替</span>
-            </a>
-            
-            <!-- 宛名ラベル -->
-            <a href="label.html" class="card">
-                <span class="card-icon">🏷️</span>
-                <span class="card-title">宛名ラベル印刷</span>
-                <span class="card-desc">A4 12面シール対応<br>一括入力・自社ラベル</span>
-            </a>
-            
-            <a href="noshi.html" class="card">
-                <span class="card-icon">🎁</span>
-                <span class="card-title">のし紙 作成</span>
-                <span class="card-desc">A4サイズ掛け紙<br>紅白・仏事切替可</span>
-            </a>
-
+            <a href="label.html" class="card"><span class="card-icon">🏷️</span><span class="card-title">宛名ラベル</span><span class="card-desc">A4 12面・CSV取込</span></a>
+            <a href="fax.html" class="card"><span class="card-icon">📠</span><span class="card-title">FAX 送付状</span><span class="card-desc">インク節約デザイン</span></a>
+            <a href="sofujo.html" class="card"><span class="card-icon">✉️</span><span class="card-title">送付状</span><span class="card-desc">挨拶文自動挿入</span></a>
+            <a href="sofujo_multi.html" class="card"><span class="card-icon">📚</span><span class="card-title">一括 送付状</span><span class="card-desc">宛先リスト管理</span></a>
+            <a href="envelope.html" class="card"><span class="card-icon">📮</span><span class="card-title">封筒印刷</span><span class="card-desc">長形3号・横書き</span></a>
+            <a href="noshi.html" class="card"><span class="card-icon">🎁</span><span class="card-title">のし紙</span><span class="card-desc">紅白・仏事切替可</span></a>
 
             <div class="section-title">勤怠・精算</div>
-
-             <a href="kintai.html" class="card">
-                <span class="card-icon">📅</span>
-                <span class="card-title">勤怠・有給計画</span>
-                <span class="card-desc">年間110日・連休取得の<br>シミュレーション</span>
-            </a>
-
-            <a href="tsukin.html" class="card">
-                <span class="card-icon">🚗</span>
-                <span class="card-title">通勤費精算書</span>
-                <span class="card-desc">毎日の通勤費管理<br>カレンダー形式・例外対応</span>
-            </a>
-
-            <a href="keihi.html" class="card">
-                <span class="card-icon">🚃</span>
-                <span class="card-title">経費精算書</span>
-                <span class="card-desc">交通費・経費の計算<br>自動合計・15行対応</span>
-            </a>
+             <a href="kintai.html" class="card"><span class="card-icon">📅</span><span class="card-title">勤怠・有給計画</span><span class="card-desc">年間110日シミュレーション</span></a>
+            <a href="tsukin.html" class="card"><span class="card-icon">🚗</span><span class="card-title">通勤費精算</span><span class="card-desc">カレンダー形式・例外対応</span></a>
+            <a href="keihi.html" class="card"><span class="card-icon">🚃</span><span class="card-title">経費精算</span><span class="card-desc">交通費自動計算</span></a>
        
             <div class="section-title">管理</div>
-
-            <a href="backup.html" class="card">
-                    <span class="card-icon">💾</span>
-                    <span class="card-title">バックアップ</span>
-                    <span class="card-desc">設定・履歴の保存と復元</span>
-            </a>
-
+            <a href="backup.html" class="card"><span class="card-icon">💾</span><span class="card-title">バックアップ</span><span class="card-desc">データの保存と復元</span></a>
         </main>
     </div>
 
-    <!-- 必須スクリプト -->
-    <script src="auth.js"></script>
+    <!-- Script: パスワード機能も内蔵 -->
     <script src="settings.js"></script>
-    
     <script>
-        // ログインチェック
-        if (typeof checkAuth === 'function') {
-            checkAuth();
-        } else {
-            alert("auth.jsが読み込めません。");
-            document.body.style.display = "block";
+        const PASSWORD = "0000"; 
+        const SESSION_KEY = "access_token"; 
+
+        // ■ 認証チェック (内蔵)
+        function checkAuth() {
+            if (sessionStorage.getItem(SESSION_KEY) === "allowed") {
+                document.body.style.display = "flex"; 
+                return;
+            }
+            setTimeout(() => {
+                const input = prompt("パスワードを入力してください");
+                if (input === PASSWORD) {
+                    sessionStorage.setItem(SESSION_KEY, "allowed");
+                    document.body.style.display = "flex";
+                } else {
+                    document.body.innerHTML = '<div style="display:flex;justify-content:center;align-items:center;height:100vh;width:100%;background:#222;color:#fff;"><button onclick="location.reload()" style="padding:15px 30px;cursor:pointer;border-radius:30px;border:none;background:#00e5ff;font-weight:bold;">🔑 ログイン</button></div>';
+                    document.body.style.display = "flex";
+                }
+            }, 50);
         }
 
-        // ページ読み込み時の処理
-        window.addEventListener('load', () => {
-            // 設定値を復元
-            if(typeof loadSettingsToInputs === 'function') {
-                loadSettingsToInputs();
+        // ■ ログアウト
+        function logout() {
+            if(confirm("ログアウトしますか？")) {
+                sessionStorage.removeItem(SESSION_KEY);
+                location.reload();
             }
+        }
+
+        // 実行
+        checkAuth();
+
+        const THEMES = ['', 'theme-kawaii', 'theme-dark'];
+
+        window.addEventListener('load', () => {
+            const savedTheme = localStorage.getItem('my_tool_theme');
+            if (savedTheme && THEMES.includes(savedTheme)) {
+                document.body.className = savedTheme;
+            }
+            updateBtnText();
+            if(typeof loadSettingsToInputs === 'function') loadSettingsToInputs();
         });
 
-        // 保存ボタン処理
         function handleSave() {
-            if (typeof saveSettings === 'function') {
-                saveSettings();
+            if (typeof saveSettings === 'function') saveSettings();
+            else alert("settings.js 読込エラー");
+        }
+
+        function toggleTheme() {
+            const body = document.body;
+            let currentClass = "";
+            if (body.classList.contains('theme-kawaii')) currentClass = 'theme-kawaii';
+            else if (body.classList.contains('theme-dark')) currentClass = 'theme-dark';
+            
+            const currentIndex = THEMES.indexOf(currentClass);
+            const nextIndex = (currentIndex + 1) % THEMES.length;
+            const nextClass = THEMES[nextIndex];
+
+            body.className = nextClass;
+            localStorage.setItem('my_tool_theme', nextClass);
+            updateBtnText();
+        }
+
+        function updateBtnText() {
+            const btn = document.getElementById('themeBtn');
+            const body = document.body;
+            
+            if (body.classList.contains('theme-kawaii')) {
+                btn.innerText = "💖 モード切替 (次:Neon)";
+                btn.style.color = "#fff";
+                btn.style.borderColor = "#fff";
+            } else if (body.classList.contains('theme-dark')) {
+                btn.innerText = "⚡ モード切替 (次:Simple)";
+                btn.style.color = "#00e5ff"; 
+                btn.style.borderColor = "#00e5ff";
             } else {
-                alert("settings.js を読み込めていません。");
+                btn.innerText = "✨ モード切替 (次:Kawaii)";
+                btn.style.color = "#fff";
+                btn.style.borderColor = "rgba(255,255,255,0.5)";
             }
         }
     </script>
