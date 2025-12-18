@@ -11,9 +11,8 @@
             background-color: #f0f2f5;
             margin: 0;
             padding: 0;
-            display: none; /* 初期非表示 */
+            display: none; /* ★重要: 初期状態は非表示(ロック) */
             color: #333;
-            /* Flex崩れ防止: 強制的に縦並びにする */
             display: flex !important; 
             flex-direction: column !important;
             min-height: 100vh;
@@ -24,7 +23,7 @@
             background-color: #333;
             color: white;
             width: 100%;
-            padding: 15px 20px;
+            padding: 10px 20px;
             box-sizing: border-box;
             box-shadow: 0 2px 5px rgba(0,0,0,0.1);
             display: flex;
@@ -35,7 +34,19 @@
             z-index: 100;
             flex-shrink: 0;
         }
-        h1 { margin: 0; font-size: 20px; font-weight: bold; }
+        h1 { margin: 0; font-size: 18px; font-weight: bold; }
+
+        /* ログアウトボタン */
+        .logout-btn {
+            background: #555;
+            color: #fff;
+            border: 1px solid #777;
+            padding: 5px 12px;
+            border-radius: 4px;
+            font-size: 12px;
+            cursor: pointer;
+        }
+        .logout-btn:hover { background: #777; }
 
         /* --- メインレイアウト --- */
         .dashboard-container {
@@ -52,7 +63,7 @@
 
         /* --- 左サイドバー --- */
         .sidebar {
-            width: 320px;
+            width: 300px; /* 少しスリムに */
             background: white;
             padding: 20px;
             border-radius: 8px;
@@ -60,8 +71,8 @@
             border-top: 4px solid #2c517c;
             flex-shrink: 0;
             position: sticky;
-            top: 80px;
-            max-height: 85vh;
+            top: 70px; /* ヘッダー分 */
+            max-height: 90vh;
             overflow-y: auto;
         }
         .sidebar h3 { margin-top: 0; font-size: 16px; color: #2c517c; border-bottom: 1px solid #eee; padding-bottom: 10px; margin-bottom: 15px; }
@@ -84,19 +95,20 @@
         .main-content {
             flex-grow: 1;
             display: grid;
-            grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
-            gap: 20px;
+            /* ★変更点: 最小幅を200pxにして4列入りやすくしました */
+            grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+            gap: 15px; /* 隙間を少し詰める */
             width: 100%;
         }
 
         .card {
             background: white;
-            padding: 20px;
-            border-radius: 12px;
+            padding: 15px; /* 余白を減らしてコンパクトに */
+            border-radius: 8px;
             text-align: center;
             text-decoration: none;
             color: #333;
-            box-shadow: 0 4px 6px rgba(0,0,0,0.05);
+            box-shadow: 0 2px 4px rgba(0,0,0,0.05);
             transition: transform 0.2s, box-shadow 0.2s;
             border: 1px solid #e0e0e0;
             display: flex;
@@ -107,18 +119,19 @@
             box-sizing: border-box;
         }
         .card:hover {
-            transform: translateY(-5px);
-            box-shadow: 0 8px 15px rgba(0,0,0,0.1);
+            transform: translateY(-3px);
+            box-shadow: 0 5px 15px rgba(0,0,0,0.1);
             border-color: #007bff;
         }
-        .card-icon { font-size: 32px; margin-bottom: 10px; display: block; }
-        .card-title { font-size: 15px; font-weight: bold; display: block; margin-bottom: 6px; }
-        .card-desc { font-size: 11px; color: #666; line-height: 1.4; }
+        /* アイコンと文字サイズも少し調整 */
+        .card-icon { font-size: 28px; margin-bottom: 8px; display: block; }
+        .card-title { font-size: 14px; font-weight: bold; display: block; margin-bottom: 4px; }
+        .card-desc { font-size: 11px; color: #666; line-height: 1.3; }
 
         .section-title {
             grid-column: 1 / -1;
-            font-size: 14px; font-weight: bold; color: #777; 
-            margin-top: 20px; margin-bottom: 10px; padding-left: 5px;
+            font-size: 13px; font-weight: bold; color: #777; 
+            margin-top: 15px; margin-bottom: 5px; padding-left: 5px;
             border-left: 4px solid #ccc; line-height: 1;
         }
         .section-title:first-child { margin-top: 0; }
@@ -134,8 +147,9 @@
 
     <!-- ヘッダー -->
     <header>
-        <h1>社内書類作成ツール</h1>
-        <div style="font-size:12px; opacity:0.8;">v5.3</div>
+        <h1>社内書類作成ツール <span style="font-size:11px; font-weight:normal;">v5.5</span></h1>
+        <!-- ログアウトボタン -->
+        <button onclick="logout()" class="logout-btn">ログアウト</button>
     </header>
 
     <!-- ダッシュボードエリア -->
@@ -157,7 +171,6 @@
             <label>登録番号(T)</label>
             <input type="text" id="setRegNo" placeholder="T1234567890123">
 
-            <!-- ハンコ2つ登録対応 -->
             <label style="margin-top:10px;">🔲 会社印 (角印)</label>
             <div class="seal-area">
                 <input type="file" id="fileSealCompany" accept="image/*" style="font-size:11px;" onchange="previewSeal(this, 'prevCompany')">
@@ -191,6 +204,12 @@
                 <span class="card-icon">🧮</span>
                 <span class="card-title">見積書 作成</span>
                 <span class="card-desc">有効期限付き<br>緑色のフォーマット</span>
+            </a>
+            
+            <a href="chumon.html" class="card">
+                <span class="card-icon">🛍️</span>
+                <span class="card-title">注文書 (発注書)</span>
+                <span class="card-desc">納期・場所指定可能<br>紫色のフォーマット</span>
             </a>
 
             <a href="nohin.html" class="card">
@@ -228,9 +247,23 @@
                 <span class="card-title">会議議事録</span>
                 <span class="card-desc">決定事項・ToDo管理<br>行追加機能付き</span>
             </a>
+
+            <!-- 電話メモ -->
+            <a href="phone.html" class="card">
+                <span class="card-icon">📞</span>
+                <span class="card-title">電話メモ</span>
+                <span class="card-desc">受電内容を即コピー<br>チャット貼り付け用</span>
+            </a>
         
 
             <div class="section-title">発送・贈答</div>
+            
+            <!-- 宛名ラベル -->
+            <a href="label.html" class="card">
+                <span class="card-icon">🏷️</span>
+                <span class="card-title">宛名ラベル印刷</span>
+                <span class="card-desc">A4 12面シール対応<br>一括入力・自社ラベル</span>
+            </a>
             
             <a href="fax.html" class="card">
                 <span class="card-icon">📠</span>
@@ -300,7 +333,12 @@
     
     <script>
         // ログインチェック
-        if (typeof checkAuth === 'function') checkAuth();
+        if (typeof checkAuth === 'function') {
+            checkAuth();
+        } else {
+            alert("auth.jsが読み込めません。");
+            document.body.style.display = "block";
+        }
 
         // ページ読み込み時の処理
         window.addEventListener('load', () => {
@@ -310,12 +348,12 @@
             }
         });
 
-        // 保存ボタン処理（エラーハンドリング付き）
+        // 保存ボタン処理
         function handleSave() {
             if (typeof saveSettings === 'function') {
                 saveSettings();
             } else {
-                alert("❌ エラー: 'settings.js' が古いか、読み込まれていません。\nsettings.js を最新版に更新してください。");
+                alert("settings.js を読み込めていません。");
             }
         }
     </script>
