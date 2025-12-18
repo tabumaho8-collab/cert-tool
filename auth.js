@@ -1,54 +1,53 @@
-// auth.js - v5.5 (完全版)
+/* auth.js - v6.0 (無限ループ防止版) */
 
 // ▼ パスワード設定（数字を変更してください）
 const PASSWORD = "0000"; 
-const SESSION_KEY = "access_token"; // 合言葉を保存する場所の名前
+const SESSION_KEY = "access_token"; 
 
-// ■ 認証チェック（全ページ共通のエントリポイント）
+// ■ 認証チェック
 function checkAuth() {
-    // 1. すでにログイン済みかチェック
+    // 1. ログイン済みなら画面を表示して終了
     if (sessionStorage.getItem(SESSION_KEY) === "allowed") {
-        showScreen();
+        document.body.style.display = "flex"; 
         return;
     }
 
     // 2. 未ログインならパスワードを聞く
-    // (index.html 以外から直接アクセスした場合もここで聞くので便利です)
     const input = prompt("パスワードを入力してください");
     
     if (input === PASSWORD) {
-        // 正解！手形を保存して画面を表示
+        // 正解！ -> 保存して表示
         sessionStorage.setItem(SESSION_KEY, "allowed");
-        showScreen();
+        document.body.style.display = "flex";
     } else {
-        // 不正解
-        alert("パスワードが違います。");
-        
-        // ツール画面(index以外)にいる場合は、メニューに戻す安全策
-        if (window.location.pathname.indexOf("index.html") === -1 && window.location.pathname.slice(-1) !== "/") {
-             window.location.href = "index.html";
-        } else {
-             // メニュー画面ならリロードして再度聞く
-             location.reload();
-        }
+        // 不正解 or キャンセル -> ループせずに「ログインボタン」を出す
+        showLoginButton();
     }
 }
 
-// ■ 画面表示処理
-function showScreen() {
-    // 【重要】block ではなく flex にしないと、横並びレイアウトが崩れます
-    document.body.style.display = "flex"; 
+// ■ ログインボタンだけの画面を作る関数
+function showLoginButton() {
+    // 既存の画面を隠すのではなく、bodyの中身を「ボタンだけ」に書き換える
+    document.body.innerHTML = `
+        <div style="display:flex; flex-direction:column; justify-content:center; align-items:center; height:100vh; background:#f0f2f5; width:100%;">
+            <h2 style="color:#555; font-size:18px; margin-bottom:20px;">ログインが必要です</h2>
+            <button onclick="location.reload()" style="padding:15px 40px; font-size:16px; font-weight:bold; color:white; background-color:#007bff; border:none; border-radius:30px; cursor:pointer; box-shadow:0 4px 10px rgba(0,0,0,0.1);">
+                🔑 ログインする
+            </button>
+        </div>
+    `;
+    document.body.style.display = "flex"; // ボタン画面を表示
 }
 
-// ■ ログアウト処理（index.htmlのボタン用）
+// ■ ログアウト処理
 function logout() {
     if(confirm("ログアウトしますか？")) {
         sessionStorage.removeItem(SESSION_KEY); // 手形を破棄
-        window.location.href = "index.html"; // メニューに戻ってリロード
+        location.reload(); // 再読み込み（パスワード入力画面に戻る）
     }
 }
 
-// ■ ログイン状態確認（必要に応じて使用）
+// ■ 状態確認用
 function isLoggedin() {
     return sessionStorage.getItem(SESSION_KEY) === "allowed";
 }
