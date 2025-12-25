@@ -1,46 +1,271 @@
 <!DOCTYPE html>
 <html lang="ja">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>のし紙作成ツール</title>
-    
+
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Yuji+Syuku&display=swap" rel="stylesheet">
-    
+
     <style>
+        /* =========================================
+           CSS変数 (テーマ定義) - index.htmlとコンシステントに
+           ========================================= */
+        :root {
+            --section-line: 1px solid #b2bec3;
+        }
+
         /* --- 全体レイアウト --- */
-        body { display: none; font-family: sans-serif; background-color: #f4f4f4; margin: 0; padding: 20px; gap: 20px; justify-content: center; min-height: 100vh; }
-        .editor-pane { width: 350px; background: #fff; padding: 20px; border-radius: 8px; box-shadow: 0 2px 10px rgba(0,0,0,0.1); height: fit-content; }
-        .back-btn { display: inline-block; background-color: #6c757d; color: white; padding: 5px 10px; text-decoration: none; border-radius: 4px; font-size: 12px; margin-bottom: 15px; cursor: pointer; }
-        .form-group { margin-bottom: 15px; }
-        .form-group label { display: block; font-size: 12px; font-weight: bold; margin-bottom: 5px; color: #555; }
-        .form-group input, .form-group select { width: 100%; padding: 8px; box-sizing: border-box; border: 1px solid #ccc; border-radius: 4px; font-size: 14px; }
-        
-        button.print-btn { width: 100%; padding: 12px; background-color: #e74c3c; color: white; border: none; border-radius: 4px; font-size: 16px; cursor: pointer; font-weight: bold; margin-top: 10px; }
-        
+        body {
+            display: none;
+            /* 認証前非表示 */
+            font-family: var(--font-family);
+            background-color: var(--bg-color);
+            background-image: var(--bg-image);
+            background-size: cover;
+            margin: 0;
+            padding: 0;
+            min-height: 100vh;
+            color: var(--text-color);
+            /* Flex layout for header + content */
+            flex-direction: column;
+        }
+
+        body.theme-kawaii {
+            background-size: 20px 20px;
+            background-position: 0 0, 10px 10px;
+        }
+
+        body.theme-dark {
+            background-size: 40px 40px;
+        }
+
+        /* ヘッダー */
+        header {
+            background-color: var(--header-bg);
+            color: var(--header-text);
+            width: 100%;
+            padding: 12px 25px;
+            box-sizing: border-box;
+            box-shadow: var(--header-shadow);
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            position: sticky;
+            top: 0;
+            z-index: 100;
+            flex-shrink: 0;
+            transition: 0.3s;
+            backdrop-filter: blur(5px);
+        }
+
+        h1 {
+            margin: 0;
+            font-size: 18px;
+            font-weight: bold;
+            letter-spacing: 1px;
+        }
+
+        .header-btns {
+            display: flex;
+            gap: 10px;
+        }
+
+        .theme-btn {
+            background: rgba(255, 255, 255, 0.1);
+            color: inherit;
+            border: 1px solid rgba(255, 255, 255, 0.3);
+            padding: 6px 15px;
+            border-radius: 20px;
+            font-size: 12px;
+            cursor: pointer;
+            transition: 0.2s;
+            font-weight: bold;
+        }
+
+        body.theme-dark .theme-btn {
+            border-color: var(--accent-color);
+            color: var(--accent-color);
+            border-radius: 4px;
+            box-shadow: 0 0 5px rgba(0, 229, 255, 0.4);
+        }
+
+        .theme-btn:hover {
+            background: rgba(255, 255, 255, 0.2);
+            transform: scale(1.05);
+        }
+
+        .back-btn-header {
+            background: rgba(128, 128, 128, 0.3);
+            color: inherit;
+            border: none;
+            padding: 6px 12px;
+            border-radius: 4px;
+            font-size: 11px;
+            cursor: pointer;
+            text-decoration: none;
+            display: inline-flex;
+            align-items: center;
+        }
+
+        .back-btn-header:hover {
+            background: rgba(128, 128, 128, 0.5);
+        }
+
+        /* メインコンテナ */
+        .main-container {
+            display: flex;
+            gap: 20px;
+            padding: 20px;
+            justify-content: center;
+            flex-grow: 1;
+            align-items: flex-start;
+        }
+
+        .editor-pane {
+            width: 350px;
+            background: var(--sidebar-bg);
+            padding: 20px;
+            border-radius: var(--border-radius);
+            box-shadow: var(--shadow);
+            border: var(--border-style);
+            backdrop-filter: var(--backdrop-filter);
+            height: fit-content;
+            flex-shrink: 0;
+        }
+
+        .form-group {
+            margin-bottom: 15px;
+        }
+
+        .form-group label {
+            display: block;
+            font-size: 12px;
+            font-weight: bold;
+            margin-bottom: 5px;
+            color: var(--text-color);
+            opacity: 0.9;
+        }
+
+        .form-group input,
+        .form-group select {
+            width: 100%;
+            padding: 10px;
+            box-sizing: border-box;
+            border: 1px solid #ccc;
+            border-radius: var(--btn-radius);
+            font-size: 14px;
+            background: rgba(255, 255, 255, 0.9);
+            color: #333;
+        }
+
+        body.theme-dark .form-group input,
+        body.theme-dark .form-group select {
+            background: rgba(0, 0, 0, 0.5);
+            color: #fff;
+            border-color: var(--accent-color);
+        }
+
+        button.print-btn {
+            width: 100%;
+            padding: 12px;
+            background-color: var(--accent-color);
+            color: white;
+            border: none;
+            border-radius: var(--btn-radius);
+            font-size: 16px;
+            cursor: pointer;
+            font-weight: bold;
+            margin-top: 10px;
+            transition: 0.2s;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        }
+
+        button.print-btn:hover {
+            background-color: var(--accent-hover);
+            transform: translateY(-2px);
+        }
+
+        body.theme-dark button.print-btn {
+            background-color: rgba(0, 229, 255, 0.1);
+            color: var(--accent-color);
+            border: 1px solid var(--accent-color);
+        }
+
+        body.theme-dark button.print-btn:hover {
+            background: var(--accent-color);
+            color: #000;
+            box-shadow: 0 0 15px var(--accent-color);
+        }
+
+        .back-btn {
+            display: inline-block;
+            background-color: #6c757d;
+            color: white;
+            padding: 5px 12px;
+            text-decoration: none;
+            border-radius: 4px;
+            font-size: 12px;
+            margin-bottom: 15px;
+            cursor: pointer;
+            transition: 0.2s;
+        }
+
+        .back-btn:hover {
+            opacity: 0.8;
+        }
+
+        body.theme-dark .back-btn {
+            background-color: rgba(255, 255, 255, 0.1);
+            border: 1px solid var(--accent-color);
+            color: var(--accent-color);
+        }
+
         /* フォント切り替えスイッチ */
-        .font-switch { display: flex; align-items: center; gap: 5px; font-size: 12px; margin-top: 5px; cursor: pointer; color: #333; }
-        
-        .preview-pane { flex-grow: 1; display: flex; justify-content: center; align-items: center; }
-        
+        .font-switch {
+            display: flex;
+            align-items: center;
+            gap: 5px;
+            font-size: 12px;
+            margin-top: 5px;
+            cursor: pointer;
+            color: var(--text-sub);
+        }
+
+        /* プレビューエリア */
+        .preview-pane {
+            flex-grow: 1;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 80vh;
+            /* 画面中央に配置 */
+        }
+
         /* のし紙（A4横） */
-        #noshi-paper { 
-            width: 297mm; height: 210mm; 
-            background: white; 
-            box-shadow: 0 5px 15px rgba(0,0,0,0.2); 
-            position: relative; 
+        #noshi-paper {
+            width: 297mm;
+            height: 210mm;
+            background: white;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
+            position: relative;
             overflow: hidden;
             display: flex;
             flex-direction: column;
             justify-content: center;
             align-items: center;
             color: #000;
-            
+            transform-origin: top left;
+            /* リサイズ用 */
+
             /* デフォルトは筆文字 */
             font-family: "Yuji Syuku", serif;
         }
+
+        /* scale logic handled in js or just let overflow scroll. css zooming is tricky. let's just create a container that scales down if needed or scroll */
 
         /* 標準フォント（明朝体）クラス - 正しい字形を優先 */
         .std-font {
@@ -48,7 +273,9 @@
         }
 
         /* 薄墨モード */
-        .usuzumi-mode { color: #666 !important; }
+        .usuzumi-mode {
+            color: #666 !important;
+        }
 
         /* --- 水引 (CSS描画) --- */
         .mizuhiki-line {
@@ -60,16 +287,21 @@
             left: 0;
             z-index: 1;
         }
+
         .mizuhiki-knot {
             position: absolute;
-            top: 50%; left: 50%;
+            top: 50%;
+            left: 50%;
             transform: translate(-50%, -50%);
-            width: 100px; height: 60px;
+            width: 100px;
+            height: 60px;
             z-index: 2;
-            background: white; 
+            background: white;
         }
+
         .knot-img {
-            width: 100%; height: 100%;
+            width: 100%;
+            height: 100%;
             background-repeat: no-repeat;
             background-position: center;
             background-size: contain;
@@ -78,159 +310,370 @@
         /* --- のし飾り (右上) --- */
         .noshi-icon {
             position: absolute;
-            top: 20mm; right: 20mm;
-            width: 30mm; height: 50mm;
+            top: 20mm;
+            right: 20mm;
+            width: 30mm;
+            height: 50mm;
             border: 1px solid #d93025;
-            display: flex; align-items: center; justify-content: center;
-            color: #d93025; font-size: 24px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: #d93025;
+            font-size: 24px;
             background: #fff;
         }
+
         .noshi-inner {
-            border: 1px solid #d93025; width: 60%; height: 60%; transform: rotate(45deg);
+            border: 1px solid #d93025;
+            width: 60%;
+            height: 60%;
+            transform: rotate(45deg);
             background: #d93025;
         }
-        
+
         /* --- 文字エリア --- */
         .text-area {
             position: absolute;
-            left: 50%;
-            transform: translateX(-50%);
-            text-align: center;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
             z-index: 3;
-            width: 240mm;
-            height: 180mm;
             display: flex;
             flex-direction: column;
             justify-content: space-between;
+            pointer-events: none;
+            /* 入力を邪魔しない */
+        }
+
+        /* 縦書きの配置 */
+        .text-area.vertical-mode .text-top {
+            justify-content: center;
+            /* 横方向(Cross axis)の中央 */
+            align-items: flex-end;
+            /* 縦方向(Main axis)の下寄せ(Mizuhikiに近い方) */
+        }
+
+        .text-area.vertical-mode .text-bottom {
+            flex-direction: row-reverse;
+            /* 右から左へ（会社名が右、代表者名が左） */
+            justify-content: center;
+            /* 横方向(Cross axis)の中央 */
+            align-items: flex-start;
+            /* 縦方向(Main axis)の上寄せ(Mizuhikiに近い方) */
+            padding-top: 80px;
+            /* 水引との間隔を広げる */
         }
 
         .text-top {
             flex: 1;
             display: flex;
-            align-items: flex-end; 
+            align-items: center;
+            /* ★ 中央寄せ */
             justify-content: center;
             padding-bottom: 20px;
         }
+
+        .text-bottom {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: flex-start;
+            padding-top: 50px;
+            /* ★ 水引からの距離 */
+        }
+
+        /* 縦書き時の特別配置（スライダーで調整可能に） */
+        .vertical-mode .text-bottom {
+            display: flex;
+            flex-direction: row-reverse;
+            justify-content: center;
+            align-items: flex-start;
+            height: 100%;
+            padding-top: var(--offset-y, 60px);
+            /* ★スライダー値を反映 */
+        }
+
+        .vertical-mode .title-text,
+        .vertical-mode .name-text,
+        .vertical-mode .rep-text {
+            writing-mode: vertical-rl;
+            text-orientation: upright;
+            margin: 0 10px;
+            /* 文字間隔調整 */
+        }
+
         .title-text {
             font-size: 70px;
             font-weight: bold;
             letter-spacing: 0.2em;
         }
 
-        .text-bottom {
-            flex: 1;
-            display: flex;
-            flex-direction: column; 
-            align-items: center; 
-            justify-content: flex-start; 
-            padding-top: 30px;
-        }
         .name-text {
             font-size: 45px;
             letter-spacing: 0.1em;
             line-height: 1.4;
             margin-bottom: 10px;
         }
+
+        /* 縦書き時のマージン調整 */
+        .vertical-mode .name-text {
+            margin-bottom: 0;
+            margin-left: 10px;
+            /* 行間 */
+        }
+
         .rep-text {
-            font-size: 28px; 
+            font-size: 28px;
             letter-spacing: 0.05em;
         }
 
+        /* 住所テキスト */
+        .addr-text {
+            font-size: 20px;
+            margin-bottom: 5px;
+        }
+
+        .vertical-mode .addr-text {
+            writing-mode: vertical-rl;
+            text-orientation: upright;
+            margin: 0 12px;
+            font-size: 18px;
+            display: flex;
+            align-items: flex-start;
+            white-space: nowrap;
+            /* ★ 改行禁止 */
+        }
+
+        .vertical-mode .name-text {
+            writing-mode: vertical-rl;
+            text-orientation: upright;
+            margin: 0 15px;
+            display: flex;
+            align-items: flex-start;
+            white-space: nowrap;
+            /* ★ 改行禁止 */
+        }
+
+        .vertical-mode .rep-text {
+            writing-mode: vertical-rl;
+            text-orientation: upright;
+            margin: 0 10px;
+            font-size: 24px;
+            display: flex;
+            align-items: flex-start;
+            padding-top: 40px;
+            white-space: nowrap;
+            /* ★ 改行禁止 */
+        }
+
+        /* 横書き時の余白調整 (絵と近い問題の解消) */
+        .text-area:not(.vertical-mode) .text-bottom {
+            padding-top: 50px;
+            /* 水引/結び目からの距離を空ける */
+        }
+
         @media print {
-            body { display: block !important; background: none; margin: 0; padding: 0; }
-            .editor-pane { display: none; }
-            .preview-pane { display: block; }
-            #noshi-paper { box-shadow: none; margin: 0; page-break-after: always; }
-            @page { margin: 0; size: A4 landscape; }
+            body {
+                display: block !important;
+                background: none !important;
+                margin: 0 !important;
+                padding: 0 !important;
+            }
+
+            header,
+            .editor-pane {
+                display: none !important;
+            }
+
+            .main-container {
+                padding: 0 !important;
+                margin: 0 !important;
+                display: block !important;
+            }
+
+            #noshi-paper {
+                box-shadow: none !important;
+                margin: 0 !important;
+                width: 297mm !important;
+                height: 210mm !important;
+                transform: none !important;
+                position: relative !important;
+                color: #000 !important;
+                /* ★印刷時は必ず黒 */
+                -webkit-print-color-adjust: exact;
+            }
+
+            .usuzumi-mode #noshi-paper,
+            .usuzumi-mode .title-text,
+            .usuzumi-mode .name-text,
+            .usuzumi-mode .rep-text,
+            .usuzumi-mode .addr-text {
+                color: #666 !important;
+                /* ★薄墨はグレー */
+            }
+
+            /* 確実に文字を出すための設定 */
+            .title-text,
+            .name-text,
+            .rep-text,
+            .addr-text {
+                visibility: visible !important;
+                opacity: 1 !important;
+                color: inherit !important;
+            }
+
+            @page {
+                margin: 0;
+                size: A4 landscape;
+            }
         }
     </style>
+    <link rel="stylesheet" href="theme.css">
 </head>
+
 <body>
     <script src="lock.js"></script>
     <script src="settings.js"></script>
     <script>
         if (typeof checkAuth === 'function') checkAuth(); else document.body.style.display = "flex";
-        window.addEventListener('load', function() {
+        window.addEventListener('load', function () {
             if (typeof applyCompanyData === 'function') applyCompanyData();
             const co = localStorage.getItem("my_tool_company_info");
-            if(co) {
+            if (co) {
                 const data = JSON.parse(co);
                 document.getElementById('iptName').value = data.name || "";
-                document.getElementById('iptRep').value = data.rep || ""; 
+                document.getElementById('iptRep').value = data.rep || "";
             }
             update();
         });
     </script>
 
-    <div class="editor-pane">
-        <a href="index.html" class="back-btn">⬅ メニューに戻る</a>
-        <h2>のし紙 作成</h2>
-        
-        <div class="form-group">
-            <label>表書き (上段)</label>
-            <select id="selTitle" onchange="applyTitle()">
-                <option value="御祝">御祝</option>
-                <option value="内祝">内祝</option>
-                <option value="御礼">御礼</option>
-                <option value="粗品" selected>粗品</option>
-                <option value="御中元">御中元</option>
-                <option value="御歳暮">御歳暮</option>
-                <hr>
-                <option value="御見舞">御見舞 (薄墨・結び切り)</option>
-                <option value="御霊前">御霊前 (薄墨・仏事)</option>
-                <option value="御仏前">御仏前 (薄墨・仏事)</option>
-                <option value="">(自由入力)</option>
-            </select>
-            <input type="text" id="iptTitle" value="粗品" oninput="update()" style="margin-top:5px;" placeholder="自由に入力">
+    <header id="global-header">
+        <h1><a href="index.html" style="text-decoration:none; color:inherit;">社内ツール</a> <span
+                style="font-size:14px; opacity:0.8; font-weight:normal;">/ のし紙 作成</span></h1>
+        <div class="header-btns">
+            <button onclick="toggleTheme()" id="themeBtn" class="theme-btn">🎨 テーマ変更</button>
+        </div>
+    </header>
+
+    <div class="main-container">
+        <div class="editor-pane">
+            <a href="index.html" class="back-btn">⬅ メニューに戻る</a>
+
+            <h2 style="margin-top:0; border-bottom:1px solid #ddd; padding-bottom:10px; color:var(--text-color);">のし紙設定
+            </h2>
+
+            <div class="form-group">
+                <label>表書き (上段)</label>
+                <select id="selTitle" onchange="applyTitle()">
+                    <option value="御祝">御祝</option>
+                    <option value="内祝">内祝</option>
+                    <option value="御礼">御礼</option>
+                    <option value="粗品" selected>粗品</option>
+                    <option value="御中元">御中元</option>
+                    <option value="御歳暮">御歳暮</option>
+                    <option value="志">志 (薄墨・仏事)</option>
+                    <hr>
+                    <option value="御見舞">御見舞 (薄墨・結び切り)</option>
+                    <option value="御霊前">御霊前 (薄墨・仏事)</option>
+                    <option value="御仏前">御仏前 (薄墨・仏事)</option>
+                    <option value="">(自由入力)</option>
+                </select>
+                <input type="text" id="iptTitle" value="粗品" oninput="update()" style="margin-top:5px;"
+                    placeholder="自由に入力">
+            </div>
+
+            <div class="form-group">
+                <label>文字の向き</label>
+                <div style="display:flex; gap:10px;">
+                    <label style="font-weight:normal; cursor:pointer;"><input type="radio" name="direction" value="v"
+                            checked onchange="toggleDirection()"> 縦書き (会社・正式)</label>
+                    <label style="font-weight:normal; cursor:pointer;"><input type="radio" name="direction" value="h"
+                            onchange="toggleDirection()"> 横書き (モダン)</label>
+                </div>
+            </div>
+
+            <div class="form-group">
+                <label>住所 (必要な場合)</label>
+                <input type="text" id="iptAddr" oninput="update()" placeholder="東京都港区...">
+            </div>
+
+            <div class="form-group">
+                <label>名入れ (会社名など)</label>
+                <input type="text" id="iptName" oninput="update()" placeholder="株式会社〇〇">
+
+                <div style="display:flex; align-items:center; gap:10px; margin-top:8px;">
+                    <span style="font-size:11px; color:var(--text-sub); white-space:nowrap;">文字サイズ</span>
+                    <input type="range" id="rngFontSize" min="20" max="60" value="45" oninput="update()"
+                        style="flex:1; cursor:pointer;" title="文字サイズ調整">
+                </div>
+
+                <!-- ▼▼▼ フォント切り替えスイッチ ▼▼▼ -->
+                <label class="font-switch">
+                    <input type="checkbox" id="chkStdFont" onchange="toggleNameFont()">
+                    筆文字が崩れる場合 (標準フォント)
+                </label>
+            </div>
+
+            <div class="form-group">
+                <label>代表者名 (必要な場合)</label>
+                <input type="text" id="iptRep" oninput="update()" placeholder="代表取締役 〇〇">
+            </div>
+
+            <!-- ▼▼▼ 位置調整用スライダー ▼▼▼ -->
+            <div class="form-group" style="background: rgba(0,0,0,0.05); padding: 10px; border-radius: 8px;">
+                <label style="color: var(--accent-color);">名前の上下位置調整</label>
+                <div style="display:flex; align-items:center; gap:10px;">
+                    <span style="font-size:11px;">上</span>
+                    <input type="range" id="rngOffsetY" min="0" max="150" value="60" oninput="update()"
+                        style="flex:1; cursor:pointer;">
+                    <span style="font-size:11px;">下</span>
+                </div>
+                <p style="font-size:10px; color:var(--text-sub); margin:5px 0 0 0;">※水引（中央の線）に合わせて調整してください</p>
+            </div>
+
+            <hr style="border:0; border-top:1px dashed #ccc; margin:15px 0;">
+            <div class="form-group">
+                <label>水引の種類</label>
+                <select id="selMizuhiki" onchange="updateStyle()">
+                    <option value="red_cho">紅白・蝶結び (一般・お祝い)</option>
+                    <option value="red_kiri">紅白・結び切り (お見舞い・婚礼)</option>
+                    <option value="bw_kiri">黒白・結び切り (仏事)</option>
+                </select>
+            </div>
+
+            <div class="form-group">
+                <label>墨の色</label>
+                <select id="selInk" onchange="updateStyle()">
+                    <option value="black">濃墨 (通常)</option>
+                    <option value="gray">薄墨 (お悔やみ・お見舞い)</option>
+                </select>
+            </div>
+
+            <button class="print-btn" onclick="window.print()">🖨️ 印刷する</button>
         </div>
 
-        <div class="form-group">
-            <label>名入れ (会社名など)</label>
-            <input type="text" id="iptName" oninput="update()" placeholder="株式会社〇〇">
-            <!-- ▼▼▼ フォント切り替えスイッチ ▼▼▼ -->
-            <label class="font-switch">
-                <input type="checkbox" id="chkStdFont" onchange="toggleNameFont()"> 
-                筆文字が崩れる場合は標準フォントにする
-            </label>
-        </div>
-        
-        <div class="form-group">
-            <label>代表者名 (必要な場合)</label>
-            <input type="text" id="iptRep" oninput="update()" placeholder="代表取締役 〇〇">
-        </div>
+        <div class="preview-pane">
+            <div id="noshi-paper">
+                <div class="noshi-icon" id="noshiMark">
+                    <div class="noshi-inner"></div>
+                </div>
+                <div class="mizuhiki-line" id="line"></div>
+                <div class="mizuhiki-knot" id="knot">
+                    <div class="knot-img" id="knotImg"></div>
+                </div>
 
-        <hr>
-        <div class="form-group">
-            <label>水引の種類</label>
-            <select id="selMizuhiki" onchange="updateStyle()">
-                <option value="red_cho">紅白・蝶結び (一般・お祝い)</option>
-                <option value="red_kiri">紅白・結び切り (お見舞い・婚礼)</option>
-                <option value="bw_kiri">黒白・結び切り (仏事)</option>
-            </select>
-        </div>
-
-        <div class="form-group">
-            <label>墨の色</label>
-            <select id="selInk" onchange="updateStyle()">
-                <option value="black">濃墨 (通常)</option>
-                <option value="gray">薄墨 (お悔やみ・お見舞い)</option>
-            </select>
-        </div>
-
-        <button class="print-btn" onclick="window.print()">🖨️ 印刷する</button>
-    </div>
-
-    <div class="preview-pane">
-        <div id="noshi-paper">
-            <div class="noshi-icon" id="noshiMark"><div class="noshi-inner"></div></div>
-            <div class="mizuhiki-line" id="line"></div>
-            <div class="mizuhiki-knot" id="knot"><div class="knot-img" id="knotImg"></div></div>
-
-            <div class="text-area" id="textArea">
-                <div class="text-top"><div class="title-text" id="viewTitle">粗品</div></div>
-                <div class="text-bottom">
-                    <div class="name-text" id="viewName"></div>
-                    <div class="rep-text" id="viewRep"></div>
+                <div class="text-area" id="textArea">
+                    <div class="text-top">
+                        <div class="title-text" id="viewTitle">粗品</div>
+                    </div>
+                    <div class="text-bottom">
+                        <div class="addr-text" id="viewAddr"></div>
+                        <div class="name-text" id="viewName"></div>
+                        <div class="rep-text" id="viewRep"></div>
+                    </div>
                 </div>
             </div>
         </div>
@@ -247,17 +690,17 @@
             const selMizuhiki = document.getElementById('selMizuhiki');
             const selInk = document.getElementById('selInk');
 
-            if(val) ipt.value = val;
+            if (val) ipt.value = val;
 
             if (val === "御見舞") {
-                selMizuhiki.value = "red_kiri"; 
-                selInk.value = "gray";        
+                selMizuhiki.value = "red_kiri";
+                selInk.value = "gray";
             } else if (val === "御霊前" || val === "御仏前") {
-                selMizuhiki.value = "bw_kiri";  
-                selInk.value = "gray";        
+                selMizuhiki.value = "bw_kiri";
+                selInk.value = "gray";
             } else if (val === "御祝" || val === "内祝" || val === "粗品") {
-                selMizuhiki.value = "red_cho";  
-                selInk.value = "black";       
+                selMizuhiki.value = "red_cho";
+                selInk.value = "black";
             }
             update();
             updateStyle();
@@ -265,22 +708,33 @@
 
         function update() {
             document.getElementById('viewTitle').innerText = document.getElementById('iptTitle').value;
+            document.getElementById('viewAddr').innerText = document.getElementById('iptAddr').value;
             document.getElementById('viewName').innerText = document.getElementById('iptName').value;
             document.getElementById('viewRep').innerText = document.getElementById('iptRep').value;
+
+            // フォントサイズ適用
+            const size = document.getElementById('rngFontSize').value;
+            document.getElementById('viewName').style.fontSize = size + "px";
+
+            // 上下位置オフセット適用
+            const offsetY = document.getElementById('rngOffsetY').value;
+            document.getElementById('textArea').style.setProperty('--offset-y', offsetY + 'px');
         }
 
-        // フォント切り替え処理
         function toggleNameFont() {
             const isChecked = document.getElementById('chkStdFont').checked;
             const viewName = document.getElementById('viewName');
             const viewRep = document.getElementById('viewRep');
-            
+            const viewAddr = document.getElementById('viewAddr');
+
             if (isChecked) {
                 viewName.classList.add('std-font');
                 viewRep.classList.add('std-font');
+                viewAddr.classList.add('std-font');
             } else {
                 viewName.classList.remove('std-font');
                 viewRep.classList.remove('std-font');
+                viewAddr.classList.remove('std-font');
             }
         }
 
@@ -298,17 +752,83 @@
             if (type === 'red_cho') {
                 line.style.background = "repeating-linear-gradient(to bottom, #d93025 0%, #d93025 33%, #fff 33%, #fff 66%, #d93025 66%, #d93025 100%)";
                 knotImg.style.backgroundImage = `url("${SVG_CHO}")`;
-                noshiMark.style.display = "flex"; 
+                noshiMark.style.display = "flex";
             } else if (type === 'red_kiri') {
                 line.style.background = "repeating-linear-gradient(to bottom, #d93025 0%, #d93025 33%, #fff 33%, #fff 66%, #d93025 66%, #d93025 100%)";
                 knotImg.style.backgroundImage = `url("${SVG_KIRI_RED}")`;
-                noshiMark.style.display = "flex"; 
+                noshiMark.style.display = "flex";
             } else {
                 line.style.background = "repeating-linear-gradient(to bottom, #333 0%, #333 33%, #fff 33%, #fff 66%, #333 66%, #333 100%)";
                 knotImg.style.backgroundImage = `url("${SVG_KIRI_BK}")`;
-                noshiMark.style.display = "none"; 
+                noshiMark.style.display = "none";
+            }
+        }
+
+        // 縦書き・横書き切り替え
+        function toggleDirection() {
+            const rads = document.getElementsByName('direction');
+            let val = 'v';
+            for (const r of rads) { if (r.checked) val = r.value; }
+
+            const area = document.getElementById('textArea');
+            if (val === 'v') {
+                area.classList.add('vertical-mode');
+            } else {
+                area.classList.remove('vertical-mode');
+            }
+        }
+
+        // テーマ切り替え・共通処理 (index.htmlから移植)
+        const THEMES = ['', 'theme-kawaii', 'theme-dark'];
+
+        window.addEventListener('load', () => {
+            // 既存のloadイベント内処理に追加
+            const savedTheme = localStorage.getItem('my_tool_theme');
+            if (savedTheme && THEMES.includes(savedTheme)) {
+                document.body.className = savedTheme;
+            }
+            updateBtnText();
+
+            // 初期状態の縦書き適用
+            toggleDirection();
+        });
+
+        function toggleTheme() {
+            const body = document.body;
+            let currentClass = "";
+            if (body.classList.contains('theme-kawaii')) currentClass = 'theme-kawaii';
+            else if (body.classList.contains('theme-dark')) currentClass = 'theme-dark';
+
+            const currentIndex = THEMES.indexOf(currentClass);
+            const nextIndex = (currentIndex + 1) % THEMES.length;
+            const nextClass = THEMES[nextIndex];
+
+            body.className = nextClass;
+            localStorage.setItem('my_tool_theme', nextClass);
+            updateBtnText();
+        }
+
+        function updateBtnText() {
+            const btn = document.getElementById('themeBtn');
+            const body = document.body;
+            if (!btn) return;
+
+            if (body.classList.contains('theme-kawaii')) {
+                btn.innerText = "💖 モード切替 (次:Neon)";
+                btn.style.color = "#fff";
+                btn.style.borderColor = "#fff";
+            } else if (body.classList.contains('theme-dark')) {
+                btn.innerText = "⚡ モード切替 (次:Simple)";
+                btn.style.color = "#00e5ff";
+                btn.style.borderColor = "#00e5ff";
+            } else {
+                btn.innerText = "✨ モード切替 (次:Kawaii)";
+                btn.style.color = "#fff";
+                btn.style.borderColor = "rgba(255,255,255,0.5)";
             }
         }
     </script>
+    <script src="theme.js"></script>
 </body>
+
 </html>

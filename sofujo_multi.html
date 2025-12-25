@@ -1,5 +1,6 @@
 <!DOCTYPE html>
 <html lang="ja">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -7,114 +8,547 @@
     <style>
         /* --- 全体レイアウト --- */
         body {
-            display: none; /* セキュリティ用 */
+            display: none;
             font-family: "Helvetica Neue", Arial, sans-serif;
             background-color: #f4f4f4;
             margin: 0;
             padding: 20px;
-            gap: 20px;
+            gap: 25px;
             justify-content: center;
+            align-items: flex-start;
             min-height: 100vh;
+            overflow-y: auto !important;
         }
 
         /* --- 左側：設定・入力エリア --- */
         .editor-pane {
-            width: 400px;
+            width: 500px;
             background: #fff;
-            padding: 20px;
-            border-radius: 8px;
-            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
-            height: fit-content;
-            max-height: 90vh;
+            padding: 30px;
+            border-radius: 12px;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+            height: auto !important;
+            max-height: calc(100vh - 250px) !important;
+            /* ★さらに短くして絶対に見切れないように */
             overflow-y: auto;
+            flex-shrink: 0;
+            margin-bottom: 50px;
+            position: relative;
         }
+
+        /* スクロールバーの見た目調整 */
+        .editor-pane::-webkit-scrollbar {
+            width: 10px;
+        }
+
+        .editor-pane::-webkit-scrollbar-track {
+            background: rgba(0, 0, 0, 0.05);
+            border-radius: 10px;
+        }
+
+        .editor-pane::-webkit-scrollbar-thumb {
+            background: rgba(0, 0, 0, 0.2);
+            border-radius: 10px;
+        }
+
+        body.theme-dark .editor-pane::-webkit-scrollbar-thumb {
+            background: #00e5ff;
+        }
+
 
         .back-btn {
-            display: inline-block; background-color: #6c757d; color: white;
-            padding: 5px 10px; text-decoration: none; border-radius: 4px;
-            font-size: 12px; margin-bottom: 15px; cursor: pointer;
+            display: inline-block;
+            background-color: #636e72;
+            color: white;
+            padding: 6px 12px;
+            text-decoration: none;
+            border-radius: 6px;
+            font-size: 12px;
+            margin-bottom: 20px;
+            cursor: pointer;
+            font-weight: bold;
         }
 
-        h2 { font-size: 18px; border-bottom: 2px solid #ddd; padding-bottom: 5px; margin-top: 0;}
-        h3 { font-size: 14px; margin-top: 20px; background: #eee; padding: 5px; }
+        h2 {
+            font-size: 18px;
+            border-bottom: 2px solid #ddd;
+            padding-bottom: 8px;
+            margin-top: 0;
+            color: #2d3436;
+        }
 
-        .form-group { margin-bottom: 15px; }
-        .form-group label { display: block; font-size: 12px; font-weight: bold; margin-bottom: 5px; color: #555; }
-        .form-group input, .form-group textarea {
-            width: 100%; padding: 8px; box-sizing: border-box;
-            border: 1px solid #ccc; border-radius: 4px; font-size: 14px;
+        h3 {
+            font-size: 14px;
+            margin-top: 25px;
+            background: #f1f3f5;
+            padding: 8px 12px;
+            border-radius: 6px;
+            color: #2d3436;
+        }
+
+        .form-group {
+            margin-bottom: 20px;
+        }
+
+        .form-group label {
+            display: block;
+            font-size: 13px;
+            font-weight: bold;
+            margin-bottom: 8px;
+            color: #2d3436;
+        }
+
+        .form-group input,
+        .form-group textarea {
+            width: 100%;
+            padding: 10px;
+            box-sizing: border-box;
+            border: 2px solid #dfe6e9;
+            border-radius: 8px;
+            font-size: 14px;
+            transition: 0.3s;
+        }
+
+        .form-group input:focus,
+        .form-group textarea:focus {
+            outline: none;
+            border-color: #6c5ce7;
+            box-shadow: 0 0 0 3px rgba(108, 92, 231, 0.1);
         }
 
         /* --- 宛先リストエリア --- */
         .dest-list {
-            border: 1px solid #ccc; max-height: 200px; overflow-y: scroll; padding: 10px; margin-bottom: 10px;
+            border: 2px solid #f1f3f5;
+            border-radius: 8px;
+            max-height: 250px;
+            overflow-y: auto;
+            padding: 10px;
+            margin-bottom: 15px;
+            background: #fafafa;
         }
+
         .dest-item {
-            display: flex; align-items: center; border-bottom: 1px solid #eee; padding: 5px 0;
+            display: flex;
+            align-items: center;
+            border-bottom: 1px solid #eee;
+            padding: 8px 0;
         }
-        .dest-item:last-child { border-bottom: none; }
-        .dest-item input[type="checkbox"] { width: auto; margin-right: 10px; }
-        .dest-info { flex: 1; font-size: 13px; }
+
+        .dest-item:last-child {
+            border-bottom: none;
+        }
+
+        .dest-item input[type="checkbox"] {
+            width: auto;
+            margin-right: 12px;
+            transform: scale(1.2);
+            cursor: pointer;
+        }
+
+        .dest-info {
+            flex: 1;
+            font-size: 13px;
+            color: #2d3436;
+        }
+
         .del-btn {
-            background: #d9534f; color: white; border: none; padding: 2px 5px; 
-            border-radius: 4px; font-size: 10px; cursor: pointer; margin-left: 5px;
+            background: rgba(217, 83, 79, 0.1);
+            color: #d9534f;
+            border: 1px solid #d9534f;
+            padding: 4px 8px;
+            border-radius: 6px;
+            font-size: 11px;
+            cursor: pointer;
+            margin-left: 10px;
+            transition: 0.2s;
+        }
+
+        .del-btn:hover {
+            background: #d9534f;
+            color: white;
+        }
+
+        /* 登録エリアのボックス背景 */
+        .registration-box {
+            background: #f8f9fa;
+            padding: 15px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+            border: 1px solid #dfe6e9;
+        }
+
+        body.theme-kawaii .registration-box {
+            background: #fff0f5;
+            border-color: #ffcdd2;
+        }
+
+        body.theme-dark .registration-box {
+            background: rgba(0, 0, 0, 0.3);
+            border-color: rgba(0, 229, 255, 0.3);
         }
 
         /* --- ボタン類 --- */
-        .btn-add { background: #17a2b8; color: white; width: 100%; border:none; padding:8px; border-radius:4px; cursor:pointer; font-weight:bold;}
-        .btn-print { background: #28a745; color: white; width: 100%; border:none; padding:12px; border-radius:4px; cursor:pointer; font-weight:bold; font-size:16px; margin-top:20px;}
-        .btn-mini { background: #6c757d; color: white; border:none; padding:4px 8px; border-radius:4px; cursor:pointer; font-size:12px; }
-
-        /* 保存ボタン */
-        .save-sender-btn {
-            background-color: #fd7e14; color: white; border: none; 
-            padding: 8px 12px; border-radius: 4px; font-size: 12px; font-weight: bold;
-            cursor: pointer; margin-left: auto; display: block; margin-bottom: 5px;
+        .btn-add {
+            background: #a29bfe;
+            color: white;
+            width: 100%;
+            border: none;
+            padding: 12px;
+            border-radius: 8px;
+            cursor: pointer;
+            font-weight: bold;
+            transition: 0.2s;
+            margin-top: 5px;
         }
-        .save-sender-btn:hover { background-color: #e36d0d; }
+
+        .btn-add:hover {
+            background: #6c5ce7;
+        }
+
+        .btn-print {
+            background: linear-gradient(135deg, #6c5ce7 0%, #4834d4 100%) !important;
+            color: white !important;
+            width: 100%;
+            border: none !important;
+            padding: 18px;
+            border-radius: 12px !important;
+            cursor: pointer;
+            font-weight: bold;
+            font-size: 17px;
+            margin-top: 25px;
+            box-shadow: 0 10px 20px rgba(108, 92, 231, 0.3) !important;
+            transition: 0.3s;
+            letter-spacing: 1px;
+            display: block;
+        }
+
+        .btn-print:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 15px 30px rgba(108, 92, 231, 0.4) !important;
+        }
+
+        /* 見切れ防止用のスペーサー */
+        .bottom-spacer {
+            height: 120px;
+            width: 100%;
+            pointer-events: none;
+        }
+
+        .btn-mini {
+            background: #f1f3f5;
+            color: #636e72;
+            border: 1px solid #dee2e6;
+            padding: 6px 12px;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 12px;
+            font-weight: bold;
+            transition: 0.2s;
+        }
+
+        .btn-mini:hover {
+            background: #e9ecef;
+            color: #2d3436;
+        }
+
+        .save-sender-btn {
+            background-color: transparent;
+            color: #636e72;
+            border: 1px solid #dfe6e9;
+            padding: 8px 12px;
+            border-radius: 6px;
+            font-size: 11px;
+            font-weight: bold;
+            cursor: pointer;
+            margin-left: auto;
+            display: block;
+            margin-bottom: 10px;
+            transition: 0.2s;
+        }
+
+        .save-sender-btn:hover {
+            background: #6c5ce7;
+            color: white;
+            border-color: #6c5ce7;
+        }
+
+        /* --- Kawaiiモード対応 --- */
+        body.theme-kawaii .editor-pane {
+            border-radius: 25px;
+            border: 3px solid #fff;
+        }
+
+        body.theme-kawaii h2,
+        body.theme-kawaii h3 {
+            color: #ff6b81;
+        }
+
+        body.theme-kawaii h3 {
+            background: #fff0f5;
+        }
+
+        body.theme-kawaii .btn-add {
+            background: #ff9eb5;
+        }
+
+        body.theme-kawaii .btn-print {
+            background: linear-gradient(45deg, #ff9eb5, #ff6b81) !important;
+            border-radius: 50px !important;
+            box-shadow: 0 4px 15px rgba(255, 107, 129, 0.4) !important;
+        }
+
+        body.theme-kawaii .save-sender-btn {
+            color: #ff9eb5;
+            border-color: #ff9eb5;
+        }
+
+        body.theme-kawaii .save-sender-btn:hover {
+            background: #ff9eb5;
+            color: white;
+        }
+
+        /* --- Darkモード対応 (視認性大幅アップ) --- */
+        body.theme-dark .editor-pane {
+            background: rgba(10, 20, 40, 0.95) !important;
+            border: 2px solid #00e5ff !important;
+            box-shadow: 0 0 30px rgba(0, 229, 255, 0.2) !important;
+        }
+
+        body.theme-dark h2,
+        body.theme-dark h3 {
+            color: #00e5ff !important;
+            text-shadow: 0 0 10px rgba(0, 229, 255, 0.8) !important;
+        }
+
+        body.theme-dark h3 {
+            background: rgba(0, 229, 255, 0.1);
+            border: 1px solid rgba(0, 229, 255, 0.3);
+        }
+
+        body.theme-dark .form-group label {
+            color: #00e5ff !important;
+            text-shadow: 0 0 5px rgba(0, 229, 255, 0.5);
+        }
+
+        body.theme-dark .form-group input,
+        body.theme-dark textarea {
+            background: rgba(0, 0, 0, 0.6) !important;
+            border-color: #00e5ff !important;
+            color: #ffffff !important;
+            box-shadow: inset 0 0 8px rgba(0, 229, 255, 0.2) !important;
+        }
+
+        body.theme-dark .dest-list {
+            background: rgba(0, 0, 0, 0.4);
+            border-color: #00e5ff;
+        }
+
+        body.theme-dark .dest-info {
+            color: #ffffff !important;
+        }
+
+        body.theme-dark .btn-mini {
+            background: rgba(0, 0, 0, 0.5);
+            border-color: #00e5ff;
+            color: #00e5ff;
+        }
+
+        body.theme-dark .btn-mini:hover {
+            background: #00e5ff;
+            color: #000;
+        }
+
+        body.theme-dark .btn-add {
+            background: #00e5ff;
+            color: #000 !important;
+            border: none;
+            font-weight: bold;
+        }
+
+        body.theme-dark .btn-add:hover {
+            background: #fff;
+            box-shadow: 0 0 20px #fff;
+        }
+
+        body.theme-dark .btn-print {
+            background: #00e5ff !important;
+            color: #000 !important;
+            border: none !important;
+            box-shadow: 0 0 25px rgba(0, 229, 255, 0.8) !important;
+            font-weight: 900 !important;
+            letter-spacing: 2px;
+        }
+
+        body.theme-dark .btn-print:hover {
+            background: #ffffff !important;
+            box-shadow: 0 0 40px #ffffff !important;
+            transform: translateY(-5px);
+        }
+
+        body.theme-dark .save-sender-btn {
+            color: #00e5ff;
+            border-color: #00e5ff;
+            background: rgba(0, 229, 255, 0.1);
+        }
+
+        body.theme-dark .save-sender-btn:hover {
+            background: #00e5ff;
+            color: #000;
+        }
 
         /* --- 右側：プレビュー --- */
-        .preview-pane { flex-grow: 1; display: flex; justify-content: center; }
-        
+        .preview-pane {
+            flex-grow: 1;
+            display: flex;
+            justify-content: center;
+        }
+
         /* 用紙スタイル */
         .sheet {
-            width: 210mm; min-height: 297mm; background: white; padding: 25mm;
-            box-sizing: border-box; box-shadow: 0 5px 15px rgba(0,0,0,0.2); 
-            font-family: "Yu Mincho", "YuMincho", serif; color: #333; line-height: 1.8;
-            position: relative; margin-bottom: 20px;
+            width: 210mm;
+            min-height: 297mm;
+            background: white;
+            padding: 25mm;
+            box-sizing: border-box;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
+            font-family: "Yu Mincho", "YuMincho", serif;
+            color: #333;
+            line-height: 1.8;
+            position: relative;
+            margin-bottom: 20px;
         }
 
-        #print-container { display: none; }
+        #print-container {
+            display: none;
+        }
 
         /* 送付状デザイン */
-        .l-date { text-align: right; margin-bottom: 20px; }
-        .l-header { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 40px; }
-        .l-recipient { width: 55%; font-size: 16px; }
-        .rec-comp { font-size: 18px; margin-bottom: 5px; }
-        .rec-name { font-size: 20px; font-weight: bold; border-bottom: 1px solid #333; display: inline-block; }
-        
-        .l-sender { width: 40%; text-align: right; font-size: 14px; position: relative; }
-        .sender-comp { font-weight: bold; font-size: 16px; margin-bottom: 5px; }
-        
-        .l-title { text-align: center; font-size: 24px; font-weight: bold; margin-bottom: 40px; text-decoration: underline; letter-spacing: 3px; }
-        .l-body { margin-bottom: 40px; white-space: pre-wrap; text-align: justify; }
-        .l-list-title { text-align: center; margin-bottom: 10px; font-weight: bold; }
-        .l-list-box { border: 1px solid #333; padding: 20px 40px; margin: 0 20px; min-height: 150px; }
-        
+        .l-date {
+            text-align: right;
+            margin-bottom: 20px;
+        }
+
+        .l-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+            margin-bottom: 40px;
+        }
+
+        .l-recipient {
+            width: 55%;
+            font-size: 16px;
+        }
+
+        .rec-comp {
+            font-size: 18px;
+            margin-bottom: 5px;
+        }
+
+        .rec-name {
+            font-size: 20px;
+            font-weight: bold;
+            border-bottom: 2px solid #333;
+            display: inline-block;
+            padding-bottom: 2px;
+        }
+
+        .l-sender {
+            width: 40%;
+            text-align: right;
+            font-size: 14px;
+            position: relative;
+        }
+
+        .sender-comp {
+            font-weight: bold;
+            font-size: 16px;
+            margin-bottom: 5px;
+        }
+
+        .l-title {
+            text-align: center;
+            font-size: 24px;
+            font-weight: bold;
+            margin-bottom: 40px;
+            text-decoration: underline;
+            letter-spacing: 3px;
+        }
+
+        .l-body {
+            margin-bottom: 40px;
+            white-space: pre-wrap;
+            text-align: justify;
+        }
+
+        .l-list-title {
+            text-align: center;
+            margin-bottom: 10px;
+            font-weight: bold;
+        }
+
+        .l-list-box {
+            border: 1px solid #333;
+            padding: 20px 40px;
+            margin: 0 20px;
+            min-height: 150px;
+        }
+
         /* --- 印刷時の設定 --- */
         @media print {
-            body { display: block !important; background: none; margin: 0; padding: 0; }
-            .editor-pane, .preview-pane { display: none; }
-            #print-container { display: block; }
-            
-            .print-page { 
-                width: 210mm; height: 297mm; padding: 25mm; box-sizing: border-box;
-                page-break-after: always; position: relative;
+            body {
+                display: block !important;
+                background: none;
+                margin: 0;
+                padding: 0;
             }
-            .print-page:last-child { page-break-after: auto; }
+
+            .editor-pane,
+            .preview-pane {
+                display: none;
+            }
+
+            #print-container {
+                display: block;
+            }
+
+            .print-page {
+                width: 210mm;
+                height: 297mm;
+                padding: 25mm;
+                box-sizing: border-box;
+                page-break-after: always;
+                position: relative;
+            }
+
+            .print-page:last-child {
+                page-break-after: auto;
+            }
+        }
+
+        @media (max-width: 900px) {
+            body {
+                flex-direction: column;
+                align-items: center;
+            }
+
+            .editor-pane {
+                width: 100%;
+                max-width: 500px;
+                height: auto !important;
+                max-height: none !important;
+            }
+
+            .preview-pane {
+                width: 100%;
+                overflow-x: auto;
+                justify-content: flex-start;
+            }
         }
     </style>
+    <link rel="stylesheet" href="theme.css">
 </head>
+
 <body>
 
     <script src="lock.js"></script>
@@ -130,9 +564,11 @@
 
         <!-- 宛先登録エリア -->
         <h3>1. 宛先リスト管理</h3>
-        <div class="form-group" style="background:#eee; padding:10px; border-radius:4px;">
-            <input type="text" id="newBranch" placeholder="支店名 (例: 大阪支店)" style="margin-bottom:5px;">
-            <input type="text" id="newName" placeholder="宛名 (例: 支店長 佐藤 殿)" style="margin-bottom:5px;">
+        <div class="registration-box">
+            <div class="form-group" style="margin-bottom: 10px;">
+                <input type="text" id="newBranch" placeholder="支店名 (例: 大阪支店)" style="margin-bottom:8px;">
+                <input type="text" id="newName" placeholder="宛名 (例: 支店長 佐藤 殿)" style="margin-bottom:8px;">
+            </div>
             <button class="btn-add" onclick="addDestination()">リストに追加</button>
         </div>
 
@@ -185,13 +621,17 @@
         <button type="button" class="save-sender-btn" onclick="saveSenderInfo()">この差出人情報を保存する</button>
 
         <button class="btn-print" onclick="window.print()">🖨️ 選択した全宛先に一括印刷</button>
+
+        <!-- ★見切れ防止のスペース -->
+        <div class="bottom-spacer"></div>
     </div>
 
     <!-- プレビューエリア -->
     <div class="preview-pane">
         <div class="sheet">
-            <div style="position:absolute; top:0; left:0; background:red; color:white; padding:5px; font-size:12px;">プレビュー（1件目のみ表示）</div>
-            
+            <div style="position:absolute; top:0; left:0; background:red; color:white; padding:5px; font-size:12px;">
+                プレビュー（1件目のみ表示）</div>
+
             <div class="l-date" id="prevDate"></div>
 
             <div class="l-header">
@@ -220,11 +660,11 @@
 
     <script>
         const KEY_DESTINATIONS = "my_tool_destinations";
-        const KEY_SENDER = "my_tool_sofujo_sender"; 
-        
+        const KEY_SENDER = "my_tool_sofujo_sender";
+
         let destinations = [];
 
-        window.addEventListener('load', function() {
+        window.addEventListener('load', function () {
             if (typeof applyCompanyData === 'function') applyCompanyData();
             loadSenderInfo();
             document.getElementById('iptDate').valueAsDate = new Date();
@@ -245,17 +685,17 @@
 
         function loadSenderInfo() {
             const json = localStorage.getItem(KEY_SENDER);
-            if(json) {
+            if (json) {
                 const data = JSON.parse(json);
-                if(data.name) document.getElementById('iptIssuerName').value = data.name;
-                if(data.rep) document.getElementById('iptIssuerRep').value = data.rep;
+                if (data.name) document.getElementById('iptIssuerName').value = data.name;
+                if (data.rep) document.getElementById('iptIssuerRep').value = data.rep;
             }
         }
 
         // 宛先リスト管理
         function loadDestinations() {
             const json = localStorage.getItem(KEY_DESTINATIONS);
-            if(json) {
+            if (json) {
                 destinations = JSON.parse(json);
             }
             renderDestList();
@@ -269,7 +709,7 @@
         function addDestination() {
             const branch = document.getElementById('newBranch').value;
             const name = document.getElementById('newName').value;
-            if(!branch) return alert("支店名を入力してください");
+            if (!branch) return alert("支店名を入力してください");
 
             destinations.push({ branch: branch, name: name, checked: true });
             document.getElementById('newBranch').value = "";
@@ -278,7 +718,7 @@
         }
 
         function deleteDest(index) {
-            if(confirm("この宛先を削除しますか？")) {
+            if (confirm("この宛先を削除しますか？")) {
                 destinations.splice(index, 1);
                 saveDestinations();
             }
@@ -286,7 +726,7 @@
 
         function renderDestList() {
             const container = document.getElementById('destList');
-            if(destinations.length === 0) {
+            if (destinations.length === 0) {
                 container.innerHTML = '<div style="color:#777; font-size:12px; text-align:center; padding:10px;">宛先を追加してください</div>';
                 return;
             }
@@ -309,7 +749,7 @@
 
         function toggleCheck(index) {
             destinations[index].checked = document.getElementById(`chk_${index}`).checked;
-            saveDestinations(); 
+            saveDestinations();
         }
 
         function checkAll(bool) {
@@ -319,9 +759,9 @@
 
         // プレビュー更新
         function formatDate(dateStr) {
-            if(!dateStr) return "";
+            if (!dateStr) return "";
             const d = new Date(dateStr);
-            return `${d.getFullYear()}年${d.getMonth()+1}月${d.getDate()}日`;
+            return `${d.getFullYear()}年${d.getMonth() + 1}月${d.getDate()}日`;
         }
 
         function updatePreview() {
@@ -330,11 +770,11 @@
             const body = document.getElementById('iptBody').value;
             const issuer = document.getElementById('iptIssuerName').value;
             const rep = document.getElementById('iptIssuerRep').value;
-            
+
             const listText = document.getElementById('iptList').value;
             let listHtml = '';
             listText.split('\n').forEach(item => {
-                if(item.trim()) listHtml += `<div>${item}</div>`;
+                if (item.trim()) listHtml += `<div>${item}</div>`;
             });
 
             document.getElementById('prevDate').innerText = date;
@@ -344,7 +784,7 @@
             document.getElementById('prevIssuerRep').innerText = rep;
             document.getElementById('prevList').innerHTML = listHtml;
 
-            if(destinations.length > 0) {
+            if (destinations.length > 0) {
                 document.getElementById('prevRecBranch').innerText = destinations[0].branch;
                 document.getElementById('prevRecName').innerText = destinations[0].name;
             } else {
@@ -356,7 +796,7 @@
         // 印刷用ページ生成
         function generatePrintPages() {
             const container = document.getElementById('print-container');
-            container.innerHTML = ""; 
+            container.innerHTML = "";
 
             const date = formatDate(document.getElementById('iptDate').value);
             const subject = document.getElementById('iptSubject').value;
@@ -366,12 +806,12 @@
             const listText = document.getElementById('iptList').value;
             let listHtml = '';
             listText.split('\n').forEach(item => {
-                if(item.trim()) listHtml += `<div>${item}</div>`;
+                if (item.trim()) listHtml += `<div>${item}</div>`;
             });
 
             const targets = destinations.filter(d => d.checked);
-            
-            if(targets.length === 0) {
+
+            if (targets.length === 0) {
                 alert("送信先が選択されていません！");
                 return;
             }
@@ -401,5 +841,7 @@
             });
         }
     </script>
+    <script src="theme.js"></script>
 </body>
+
 </html>

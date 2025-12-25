@@ -1,60 +1,238 @@
 <!DOCTYPE html>
 <html lang="ja">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>会議議事録作成</title>
     <style>
         /* --- 全体レイアウト --- */
-        body { display: none; font-family: "Helvetica Neue", Arial, sans-serif; background-color: #f4f4f4; margin: 0; padding: 20px; gap: 20px; justify-content: center; min-height: 100vh; }
-        .editor-pane { width: 350px; background: #fff; padding: 20px; border-radius: 8px; box-shadow: 0 2px 10px rgba(0,0,0,0.1); height: fit-content; overflow-y: auto; max-height: 90vh; }
-        .back-btn { display: inline-block; background-color: #6c757d; color: white; padding: 5px 10px; text-decoration: none; border-radius: 4px; font-size: 12px; margin-bottom: 15px; cursor: pointer; }
-        .form-group { margin-bottom: 15px; }
-        .form-group label { display: block; font-size: 12px; font-weight: bold; margin-bottom: 5px; color: #555; }
-        .form-group input, .form-group textarea, .form-group select { width: 100%; padding: 8px; box-sizing: border-box; border: 1px solid #ccc; border-radius: 4px; font-size: 14px; }
-        
-        .add-btn { background: #6c757d; color: white; border: none; padding: 2px 8px; font-size: 12px; cursor: pointer; border-radius: 4px; margin-left: 5px; }
-        button.print-btn { width: 100%; padding: 12px; background-color: #007bff; color: white; border: none; border-radius: 4px; font-size: 16px; cursor: pointer; font-weight: bold; margin-top: 10px; }
-        
-        .preview-pane { flex-grow: 1; display: flex; justify-content: center; }
-        #doc { width: 210mm; min-height: 297mm; background: white; padding: 20mm; box-sizing: border-box; box-shadow: 0 5px 15px rgba(0,0,0,0.2); position: relative; color: #333; line-height: 1.6; }
-        
+        body {
+            display: none;
+            font-family: "Helvetica Neue", Arial, sans-serif;
+            background-color: #f4f4f4;
+            margin: 0;
+            padding: 20px;
+            gap: 20px;
+            justify-content: center;
+            min-height: 100vh;
+        }
+
+        .editor-pane {
+            width: 350px;
+            background: #fff;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+            height: fit-content;
+            overflow-y: auto;
+            max-height: 90vh;
+        }
+
+        .back-btn {
+            display: inline-block;
+            padding: 5px 10px;
+            text-decoration: none;
+            border-radius: var(--btn-radius);
+            font-size: 12px;
+            margin-bottom: 15px;
+            cursor: pointer;
+        }
+
+        .form-group {
+            margin-bottom: 15px;
+        }
+
+        .form-group label {
+            display: block;
+            font-size: 12px;
+            font-weight: bold;
+            margin-bottom: 5px;
+            color: #555;
+        }
+
+        .form-group input,
+        .form-group textarea,
+        .form-group select {
+            width: 100%;
+            padding: 8px;
+            box-sizing: border-box;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+            font-size: 14px;
+        }
+
+        .add-btn {
+            background: #6c757d;
+            color: white;
+            border: none;
+            padding: 2px 8px;
+            font-size: 12px;
+            cursor: pointer;
+            border-radius: 4px;
+            margin-left: 5px;
+        }
+
+        button.print-btn {
+            width: 100%;
+            padding: 12px;
+            background-color: #007bff;
+            color: white;
+            border: none;
+            border-radius: 4px;
+            font-size: 16px;
+            cursor: pointer;
+            font-weight: bold;
+            margin-top: 10px;
+        }
+
+        .preview-pane {
+            flex-grow: 1;
+            display: flex;
+            justify-content: center;
+        }
+
+        #doc {
+            width: 210mm;
+            min-height: 297mm;
+            background: white;
+            padding: 20mm;
+            box-sizing: border-box;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
+            position: relative;
+            color: #333;
+            line-height: 1.6;
+        }
+
         /* 議事録デザイン */
-        .g-title { text-align: center; font-size: 24px; font-weight: bold; margin-bottom: 20px; border: 2px solid #333; padding: 10px; }
-        
-        .g-meta-table { width: 100%; border-collapse: collapse; margin-bottom: 20px; font-size: 14px; }
-        .g-meta-table th, .g-meta-table td { border: 1px solid #333; padding: 8px; }
-        .g-meta-table th { background: #eee; width: 100px; text-align: left; font-weight: normal; }
-        
-        .g-section-title { font-size: 16px; font-weight: bold; border-left: 5px solid #007bff; padding-left: 10px; margin: 20px 0 10px 0; background: #f9f9f9; padding-top:5px; padding-bottom:5px; }
-        
-        .g-list { list-style: none; padding: 0; margin: 0; }
-        .g-list li { margin-bottom: 8px; border-bottom: 1px dashed #ddd; padding-bottom: 5px; display: flex; }
-        .g-list li::before { content: "●"; color: #007bff; margin-right: 10px; }
-        
-        .todo-table { width: 100%; border-collapse: collapse; font-size: 14px; margin-top: 10px; }
-        .todo-table th, .todo-table td { border: 1px solid #333; padding: 8px; }
-        .todo-table th { background: #eee; font-weight: normal; }
-        
+        .g-title {
+            text-align: center;
+            font-size: 24px;
+            font-weight: bold;
+            margin-bottom: 20px;
+            border: 2px solid #333;
+            padding: 10px;
+        }
+
+        .g-meta-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-bottom: 20px;
+            font-size: 14px;
+        }
+
+        .g-meta-table th,
+        .g-meta-table td {
+            border: 1px solid #333;
+            padding: 8px;
+        }
+
+        .g-meta-table th {
+            background: #eee;
+            width: 100px;
+            text-align: left;
+            font-weight: normal;
+        }
+
+        .g-section-title {
+            font-size: 16px;
+            font-weight: bold;
+            border-left: 5px solid #007bff;
+            padding-left: 10px;
+            margin: 20px 0 10px 0;
+            background: #f9f9f9;
+            padding-top: 5px;
+            padding-bottom: 5px;
+        }
+
+        .g-list {
+            list-style: none;
+            padding: 0;
+            margin: 0;
+        }
+
+        .g-list li {
+            margin-bottom: 8px;
+            border-bottom: 1px dashed #ddd;
+            padding-bottom: 5px;
+            display: flex;
+        }
+
+        .g-list li::before {
+            content: "●";
+            color: #007bff;
+            margin-right: 10px;
+        }
+
+        .todo-table {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 14px;
+            margin-top: 10px;
+        }
+
+        .todo-table th,
+        .todo-table td {
+            border: 1px solid #333;
+            padding: 8px;
+        }
+
+        .todo-table th {
+            background: #eee;
+            font-weight: normal;
+        }
+
         /* 入力用リスト */
-        .input-list-item { display: flex; gap: 5px; margin-bottom: 5px; }
-        .input-list-item input { flex: 1; }
-        
-        @media print { 
-            body { display: block !important; background: none; margin: 0; padding: 0; } 
-            .editor-pane { display: none; } 
-            .preview-pane { display: block; } 
-            #doc { box-shadow: none; width: 100%; height: 100%; margin: 0; padding: 20mm; page-break-after: always; } 
-            @page { margin: 0; size: A4 portrait; } 
+        .input-list-item {
+            display: flex;
+            gap: 5px;
+            margin-bottom: 5px;
+        }
+
+        .input-list-item input {
+            flex: 1;
+        }
+
+        @media print {
+            body {
+                display: block !important;
+                background: none;
+                margin: 0;
+                padding: 0;
+            }
+
+            .editor-pane {
+                display: none;
+            }
+
+            .preview-pane {
+                display: block;
+            }
+
+            #doc {
+                box-shadow: none;
+                width: 100%;
+                height: 100%;
+                margin: 0;
+                padding: 20mm;
+                page-break-after: always;
+            }
+
+            @page {
+                margin: 0;
+                size: A4 portrait;
+            }
         }
     </style>
+    <link rel="stylesheet" href="theme.css">
 </head>
+
 <body>
     <script src="lock.js"></script>
     <script src="settings.js"></script>
     <script>
         if (typeof checkAuth === 'function') checkAuth(); else document.body.style.display = "flex";
-        window.addEventListener('load', function() {
+        window.addEventListener('load', function () {
             document.getElementById('iptDate').valueAsDate = new Date();
             addTopic(); addTodo();
             update();
@@ -64,25 +242,29 @@
     <div class="editor-pane">
         <a href="index.html" class="back-btn">⬅ メニューに戻る</a>
         <h2>議事録 作成</h2>
-        <div class="form-group"><label>会議名</label><input type="text" id="iptTitle" placeholder="〇〇プロジェクト定例会" oninput="update()"></div>
+        <div class="form-group"><label>会議名</label><input type="text" id="iptTitle" placeholder="〇〇プロジェクト定例会"
+                oninput="update()"></div>
         <div class="form-group"><label>日時</label><input type="date" id="iptDate" oninput="update()"></div>
-        <div class="form-group"><label>場所</label><input type="text" id="iptPlace" placeholder="第1会議室 / Zoom" oninput="update()"></div>
-        <div class="form-group"><label>出席者</label><textarea id="iptMember" rows="2" placeholder="山田、鈴木、佐藤..." oninput="update()"></textarea></div>
-        
+        <div class="form-group"><label>場所</label><input type="text" id="iptPlace" placeholder="第1会議室 / Zoom"
+                oninput="update()"></div>
+        <div class="form-group"><label>出席者</label><textarea id="iptMember" rows="2" placeholder="山田、鈴木、佐藤..."
+                oninput="update()"></textarea></div>
+
         <hr>
         <div class="form-group">
             <label>議題 / 決定事項 <button type="button" class="add-btn" onclick="addTopic()">＋行追加</button></label>
             <div id="topic-container"></div>
         </div>
-        
+
         <hr>
         <div class="form-group">
             <label>次回までのタスク (ToDo) <button type="button" class="add-btn" onclick="addTodo()">＋行追加</button></label>
             <div id="todo-container"></div>
         </div>
-        
+
         <hr>
-        <div class="form-group"><label>次回予定 / 備考</label><textarea id="iptNext" rows="2" oninput="update()"></textarea></div>
+        <div class="form-group"><label>次回予定 / 備考</label><textarea id="iptNext" rows="2" oninput="update()"></textarea>
+        </div>
 
         <button class="print-btn" onclick="window.print()">🖨️ 議事録を印刷</button>
     </div>
@@ -90,11 +272,20 @@
     <div class="preview-pane">
         <div id="doc">
             <div class="g-title" id="viewTitle">会議議事録</div>
-            
+
             <table class="g-meta-table">
-                <tr><th>日　時</th><td id="viewDate"></td></tr>
-                <tr><th>場　所</th><td id="viewPlace"></td></tr>
-                <tr><th>出席者</th><td id="viewMember"></td></tr>
+                <tr>
+                    <th>日　時</th>
+                    <td id="viewDate"></td>
+                </tr>
+                <tr>
+                    <th>場　所</th>
+                    <td id="viewPlace"></td>
+                </tr>
+                <tr>
+                    <th>出席者</th>
+                    <td id="viewMember"></td>
+                </tr>
             </table>
 
             <div class="g-section-title">議題・決定事項</div>
@@ -102,7 +293,13 @@
 
             <div class="g-section-title">アクションアイテム (ToDo)</div>
             <table class="todo-table">
-                <thead><tr><th style="width:70%;">タスク内容</th><th style="width:15%;">担当</th><th style="width:15%;">期限</th></tr></thead>
+                <thead>
+                    <tr>
+                        <th style="width:70%;">タスク内容</th>
+                        <th style="width:15%;">担当</th>
+                        <th style="width:15%;">期限</th>
+                    </tr>
+                </thead>
                 <tbody id="viewTodoBody"></tbody>
             </table>
 
@@ -112,7 +309,7 @@
     </div>
 
     <script>
-        function formatDate(dateStr) { if(!dateStr) return ""; const d = new Date(dateStr); return `${d.getFullYear()}年${d.getMonth()+1}月${d.getDate()}日`; }
+        function formatDate(dateStr) { if (!dateStr) return ""; const d = new Date(dateStr); return `${d.getFullYear()}年${d.getMonth() + 1}月${d.getDate()}日`; }
 
         function addTopic() {
             const div = document.createElement('div');
@@ -142,7 +339,7 @@
             // 議題リスト更新
             let topicHtml = '';
             document.querySelectorAll('.ipt-topic').forEach(el => {
-                if(el.value.trim()) {
+                if (el.value.trim()) {
                     topicHtml += `<li><div style="white-space: pre-wrap;">${el.value}</div></li>`;
                 }
             });
@@ -153,14 +350,16 @@
             const tasks = document.querySelectorAll('.ipt-todo-task');
             const whos = document.querySelectorAll('.ipt-todo-who');
             const dues = document.querySelectorAll('.ipt-todo-due');
-            
+
             tasks.forEach((el, i) => {
-                if(el.value.trim() || whos[i].value.trim()) {
+                if (el.value.trim() || whos[i].value.trim()) {
                     todoHtml += `<tr><td>${el.value}</td><td style="text-align:center;">${whos[i].value}</td><td style="text-align:center;">${dues[i].value}</td></tr>`;
                 }
             });
             document.getElementById('viewTodoBody').innerHTML = todoHtml;
         }
     </script>
+    <script src="theme.js"></script>
 </body>
+
 </html>

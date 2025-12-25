@@ -1,48 +1,175 @@
 <!DOCTYPE html>
 <html lang="ja">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>経費精算書作成ツール</title>
     <style>
         /* --- 全体レイアウト --- */
-        body { display: none; font-family: "Helvetica Neue", Arial, sans-serif; background-color: #f4f4f4; margin: 0; padding: 20px; gap: 20px; justify-content: center; min-height: 100vh; }
-        .editor-pane { width: 400px; background: #fff; padding: 20px; border-radius: 8px; box-shadow: 0 2px 10px rgba(0,0,0,0.1); height: fit-content; overflow-y: auto; max-height: 90vh; }
-        .back-btn { display: inline-block; background-color: #6c757d; color: white; padding: 5px 10px; text-decoration: none; border-radius: 4px; font-size: 12px; margin-bottom: 15px; cursor: pointer; }
-        .form-group { margin-bottom: 15px; }
-        .form-group label { display: block; font-size: 12px; font-weight: bold; margin-bottom: 5px; color: #555; }
-        .form-group input, .form-group textarea, .form-group select { width: 100%; padding: 8px; box-sizing: border-box; border: 1px solid #ccc; border-radius: 4px; font-size: 14px; }
-        .seal-switch { display: flex; align-items: center; gap: 5px; font-size: 12px; font-weight: normal; cursor: pointer; margin-top: 5px; }
+        body {
+            display: none;
+            font-family: "Helvetica Neue", Arial, sans-serif;
+            background-color: #f4f4f4;
+            margin: 0;
+            padding: 20px;
+            gap: 20px;
+            justify-content: center;
+            min-height: 100vh;
+        }
+
+        .editor-pane {
+            width: 400px;
+            background: #fff;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+            height: fit-content;
+            overflow-y: auto;
+            max-height: 90vh;
+        }
+
+        .back-btn {
+            display: inline-block;
+            padding: 5px 10px;
+            text-decoration: none;
+            border-radius: var(--btn-radius);
+            font-size: 12px;
+            margin-bottom: 15px;
+            cursor: pointer;
+        }
+
+        .form-group {
+            margin-bottom: 15px;
+        }
+
+        .form-group label {
+            display: block;
+            font-size: 12px;
+            font-weight: bold;
+            margin-bottom: 5px;
+            color: #555;
+        }
+
+        .form-group input,
+        .form-group textarea,
+        .form-group select {
+            width: 100%;
+            padding: 8px;
+            box-sizing: border-box;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+            font-size: 14px;
+        }
+
+        .seal-switch {
+            display: flex;
+            align-items: center;
+            gap: 5px;
+            font-size: 12px;
+            font-weight: normal;
+            cursor: pointer;
+            margin-top: 5px;
+        }
 
         /* 明細行入力エリア */
-        .item-row { display: flex; gap: 5px; margin-bottom: 8px; align-items: center; border-bottom: 1px dashed #eee; padding-bottom: 8px; }
-        .item-row input { flex: 1; font-size: 13px; }
-        .w-date { width: 80px; flex: none !important; }
-        .w-price { width: 80px; flex: none !important; text-align: right; }
-        .w-dest { flex: 1.5 !important; }
-        
-        button.print-btn { width: 100%; padding: 12px; background-color: #17a2b8; color: white; border: none; border-radius: 4px; font-size: 16px; cursor: pointer; font-weight: bold; margin-top: 10px; }
-        
-        .preview-pane { flex-grow: 1; display: flex; justify-content: center; }
-        #sheet { width: 210mm; min-height: 297mm; background: white; padding: 20mm; box-sizing: border-box; box-shadow: 0 5px 15px rgba(0,0,0,0.2); position: relative; font-family: "Yu Mincho", "YuMincho", serif; color: #333; }
-        
+        .item-row {
+            display: flex;
+            gap: 5px;
+            margin-bottom: 8px;
+            align-items: center;
+            border-bottom: 1px dashed #eee;
+            padding-bottom: 8px;
+        }
+
+        .item-row input {
+            flex: 1;
+            font-size: 13px;
+        }
+
+        .w-date {
+            width: 80px;
+            flex: none !important;
+        }
+
+        .w-price {
+            width: 80px;
+            flex: none !important;
+            text-align: right;
+        }
+
+        .w-dest {
+            flex: 1.5 !important;
+        }
+
+        button.print-btn {
+            width: 100%;
+            padding: 12px;
+            background-color: #17a2b8;
+            color: white;
+            border: none;
+            border-radius: 4px;
+            font-size: 16px;
+            cursor: pointer;
+            font-weight: bold;
+            margin-top: 10px;
+        }
+
+        .preview-pane {
+            flex-grow: 1;
+            display: flex;
+            justify-content: center;
+        }
+
+        #sheet {
+            width: 210mm;
+            min-height: 297mm;
+            background: white;
+            padding: 20mm;
+            box-sizing: border-box;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
+            position: relative;
+            font-family: "Yu Mincho", "YuMincho", serif;
+            color: #333;
+        }
+
         /* デザイン */
-        .s-title { text-align: center; font-size: 28px; font-weight: bold; border-bottom: 2px solid #333; padding-bottom: 10px; margin-bottom: 30px; letter-spacing: 2px; }
-        
+        .s-title {
+            text-align: center;
+            font-size: 28px;
+            font-weight: bold;
+            border-bottom: 2px solid #333;
+            padding-bottom: 10px;
+            margin-bottom: 30px;
+            letter-spacing: 2px;
+        }
+
         /* ヘッダーエリア */
-        .s-header { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 30px; }
-        .s-info { font-size: 14px; line-height: 1.8; }
-        
+        .s-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+            margin-bottom: 30px;
+        }
+
+        .s-info {
+            font-size: 14px;
+            line-height: 1.8;
+        }
+
         /* 名前とハンコの並び（修正版） */
         .name-wrapper {
             display: flex;
-            align-items: center; /* 垂直方向中央揃え */
+            align-items: center;
+            /* 垂直方向中央揃え */
         }
-        
+
         /* 名前とハンコのコンテナ */
         .name-seal-box {
-            display: flex;         /* 横並びにする */
-            align-items: center;   /* 高さを合わせる */
+            display: flex;
+            /* 横並びにする */
+            align-items: center;
+            /* 高さを合わせる */
             margin-left: 5px;
         }
 
@@ -51,57 +178,167 @@
             border-bottom: 1px solid #333;
             min-width: 150px;
             padding-left: 5px;
-            margin-right: 15px; /* ハンコとの隙間 */
+            margin-right: 15px;
+            /* ハンコとの隙間 */
         }
 
         /* ハンコの位置（相対配置に変更） */
         .seal-container {
-            position: relative; /* 絶対配置をやめて、自然な並びに */
+            position: relative;
+            /* 絶対配置をやめて、自然な並びに */
             width: 45px;
             height: 45px;
             opacity: 0.85;
         }
-        .seal-img { width: 100%; height: 100%; object-fit: contain; }
-        .seal-dummy { width: 100%; height: 100%; border: 1px solid #ddd; display: flex; align-items: center; justify-content: center; color: #ddd; font-size: 10px; background: rgba(255,255,255,0.6); }
+
+        .seal-img {
+            width: 100%;
+            height: 100%;
+            object-fit: contain;
+        }
+
+        .seal-dummy {
+            width: 100%;
+            height: 100%;
+            border: 1px solid #ddd;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: #ddd;
+            font-size: 10px;
+            background: rgba(255, 255, 255, 0.6);
+        }
 
         /* 右側の承認印ボックス */
-        .stamp-box-table { border-collapse: collapse; font-size: 12px; text-align: center; }
-        .stamp-box-table th { border: 1px solid #000; background: #f0f0f0; width: 60px; padding: 2px; font-weight: normal; }
-        .stamp-box-table td { border: 1px solid #000; height: 60px; width: 60px; }
-        
+        .stamp-box-table {
+            border-collapse: collapse;
+            font-size: 12px;
+            text-align: center;
+        }
+
+        .stamp-box-table th {
+            border: 1px solid #000;
+            background: #f0f0f0;
+            width: 60px;
+            padding: 2px;
+            font-weight: normal;
+        }
+
+        .stamp-box-table td {
+            border: 1px solid #000;
+            height: 60px;
+            width: 60px;
+        }
+
         /* 合計金額バー */
-        .s-total-bar { display: flex; justify-content: flex-end; align-items: center; margin-bottom: 10px; font-size: 16px; font-weight: bold; }
-        .s-total-val { font-size: 24px; border-bottom: 2px solid #333; margin-left: 10px; padding: 0 20px; min-width: 100px; text-align: right; }
+        .s-total-bar {
+            display: flex;
+            justify-content: flex-end;
+            align-items: center;
+            margin-bottom: 10px;
+            font-size: 16px;
+            font-weight: bold;
+        }
+
+        .s-total-val {
+            font-size: 24px;
+            border-bottom: 2px solid #333;
+            margin-left: 10px;
+            padding: 0 20px;
+            min-width: 100px;
+            text-align: right;
+        }
 
         /* 明細テーブル */
-        .s-table { width: 100%; border-collapse: collapse; font-size: 12px; margin-bottom: 20px; }
-        .s-table th, .s-table td { border: 1px solid #333; padding: 6px; vertical-align: middle; }
-        .s-table th { background: #f0f0f0; text-align: center; font-weight: normal; }
-        .s-table td { height: 25px; }
-        
-        /* 列幅 */
-        .tc-date { width: 40px; text-align: center; }
-        .tc-dest { width: 150px; }
-        .tc-route { }
-        .tc-price { width: 80px; text-align: right; }
-        .tc-note { width: 80px; }
+        .s-table {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 12px;
+            margin-bottom: 20px;
+        }
 
-        @media print { 
-            body { display: block !important; background: none; margin: 0; padding: 0; } 
-            .editor-pane { display: none; } 
-            .preview-pane { display: block; } 
-            #sheet { box-shadow: none; width: 100%; height: 100%; margin: 0; padding: 20mm; page-break-after: always; } 
-            .seal-dummy { display: none !important; }
-            @page { margin: 0; size: A4 portrait; } 
+        .s-table th,
+        .s-table td {
+            border: 1px solid #333;
+            padding: 6px;
+            vertical-align: middle;
+        }
+
+        .s-table th {
+            background: #f0f0f0;
+            text-align: center;
+            font-weight: normal;
+        }
+
+        .s-table td {
+            height: 25px;
+        }
+
+        /* 列幅 */
+        .tc-date {
+            width: 40px;
+            text-align: center;
+        }
+
+        .tc-dest {
+            width: 150px;
+        }
+
+        .tc-route {}
+
+        .tc-price {
+            width: 80px;
+            text-align: right;
+        }
+
+        .tc-note {
+            width: 80px;
+        }
+
+        @media print {
+            body {
+                display: block !important;
+                background: none;
+                margin: 0;
+                padding: 0;
+            }
+
+            .editor-pane {
+                display: none;
+            }
+
+            .preview-pane {
+                display: block;
+            }
+
+            #sheet {
+                box-shadow: none;
+                width: 100%;
+                height: 100%;
+                margin: 0;
+                padding: 20mm;
+                page-break-after: always;
+            }
+
+            .seal-dummy {
+                display: none !important;
+            }
+
+            @page {
+                margin: 0;
+                size: A4 portrait;
+            }
         }
     </style>
+    <link rel="stylesheet" href="theme.css">
 </head>
+
 <body>
     <script src="lock.js"></script>
     <script src="settings.js"></script>
     <script>
         if (typeof checkAuth === 'function') checkAuth(); else document.body.style.display = "flex";
-        window.addEventListener('load', function() {
+        window.addEventListener('load', function () {
             if (typeof applyCompanyData === 'function') applyCompanyData();
             document.getElementById('iptDate').valueAsDate = new Date();
             // 共通設定のハンコを読み込む
@@ -114,21 +351,23 @@
     <div class="editor-pane">
         <a href="index.html" class="back-btn">⬅ メニューに戻る</a>
         <h2>経費精算書 作成</h2>
-        
+
         <div class="form-group"><label>提出日</label><input type="date" id="iptDate" oninput="update()"></div>
-        <div class="form-group"><label>期間（〇月分など）</label><input type="text" id="iptPeriod" placeholder="2025年12月度" oninput="update()"></div>
-        
+        <div class="form-group"><label>期間（〇月分など）</label><input type="text" id="iptPeriod" placeholder="2025年12月度"
+                oninput="update()"></div>
+
         <hr>
-        <div class="form-group"><label>所属</label><input type="text" id="iptDept" placeholder="営業部" oninput="update()"></div>
+        <div class="form-group"><label>所属</label><input type="text" id="iptDept" placeholder="営業部" oninput="update()">
+        </div>
         <div class="form-group"><label>氏名 (申請者)</label><input type="text" id="iptIssuerRep" oninput="update()"></div>
-        
+
         <div class="form-group">
             <label class="seal-switch">
                 <input type="checkbox" id="chkSeal" checked onchange="toggleSeal()">
                 電子印鑑を表示する
             </label>
         </div>
-        
+
         <hr>
         <label>明細入力 (日付 / 訪問先・内容 / 経路 / 金額)</label>
         <div id="items-container"></div>
@@ -139,20 +378,20 @@
     <div class="preview-pane">
         <div id="sheet">
             <div class="s-title">交通費・経費精算書</div>
-            
+
             <div class="s-header">
                 <!-- 左側：情報エリア -->
                 <div class="s-info">
                     <div>提出日：<span id="viewDate"></span></div>
                     <div>期間　：<span id="viewPeriod"></span></div>
                     <div>所　属：<span id="viewDept"></span></div>
-                    
+
                     <!-- 名前とハンコのセット (横並び) -->
                     <div class="name-wrapper">
                         <div>氏　名：</div>
                         <div class="name-seal-box">
                             <span class="user-name-text" id="viewName"></span>
-                            
+
                             <!-- ハンココンテナ (名前の右横に配置) -->
                             <div class="seal-container">
                                 <img id="viewSeal" src="" class="seal-img" style="display:none;">
@@ -161,7 +400,7 @@
                         </div>
                     </div>
                 </div>
-                
+
                 <!-- 右側：承認印ボックス -->
                 <table class="stamp-box-table">
                     <tr>
@@ -193,7 +432,7 @@
                 </thead>
                 <tbody id="viewItemsBody"></tbody>
             </table>
-            
+
             <div style="font-size:12px;">
                 ※ 領収証がある場合は裏面に添付してください。<br>
                 ※ 定期区間内の交通費は除いて記入してください。
@@ -204,9 +443,9 @@
     <script>
         const ROW_COUNT = 15; // 15行分作成
 
-        window.onload = function() {
+        window.onload = function () {
             const container = document.getElementById('items-container');
-            for(let i=0; i<ROW_COUNT; i++) {
+            for (let i = 0; i < ROW_COUNT; i++) {
                 const div = document.createElement('div');
                 div.className = 'item-row';
                 div.innerHTML = `
@@ -217,18 +456,18 @@
                 `;
                 container.appendChild(div);
             }
-            
+
             document.getElementById('iptDate').valueAsDate = new Date();
-            
+
             // 共通設定(settings.js)の読み込み
             if (typeof applyCompanyData === 'function') applyCompanyData();
-            
+
             // 画像ロード（少し待ってから反映）
             setTimeout(() => {
                 loadSeal();
                 update();
             }, 500);
-            
+
             update();
         };
 
@@ -248,7 +487,7 @@
             const isChecked = document.getElementById('chkSeal').checked;
             const img = document.getElementById('viewSeal');
             const dummy = document.getElementById('dummySeal');
-            
+
             if (img.src && img.src.length > 100 && isChecked) {
                 img.style.display = 'block';
                 dummy.style.display = 'none';
@@ -258,7 +497,7 @@
             }
         }
 
-        function formatDate(dateStr) { if(!dateStr) return ""; const d = new Date(dateStr); return `${d.getFullYear()}年${d.getMonth()+1}月${d.getDate()}日`; }
+        function formatDate(dateStr) { if (!dateStr) return ""; const d = new Date(dateStr); return `${d.getFullYear()}年${d.getMonth() + 1}月${d.getDate()}日`; }
         function fmt(num) { return num.toLocaleString(); }
 
         function update() {
@@ -269,7 +508,7 @@
 
             let html = '';
             let total = 0;
-            
+
             const rows = document.querySelectorAll('.item-row');
             rows.forEach(row => {
                 const day = row.querySelector('.ipt-day').value;
@@ -293,12 +532,14 @@
                     html += `<tr><td class="tc-date"></td><td></td><td></td><td></td><td></td></tr>`;
                 }
             });
-            
+
             document.getElementById('viewItemsBody').innerHTML = html;
             document.getElementById('viewTotal').innerText = fmt(total);
         }
-        
+
         document.querySelectorAll('input').forEach(i => i.addEventListener('input', update));
     </script>
+    <script src="theme.js"></script>
 </body>
+
 </html>

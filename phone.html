@@ -1,111 +1,279 @@
 <!DOCTYPE html>
 <html lang="ja">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Phone Memo 💖</title>
-    <link href="https://fonts.googleapis.com/css2?family=M+PLUS+Rounded+1c:wght@400;700&display=swap" rel="stylesheet">
+    <title>Phone Memo</title>
+    <link
+        href="https://fonts.googleapis.com/css2?family=M+PLUS+Rounded+1c:wght@400;700&family=Noto+Sans+JP:wght@400;700&display=swap"
+        rel="stylesheet">
+    <link rel="stylesheet" href="theme.css">
     <style>
+        /* =========================================
+           テーマ定義 (CSS変数)
+           ========================================= */
         :root {
-            --main-pink: #ff9eb5;
-            --light-pink: #fff0f5;
-            --text-color: #5d4037;
+            /* Stylish (Default) */
+            --bg-color: #f4f7f6;
+            --bg-image: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
+            --font-family: "Helvetica Neue", "Noto Sans JP", Arial, sans-serif;
+            --text-color: #2d3436;
+            --accent-color: #6c5ce7;
+            --accent-sub: #a29bfe;
+            --card-bg: rgba(255, 255, 255, 0.9);
+            --header-bg: #2d3436;
+            --header-text: #ffffff;
+            --border-radius: 12px;
+            --shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+            --input-bg: #fff;
+            --input-border: #dfe6e9;
+            --check-bg: #fff;
+            --btn-radius: 6px;
+            --back-btn-bg: #636e72;
+            --back-btn-text: #fff;
         }
 
+        /* Kawaii (水色ボタン復活！) */
+        body.theme-kawaii {
+            --bg-color: #fff0f6;
+            --bg-image: radial-gradient(#ffcdd2 20%, transparent 20%), radial-gradient(#ffcdd2 20%, transparent 20%);
+            --font-family: "M PLUS Rounded 1c", sans-serif;
+            --text-color: #5d4037;
+            --accent-color: #ff6b81;
+            --accent-sub: #ff9eb5;
+            --card-bg: rgba(255, 255, 255, 0.95);
+            --header-bg: #ff9eb5;
+            --header-text: #ffffff;
+            --border-radius: 25px;
+            --shadow: 0 10px 20px rgba(255, 105, 180, 0.15);
+            --input-bg: #fff;
+            --input-border: #ffdde1;
+            --check-bg: #fff;
+        }
+
+        /* Dark */
+        body.theme-dark {
+            --bg-color: #050508;
+            --bg-image: linear-gradient(rgba(0, 229, 255, 0.05) 1px, transparent 1px), linear-gradient(90deg, rgba(0, 229, 255, 0.05) 1px, transparent 1px);
+            --font-family: "Helvetica Neue", "Noto Sans JP", Arial, sans-serif;
+            --text-color: #e0f7fa;
+            --accent-color: #00e5ff;
+            --accent-sub: #00b8d4;
+            --card-bg: rgba(20, 30, 50, 0.8);
+            --header-bg: rgba(5, 10, 20, 0.95);
+            --header-text: #00e5ff;
+            --border-radius: 6px;
+            --shadow: 0 0 20px rgba(0, 229, 255, 0.1);
+            --input-bg: rgba(0, 0, 0, 0.5);
+            --input-border: #00e5ff;
+            --check-bg: rgba(0, 0, 0, 0.5);
+        }
+
+        /* --- 基本レイアウト --- */
         body {
-            font-family: "M PLUS Rounded 1c", sans-serif;
-            background-color: #fff0f6;
-            background-image: radial-gradient(#ffcdd2 20%, transparent 20%), radial-gradient(#ffcdd2 20%, transparent 20%);
-            background-size: 20px 20px;
-            background-position: 0 0, 10px 10px;
+            font-family: var(--font-family);
+            background-color: var(--bg-color);
+            background-image: var(--bg-image);
+            background-size: cover;
             margin: 0;
-            padding: 20px;
+            padding: 0;
             display: flex;
-            justify-content: center;
+            flex-direction: column;
             min-height: 100vh;
             color: var(--text-color);
+            transition: 0.3s;
         }
-        
+
+        body.theme-kawaii {
+            background-size: 20px 20px;
+            background-position: 0 0, 10px 10px;
+        }
+
+        body.theme-dark {
+            background-size: 40px 40px;
+        }
+
+        /* ヘッダー */
+        header {
+            background-color: var(--header-bg);
+            color: var(--header-text);
+            width: 100%;
+            padding: 12px 25px;
+            box-sizing: border-box;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            position: sticky;
+            top: 0;
+            z-index: 1000;
+            flex-shrink: 0;
+            backdrop-filter: blur(5px);
+        }
+
+        h1 {
+            margin: 0;
+            font-size: 18px;
+            font-weight: bold;
+            letter-spacing: 1px;
+        }
+
+        .header-btns {
+            display: flex;
+            gap: 10px;
+        }
+
+        /* モード切替ボタン */
+        .theme-btn {
+            background: rgba(255, 255, 255, 0.2);
+            color: inherit;
+            border: 1px solid rgba(255, 255, 255, 0.4);
+            padding: 6px 15px;
+            border-radius: 20px;
+            font-size: 12px;
+            cursor: pointer;
+            font-weight: bold;
+        }
+
+        .theme-btn:hover {
+            background: rgba(255, 255, 255, 0.3);
+        }
+
+        body.theme-dark .theme-btn {
+            border-color: var(--accent-color);
+            color: var(--accent-color);
+            background: rgba(0, 0, 0, 0.5);
+        }
+
+        /* --- メインコンテンツ --- */
         .container {
             display: flex;
             gap: 25px;
             width: 100%;
-            max-width: 950px;
-        }
-        
-        .editor-pane {
-            flex: 1;
-            background: rgba(255, 255, 255, 0.95);
-            padding: 25px;
-            border-radius: 25px;
-            border: 3px solid #fff;
-            box-shadow: 0 10px 20px rgba(255, 105, 180, 0.15);
+            max-width: 1200px;
+            margin: 20px auto;
+            padding: 0 20px;
+            box-sizing: border-box;
+            flex-grow: 1;
         }
 
+        /* エディタエリア */
+        .editor-pane {
+            flex: 1;
+            min-width: 350px;
+            background: var(--card-bg);
+            padding: 30px;
+            border-radius: var(--border-radius);
+            box-shadow: var(--shadow);
+            border: 2px solid rgba(255, 255, 255, 0.5);
+        }
+
+        body.theme-dark .editor-pane {
+            border: 1px solid var(--accent-color);
+        }
+
+        /* ★復活した「戻る」ボタン */
         .back-btn {
             display: inline-block;
-            background-color: #b2ebf2;
+            margin-bottom: 20px;
+        }
+
+        .back-btn:active {
+            transform: translateY(2px);
+        }
+
+        .reset-btn {
+            background: var(--input-bg);
+            border: 1px solid var(--input-border);
             color: var(--text-color);
-            padding: 6px 12px;
-            text-decoration: none;
-            border-radius: 20px;
+            padding: 5px 15px;
+            border-radius: var(--btn-radius);
+            cursor: pointer;
             font-size: 12px;
             font-weight: bold;
-            margin-bottom: 15px;
-            box-shadow: 2px 2px 0px #80deea;
-            transition: transform 0.1s;
+            opacity: 0.7;
         }
-        .back-btn:active { transform: translateY(2px); box-shadow: none; }
-        
+
+        .reset-btn:hover {
+            opacity: 1;
+            border-color: var(--accent-color);
+            color: var(--accent-color);
+        }
+
         h2 {
-            color: #ff6b81;
-            margin-top: 0;
+            color: var(--accent-color);
+            margin-top: 10px;
             font-size: 22px;
             text-align: center;
-            border-bottom: 2px dashed #ff9eb5;
+            border-bottom: 2px dashed var(--accent-sub);
             padding-bottom: 10px;
         }
 
-        .form-group { margin-bottom: 18px; }
-        
-        /* ★修正: 直下の子要素(>)だけに限定することで、チェックボックスへの影響を防ぐ */
-        .form-group > label {
+        .form-group {
+            margin-bottom: 18px;
+        }
+
+        .form-group>label {
             display: flex;
             justify-content: space-between;
             align-items: center;
             font-size: 13px;
             font-weight: bold;
             margin-bottom: 6px;
-            color: #ff6b81;
+            color: var(--accent-color);
         }
-        .form-group > label span::before { content: "♥ "; color: #ff9eb5; }
 
-        input, textarea {
+        body.theme-kawaii .form-group>label span::before {
+            content: "♥ ";
+            color: var(--accent-sub);
+        }
+
+        input,
+        textarea {
             width: 100%;
             padding: 12px;
             box-sizing: border-box;
-            border: 2px solid #ffdde1;
-            border-radius: 15px;
+            border: 2px solid var(--input-border);
+            border-radius: var(--border-radius);
             font-size: 14px;
             font-family: inherit;
-            background: #fff;
-            transition: 0.3s;
+            background: var(--input-bg);
             color: var(--text-color);
+            transition: 0.3s;
         }
-        input:focus, textarea:focus {
+
+        input:focus,
+        textarea:focus {
             outline: none;
-            border-color: #ff9eb5;
+            border-color: var(--accent-color);
+            box-shadow: 0 0 0 3px rgba(108, 92, 231, 0.2);
+        }
+
+        body.theme-kawaii input:focus,
+        body.theme-kawaii textarea:focus {
             box-shadow: 0 0 0 3px rgba(255, 158, 181, 0.2);
         }
 
-        /* --- メンバーリスト（チップ）の改良 --- */
-        .member-list { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 5px; margin-bottom: 5px; }
-        
+        body.theme-dark input:focus,
+        body.theme-dark textarea:focus {
+            box-shadow: 0 0 10px var(--accent-color);
+        }
+
+        /* メンバーリスト */
+        .member-list {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 8px;
+            margin-top: 5px;
+            margin-bottom: 5px;
+        }
+
         .member-chip {
-            background-color: #fff0f5;
-            border: 1px solid #ff9eb5;
-            color: #ff6b81;
-            padding: 4px 8px 4px 12px; /* 右側（×ボタン）の余白調整 */
+            background-color: var(--bg-color);
+            border: 1px solid var(--accent-color);
+            color: var(--accent-color);
+            padding: 4px 8px 4px 12px;
             border-radius: 20px;
             font-size: 12px;
             font-weight: bold;
@@ -116,89 +284,258 @@
             align-items: center;
             gap: 8px;
         }
+
         .member-chip:hover {
-            background-color: #ffe0e9;
+            background-color: var(--accent-color);
+            color: #fff;
             transform: translateY(-2px);
         }
-        
-        /* 削除ボタン(×)のデザイン */
+
+        body.theme-dark .member-chip:hover {
+            color: #000;
+        }
+
         .chip-delete {
             width: 18px;
             height: 18px;
-            background: rgba(255, 255, 255, 0.5);
+            background: rgba(0, 0, 0, 0.1);
             border-radius: 50%;
             display: flex;
             justify-content: center;
             align-items: center;
-            color: #ff6b81;
             font-size: 10px;
             line-height: 1;
         }
+
         .chip-delete:hover {
-            background: #ff6b81;
+            background: #ff5252;
             color: white;
         }
 
         /* 設定エリア */
         .member-settings {
-            background: #fdf2f4; padding: 10px; border-radius: 10px; margin-top: 5px;
-            border: 1px dashed #ff9eb5; display: none;
+            background: var(--bg-color);
+            padding: 10px;
+            border-radius: 10px;
+            margin-top: 5px;
+            border: 1px dashed var(--accent-color);
+            display: none;
         }
-        .add-row { display: flex; gap: 5px; }
-        .add-row input { padding: 8px; font-size: 12px; border-radius: 8px; }
+
+        .add-row {
+            display: flex;
+            gap: 5px;
+        }
+
+        .add-row input {
+            padding: 8px;
+            font-size: 12px;
+        }
+
         .small-btn {
-            padding: 8px 12px; background: #ff9eb5; color: white; border: none;
-            border-radius: 8px; font-weight: bold; cursor: pointer; font-size: 12px; white-space: nowrap;
+            padding: 8px 12px;
+            background: var(--accent-color);
+            color: white;
+            border: none;
+            border-radius: 8px;
+            font-weight: bold;
+            cursor: pointer;
+            font-size: 12px;
+            white-space: nowrap;
         }
-        .edit-toggle { font-size: 11px; cursor: pointer; color: #aaa; text-decoration: underline; }
-        .edit-toggle:hover { color: #ff6b81; }
+
+        body.theme-dark .small-btn {
+            color: #000;
+        }
+
+        .edit-toggle {
+            font-size: 11px;
+            cursor: pointer;
+            opacity: 0.7;
+            text-decoration: underline;
+        }
+
+        .edit-toggle:hover {
+            color: var(--accent-color);
+            opacity: 1;
+        }
 
         /* チェックボックス */
-        .check-group { display: flex; flex-direction: column; gap: 12px; }
-        .check-item { border: 2px solid #ffe0e9; border-radius: 18px; padding: 12px; background: #fff; transition: 0.2s; cursor: pointer; }
-        .check-item:has(input:checked) { background: #fff0f5; border-color: #ff9eb5; transform: scale(1.02); box-shadow: 0 4px 10px rgba(255, 182, 193, 0.2); }
-        
-        /* ★修正: 左寄せを強制 */
-        .check-label { 
-            display: flex; 
-            align-items: center; 
-            gap: 10px; 
-            font-size: 14px; 
-            font-weight: bold; 
-            color: var(--text-color); 
-            cursor: pointer;
-            justify-content: flex-start !important; /* 絶対に左寄せ */
+        .check-group {
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
         }
-        
-        input[type="checkbox"] { accent-color: #ff6b81; width: 18px; height: 18px; cursor: pointer; }
 
-        .sub-input { margin-top: 10px; margin-left: 28px; display: none; animation: popIn 0.3s; }
-        .check-item:has(input:checked) .sub-input { display: block; }
-        @keyframes popIn { from { opacity: 0; transform: translateY(-5px); } to { opacity: 1; transform: translateY(0); } }
+        .check-item {
+            border: 1px solid var(--input-border);
+            border-radius: var(--border-radius);
+            padding: 10px;
+            background: var(--check-bg);
+            transition: 0.2s;
+            cursor: pointer;
+        }
 
-        #saveMsg { font-size: 11px; color: #4caf50; margin-top: 5px; text-align: right; display: none; font-weight: bold; }
+        .check-item:has(input:checked) {
+            background: var(--bg-color);
+            border-color: var(--accent-color);
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+        }
 
-        .preview-pane { width: 380px; display: flex; flex-direction: column; gap: 15px; }
-        .result-container { background: #fff; padding: 10px; border-radius: 20px; border-top: 8px solid rgba(255, 182, 193, 0.5); box-shadow: 0 5px 15px rgba(0,0,0,0.05); }
-        .result-box { background: #fffcf0; color: #5d4037; padding: 20px; border-radius: 10px; font-family: "M PLUS Rounded 1c", monospace; line-height: 1.7; white-space: pre-wrap; font-size: 13px; min-height: 300px; border: 2px dashed #e0e0e0; }
-        .copy-btn { width: 100%; padding: 15px; background: linear-gradient(45deg, #ff9eb5, #ff6b81); color: white; border: none; border-radius: 50px; font-size: 16px; font-weight: bold; font-family: inherit; cursor: pointer; box-shadow: 0 4px 10px rgba(255, 107, 129, 0.4); transition: transform 0.2s; position: relative; overflow: hidden; }
-        .copy-btn:hover { transform: translateY(-3px); box-shadow: 0 6px 15px rgba(255, 107, 129, 0.6); }
-        .copy-btn::after { content: "✨"; position: absolute; right: 20px; top: 50%; transform: translateY(-50%); }
-        .reset-btn { background: #fff; border: 2px solid #eee; color: #aaa; padding: 5px 15px; border-radius: 20px; cursor: pointer; font-size: 12px; float: right; font-weight: bold; }
-        .helper-text { font-size: 11px; text-align: center; color: #ff6b81; font-weight: bold; }
+        .check-label {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            font-size: 14px;
+            font-weight: bold;
+            cursor: pointer;
+            justify-content: flex-start;
+        }
 
-        @media (max-width: 700px) { .container { flex-direction: column; } .preview-pane { width: 100%; } }
+        input[type="checkbox"] {
+            accent-color: var(--accent-color);
+            width: 18px;
+            height: 18px;
+            cursor: pointer;
+        }
+
+        .sub-input {
+            margin-top: 10px;
+            margin-left: 28px;
+            display: none;
+        }
+
+        .check-item:has(input:checked) .sub-input {
+            display: block;
+            animation: popIn 0.3s;
+        }
+
+        @keyframes popIn {
+            from {
+                opacity: 0;
+                transform: translateY(-5px);
+            }
+
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        #saveMsg {
+            font-size: 11px;
+            color: #4caf50;
+            margin-top: 5px;
+            text-align: right;
+            display: none;
+            font-weight: bold;
+        }
+
+        /* プレビューエリア */
+        .preview-pane {
+            width: 500px;
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+            flex-shrink: 0;
+        }
+
+        .result-container {
+            width: 100%;
+            box-sizing: border-box;
+            background: #fff;
+            padding: 10px;
+            border-radius: 20px;
+            border-top: 8px solid var(--accent-sub);
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.05);
+        }
+
+        .result-box {
+            background: #fffcf0;
+            color: #5d4037;
+            padding: 20px;
+            border-radius: 10px;
+            font-family: monospace;
+            line-height: 1.7;
+            white-space: pre-wrap;
+            font-size: 13px;
+            min-height: 300px;
+            border: 2px dashed #e0e0e0;
+        }
+
+        .copy-btn {
+            width: 100%;
+            padding: 15px;
+            background: var(--accent-color);
+            color: white;
+            border: none;
+            border-radius: var(--btn-radius);
+            font-size: 16px;
+            font-weight: bold;
+            cursor: pointer;
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2);
+            transition: transform 0.2s;
+            position: relative;
+            overflow: hidden;
+        }
+
+        body.theme-kawaii .copy-btn {
+            background: linear-gradient(45deg, #ff9eb5, #ff6b81);
+            border-radius: 50px;
+        }
+
+        body.theme-dark .copy-btn {
+            background: rgba(0, 229, 255, 0.2);
+            color: #00e5ff;
+            border: 1px solid #00e5ff;
+            box-shadow: 0 0 10px #00e5ff;
+        }
+
+        .copy-btn:hover {
+            transform: translateY(-3px);
+            opacity: 0.9;
+        }
+
+        .helper-text {
+            font-size: 11px;
+            text-align: center;
+            color: var(--accent-color);
+            font-weight: bold;
+        }
+
+        @media (max-width: 900px) {
+            .container {
+                flex-direction: column;
+            }
+
+            .preview-pane {
+                width: 100%;
+            }
+
+            .editor-pane {
+                min-width: auto;
+            }
+        }
     </style>
 </head>
+
 <body>
-    <script src="lock.js"></script>
-    <script>if (typeof checkAuth === 'function') checkAuth(); else document.body.style.display="flex";</script>
+    <header>
+        <h1>Phone Memo</h1>
+        <div class="header-btns">
+            <button onclick="toggleTheme()" id="themeBtn" class="theme-btn">🎨 デザイン変更</button>
+        </div>
+    </header>
 
     <div class="container">
         <div class="editor-pane">
-            <a href="index.html" class="back-btn">⬅ もどる</a>
-            <button class="reset-btn" onclick="resetForm()">リセット</button>
-            <h2>💖 Phone Memo 💖</h2>
+            <div style="display:flex; justify-content:space-between; align-items:center;">
+                <!-- ★復活: 水色の戻るボタン -->
+                <a href="index.html" class="back-btn">⬅ メニューに戻る</a>
+                <button class="reset-btn" onclick="resetForm()">リセット</button>
+            </div>
+
+            <h2>📞 電話メモ</h2>
 
             <div class="form-group">
                 <label><span>お相手 (会社名・氏名)</span></label>
@@ -209,17 +546,14 @@
             <div class="form-group">
                 <label>
                     <span>社内の誰宛？</span>
-                    <!-- ⚙️は設定エリアの開閉のみに使用 -->
                     <span class="edit-toggle" onclick="toggleSettingsBox('to')">⚙️追加</span>
                 </label>
-                
                 <div id="settingsTo" class="member-settings">
                     <div class="add-row">
                         <input type="text" id="newMemberTo" placeholder="例：佐藤さん">
                         <button class="small-btn" onclick="addMember('to')">追加する</button>
                     </div>
                 </div>
-
                 <div id="memberListTo" class="member-list"></div>
                 <input type="text" id="iptTo" placeholder="入力または上のボタンを選択" oninput="update()">
             </div>
@@ -228,15 +562,20 @@
                 <label><span>どうする？ (複数えらべるよ)</span></label>
                 <div class="check-group">
                     <div class="check-item">
-                        <label class="check-label"><input type="checkbox" id="chkCallback" onchange="update()"> 📞 折り返し電話してほしい</label>
-                        <div class="sub-input"><input type="text" id="iptTel" placeholder="相手の番号: 03-0000-0000" oninput="update()"></div>
+                        <label class="check-label"><input type="checkbox" id="chkCallback" onchange="update()"> 📞
+                            折り返し電話してほしい</label>
+                        <div class="sub-input"><input type="text" id="iptTel" placeholder="相手の番号: 03-0000-0000"
+                                oninput="update()"></div>
                     </div>
                     <div class="check-item">
-                        <label class="check-label"><input type="checkbox" id="chkAgain" onchange="update()"> 🔁 また掛け直すそうです</label>
-                        <div class="sub-input"><input type="text" id="iptTime" placeholder="いつ頃？ (例: 本日15時頃)" oninput="update()"></div>
+                        <label class="check-label"><input type="checkbox" id="chkAgain" onchange="update()"> 🔁
+                            また掛け直すそうです</label>
+                        <div class="sub-input"><input type="text" id="iptTime" placeholder="いつ頃？ (例: 本日15時頃)"
+                                oninput="update()"></div>
                     </div>
                     <div class="check-item">
-                        <label class="check-label"><input type="checkbox" id="chkReceived" onchange="update()"> 📱 電話があったことだけ報告</label>
+                        <label class="check-label"><input type="checkbox" id="chkReceived" onchange="update()"> 📱
+                            電話があったことだけ報告</label>
                     </div>
                 </div>
             </div>
@@ -245,21 +584,19 @@
                 <label><span>伝言メモ (くわしく)</span></label>
                 <textarea id="iptMsg" rows="4" placeholder="例：見積書の件について確認したいそうです。" oninput="update()"></textarea>
             </div>
-            
+
             <!-- 受電者 (Me) -->
             <div class="form-group">
                 <label>
                     <span>電話とった人 (自分)</span>
                     <span class="edit-toggle" onclick="toggleSettingsBox('me')">⚙️追加</span>
                 </label>
-                
                 <div id="settingsMe" class="member-settings">
                     <div class="add-row">
                         <input type="text" id="newMemberMe" placeholder="例：自分(田中)">
                         <button class="small-btn" onclick="addMember('me')">追加する</button>
                     </div>
                 </div>
-
                 <div id="memberListMe" class="member-list"></div>
                 <input type="text" id="iptMe" placeholder="自分の名前" oninput="update(); saveName();">
                 <div id="saveMsg">✅ 次回からこの名前になります</div>
@@ -270,18 +607,29 @@
             <div class="result-container">
                 <div class="result-box" id="resultText"></div>
             </div>
-            <button class="copy-btn" onclick="copyToClipboard()">コピーする 💕</button>
+            <button class="copy-btn" onclick="copyToClipboard()">コピーする</button>
             <p class="helper-text">↑ これを押してLINEやSlackにペタッ！</p>
         </div>
     </div>
 
+    <script src="auth.js"></script>
     <script>
+        if (typeof checkAuth === 'function') checkAuth(); else document.body.style.display = "flex";
+
         const KEY_PHONE_ME = "my_tool_phone_receiver";
         const KEY_COMPANY = "my_tool_company_info";
         const KEY_MEMBERS_TO = "my_tool_phone_members_to";
         const KEY_MEMBERS_ME = "my_tool_phone_members_me";
+        const THEMES = ['', 'theme-kawaii', 'theme-dark'];
 
-        window.onload = function() {
+        window.onload = function () {
+            // テーマ復元
+            const savedTheme = localStorage.getItem('my_tool_theme');
+            if (savedTheme && THEMES.includes(savedTheme)) {
+                document.body.className = savedTheme;
+            }
+            updateBtnText();
+
             let initialName = localStorage.getItem(KEY_PHONE_ME);
             if (!initialName) {
                 const savedCompany = localStorage.getItem(KEY_COMPANY);
@@ -289,15 +637,45 @@
                     try {
                         const data = JSON.parse(savedCompany);
                         if (data.rep) initialName = data.rep;
-                    } catch(e) {}
+                    } catch (e) { }
                 }
             }
-            if(initialName) document.getElementById('iptMe').value = initialName;
-            
+            if (initialName) document.getElementById('iptMe').value = initialName;
+
             renderMembers('to');
             renderMembers('me');
             update();
         };
+
+        function toggleTheme() {
+            const body = document.body;
+            let currentClass = "";
+            if (body.classList.contains('theme-kawaii')) currentClass = 'theme-kawaii';
+            else if (body.classList.contains('theme-dark')) currentClass = 'theme-dark';
+
+            const currentIndex = THEMES.indexOf(currentClass);
+            const nextIndex = (currentIndex + 1) % THEMES.length;
+            const nextClass = THEMES[nextIndex];
+
+            body.className = nextClass;
+            localStorage.setItem('my_tool_theme', nextClass);
+            updateBtnText();
+        }
+
+        function updateBtnText() {
+            const btn = document.getElementById('themeBtn');
+            const body = document.body;
+            if (body.classList.contains('theme-kawaii')) {
+                btn.innerText = "💖 モード切替 (次:Neon)";
+                btn.style.color = "#fff"; btn.style.borderColor = "#fff";
+            } else if (body.classList.contains('theme-dark')) {
+                btn.innerText = "⚡ モード切替 (次:Simple)";
+                btn.style.color = "#00e5ff"; btn.style.borderColor = "#00e5ff";
+            } else {
+                btn.innerText = "✨ モード切替 (次:Kawaii)";
+                btn.style.color = "#fff"; btn.style.borderColor = "rgba(255,255,255,0.5)";
+            }
+        }
 
         function getMembers(type) {
             const key = (type === 'to') ? KEY_MEMBERS_TO : KEY_MEMBERS_ME;
@@ -305,7 +683,6 @@
             return json ? JSON.parse(json) : [];
         }
 
-        // ★修正: チップと削除ボタンを分離
         function renderMembers(type) {
             const list = getMembers(type);
             const container = document.getElementById(type === 'to' ? 'memberListTo' : 'memberListMe');
@@ -314,24 +691,22 @@
             list.forEach((name, index) => {
                 const chip = document.createElement("div");
                 chip.className = "member-chip";
-                
-                // 名前部分
+
                 const nameSpan = document.createElement("span");
                 nameSpan.innerText = name;
                 nameSpan.style.flex = "1";
                 nameSpan.onclick = () => {
                     const targetId = (type === 'to') ? 'iptTo' : 'iptMe';
                     document.getElementById(targetId).value = name;
-                    if(type === 'me') saveName();
+                    if (type === 'me') saveName();
                     update();
                 };
 
-                // 削除ボタン部分 (×)
                 const deleteBtn = document.createElement("span");
                 deleteBtn.className = "chip-delete";
                 deleteBtn.innerText = "×";
                 deleteBtn.onclick = (e) => {
-                    e.stopPropagation(); // 親のクリックイベントを止める
+                    e.stopPropagation();
                     removeMember(type, index);
                 };
 
@@ -350,18 +725,18 @@
             const inputId = (type === 'to') ? 'newMemberTo' : 'newMemberMe';
             const input = document.getElementById(inputId);
             const name = input.value.trim();
-            if(!name) return;
+            if (!name) return;
 
             const list = getMembers(type);
             list.push(name);
             localStorage.setItem((type === 'to') ? KEY_MEMBERS_TO : KEY_MEMBERS_ME, JSON.stringify(list));
-            
+
             input.value = "";
             renderMembers(type);
         }
 
         function removeMember(type, index) {
-            if(!confirm("削除していい？")) return;
+            if (!confirm("削除しますか？")) return;
             const list = getMembers(type);
             list.splice(index, 1);
             localStorage.setItem((type === 'to') ? KEY_MEMBERS_TO : KEY_MEMBERS_ME, JSON.stringify(list));
@@ -395,13 +770,13 @@
             if (document.getElementById('chkCallback').checked) {
                 const tel = document.getElementById('iptTel').value;
                 let line = "・折り返しお電話をいただきたいとのことです。";
-                if(tel) line += `\n  (連絡先: ${tel})`;
+                if (tel) line += `\n  (連絡先: ${tel})`;
                 actions.push(line);
             }
             if (document.getElementById('chkAgain').checked) {
                 const time = document.getElementById('iptTime').value;
                 let line = "・また改めますとのことです。";
-                if(time) line += `\n  (目安: ${time})`;
+                if (time) line += `\n  (目安: ${time})`;
                 actions.push(line);
             }
 
@@ -415,7 +790,7 @@
             } else if (actions.length === 0) {
                 text += `(用件の入力をお待ちしています)\n\n`;
             }
-            
+
             text += `--------------------------------\n`;
             text += `受電: ${me}`;
 
@@ -427,11 +802,17 @@
             navigator.clipboard.writeText(text).then(() => {
                 const btn = document.querySelector('.copy-btn');
                 const original = btn.innerHTML;
-                btn.innerHTML = "コピー完了だよ！👌";
-                btn.style.background = "linear-gradient(45deg, #43a047, #66bb6a)";
+                btn.innerHTML = "コピー完了！👌";
+                if (document.body.classList.contains('theme-dark')) {
+                    btn.style.background = "#00e5ff"; btn.style.color = "#000";
+                } else if (document.body.classList.contains('theme-kawaii')) {
+                    btn.style.background = "linear-gradient(45deg, #43a047, #66bb6a)";
+                } else {
+                    btn.style.background = "#6c5ce7";
+                }
                 setTimeout(() => {
                     btn.innerHTML = original;
-                    btn.style.background = "linear-gradient(45deg, #ff9eb5, #ff6b81)";
+                    btn.style.background = ""; btn.style.color = "";
                 }, 2000);
             });
         }
@@ -445,4 +826,5 @@
         }
     </script>
 </body>
+
 </html>

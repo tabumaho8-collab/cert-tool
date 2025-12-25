@@ -1,101 +1,321 @@
 <!DOCTYPE html>
 <html lang="ja">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>シンプル領収書作成</title>
     <style>
         /* --- 全体のレイアウト --- */
-        body { display: none; font-family: "Helvetica Neue", Arial, "Hiragino Kaku Gothic ProN", "Hiragino Sans", Meiryo, sans-serif; background-color: #f4f4f4; margin: 0; padding: 20px; gap: 20px; justify-content: center; min-height: 100vh; }
-        
-        .editor-pane { width: 350px; background: #fff; padding: 20px; border-radius: 8px; box-shadow: 0 2px 10px rgba(0,0,0,0.1); height: fit-content; overflow-y: auto; max-height: 90vh; }
-        .back-btn { display: inline-block; background-color: #6c757d; color: white; padding: 5px 10px; text-decoration: none; border-radius: 4px; font-size: 12px; margin-bottom: 15px; cursor: pointer; }
-        .back-btn:hover { background-color: #5a6268; }
-        
-        .form-group { margin-bottom: 15px; }
-        .form-group label { display: block; font-size: 12px; font-weight: bold; margin-bottom: 5px; color: #555; }
-        .form-group input, .form-group textarea { width: 100%; padding: 10px; box-sizing: border-box; border: 1px solid #ccc; border-radius: 4px; font-size: 14px; }
-        .input-money { font-size: 16px; font-weight: bold; text-align: right; }
-        
-        /* ハンコ切替スイッチのデザイン (統一) */
-        .seal-type-group { background:#eef2f6; padding:8px; border-radius:4px; font-size:12px; margin-bottom:10px; border:1px solid #dbe5f1; }
-        .seal-type-label { margin-right:15px; cursor:pointer; }
-        .seal-switch { display: flex; align-items: center; gap: 5px; font-size: 12px; font-weight: normal; cursor: pointer; margin-top: 5px; }
-        .seal-switch input { width: auto; margin: 0; cursor: pointer; }
+        body {
+            display: none;
+            font-family: "Helvetica Neue", Arial, "Hiragino Kaku Gothic ProN", "Hiragino Sans", Meiryo, sans-serif;
+            background-color: #f4f4f4;
+            margin: 0;
+            padding: 20px;
+            gap: 20px;
+            justify-content: center;
+            min-height: 100vh;
+        }
 
-        button.print-btn { width: 100%; padding: 12px; background-color: #333; color: white; border: none; border-radius: 4px; font-size: 16px; cursor: pointer; font-weight: bold; margin-top: 20px; }
-        button.print-btn:hover { background-color: #000; }
-        
-        .preview-pane { flex-grow: 1; display: flex; justify-content: center; }
-        #receipt { width: 210mm; min-height: 297mm; background: white; padding: 25mm; box-sizing: border-box; box-shadow: 0 5px 15px rgba(0,0,0,0.2); position: relative; color: #000; }
-        
+        .editor-pane {
+            width: 500px;
+            background: #fff;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+            height: fit-content;
+            overflow-y: auto;
+            max-height: 90vh;
+        }
+
+        .back-btn {
+            display: inline-block;
+            background-color: #6c757d;
+            color: white;
+            padding: 5px 10px;
+            text-decoration: none;
+            border-radius: 4px;
+            font-size: 12px;
+            margin-bottom: 15px;
+            cursor: pointer;
+        }
+
+        .back-btn:hover {
+            background-color: #5a6268;
+        }
+
+        .form-group {
+            margin-bottom: 15px;
+        }
+
+        .form-group label {
+            display: block;
+            font-size: 12px;
+            font-weight: bold;
+            margin-bottom: 5px;
+            color: #555;
+        }
+
+        .form-group input,
+        .form-group textarea {
+            width: 100%;
+            padding: 10px;
+            box-sizing: border-box;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+            font-size: 14px;
+        }
+
+        .input-money {
+            font-size: 16px;
+            font-weight: bold;
+            text-align: right;
+        }
+
+        /* ハンコ切替スイッチのデザイン (統一) */
+        .seal-type-group {
+            background: #eef2f6;
+            padding: 8px;
+            border-radius: 4px;
+            font-size: 12px;
+            margin-bottom: 10px;
+            border: 1px solid #dbe5f1;
+        }
+
+        .seal-type-label {
+            margin-right: 15px;
+            cursor: pointer;
+        }
+
+        .seal-switch {
+            display: flex;
+            align-items: center;
+            gap: 5px;
+            font-size: 12px;
+            font-weight: normal;
+            cursor: pointer;
+            margin-top: 5px;
+        }
+
+        .seal-switch input {
+            width: auto;
+            margin: 0;
+            cursor: pointer;
+        }
+
+        button.print-btn {
+            width: 100%;
+            padding: 12px;
+            background-color: #333;
+            color: white;
+            border: none;
+            border-radius: 4px;
+            font-size: 16px;
+            cursor: pointer;
+            font-weight: bold;
+            margin-top: 20px;
+        }
+
+        button.print-btn:hover {
+            background-color: #000;
+        }
+
+        .preview-pane {
+            flex-grow: 1;
+            display: flex;
+            justify-content: center;
+        }
+
+        #receipt {
+            width: 210mm;
+            min-height: 297mm;
+            background: white;
+            padding: 25mm;
+            box-sizing: border-box;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
+            position: relative;
+            color: #000;
+        }
+
         /* 領収書デザイン */
-        .r-title { text-align: center; font-size: 28px; font-weight: bold; margin-bottom: 60px; letter-spacing: 5px; }
-        .r-header { display: flex; justify-content: space-between; align-items: flex-end; margin-bottom: 40px; }
-        .r-client { font-size: 24px; border-bottom: 1px solid #000; padding-bottom: 5px; min-width: 300px; }
-        .r-date { font-size: 14px; text-align: right; }
-        .r-amount-row { display: flex; justify-content: space-between; align-items: flex-end; border-bottom: 2px solid #000; padding-bottom: 10px; margin-bottom: 20px; }
-        .r-amount-label { font-size: 18px; font-weight: bold; }
-        .r-total-amount { font-size: 36px; font-weight: bold; }
-        .r-proviso { font-size: 14px; margin-bottom: 80px; }
-        
+        .r-title {
+            text-align: center;
+            font-size: 28px;
+            font-weight: bold;
+            margin-bottom: 60px;
+            letter-spacing: 5px;
+        }
+
+        .r-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-end;
+            margin-bottom: 40px;
+        }
+
+        .r-client {
+            font-size: 24px;
+            border-bottom: 1px solid #000;
+            padding-bottom: 5px;
+            min-width: 300px;
+        }
+
+        .r-date {
+            font-size: 14px;
+            text-align: right;
+        }
+
+        /* 金額表示：中央寄せに変更 */
+        .r-amount-row {
+            display: flex;
+            justify-content: center;
+            /* 右寄せ(space-between)から中央寄せに変更 */
+            align-items: baseline;
+            /* 下揃え */
+            border-bottom: 2px solid #000;
+            padding-bottom: 10px;
+            margin-bottom: 20px;
+            gap: 20px;
+        }
+
+        .r-amount-label {
+            font-size: 18px;
+            font-weight: bold;
+        }
+
+        .r-total-amount {
+            font-size: 42px;
+            font-weight: bold;
+            letter-spacing: 2px;
+        }
+
+        /* 少し大きく目立たせる */
+        .r-proviso {
+            font-size: 14px;
+            margin-bottom: 80px;
+        }
+
         /* フッターエリア */
-        .r-footer { display: flex; justify-content: space-between; align-items: flex-end; }
-        
+        .r-footer {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-end;
+        }
+
         /* 内訳 */
-        .tax-breakdown { font-size: 12px; line-height: 1.8; }
-        .tax-title { font-weight: bold; margin-bottom: 5px; font-size: 14px; }
-        .tax-row { display: flex; justify-content: space-between; width: 220px; }
+        .tax-breakdown {
+            font-size: 12px;
+            line-height: 1.8;
+        }
+
+        .tax-title {
+            font-weight: bold;
+            margin-bottom: 5px;
+            font-size: 14px;
+        }
+
+        .tax-row {
+            display: flex;
+            justify-content: space-between;
+            width: 220px;
+        }
 
         /* 発行者情報 */
-        .issuer-info { 
-            width: max-content; 
+        .issuer-info {
+            width: max-content;
             max-width: 50%;
-            margin-left: auto; 
-            text-align: left; 
-            font-size: 14px; 
-            line-height: 1.6; 
-            position: relative; 
+            margin-left: auto;
+            text-align: left;
+            font-size: 14px;
+            line-height: 1.6;
+            position: relative;
         }
-        .issuer-name { font-size: 18px; font-weight: bold; margin-bottom: 5px; }
+
+        .issuer-name {
+            font-size: 18px;
+            font-weight: bold;
+            margin-bottom: 5px;
+        }
 
         /* ハンコの位置 (シンプル版も下揃えで統一) */
         .seal-container {
             position: absolute;
-            bottom: -5px;  
-            right: -20px;  
-            width: 44px;   
-            height: 44px; 
-            z-index: 10; 
+            bottom: -5px;
+            right: -20px;
+            width: 44px;
+            height: 44px;
+            z-index: 10;
             pointer-events: none;
         }
 
-        .seal-img { width: 100%; height: 100%; object-fit: contain; opacity: 0.85; }
-        .seal-dummy { width: 100%; height: 100%; border: 1px solid #eee; display: flex; align-items: center; justify-content: center; color: #ddd; font-size: 10px; }
+        .seal-img {
+            width: 100%;
+            height: 100%;
+            object-fit: contain;
+            opacity: 0.85;
+        }
+
+        .seal-dummy {
+            width: 100%;
+            height: 100%;
+            border: 1px solid #eee;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: #ddd;
+            font-size: 10px;
+        }
 
         /* --- 印刷設定 --- */
-        @media print { 
-            body { display: block !important; background: none; margin: 0; padding: 0; } 
-            .editor-pane { display: none; } 
-            .preview-pane { display: block; } 
-            #receipt { box-shadow: none; width: 100%; height: 100%; margin: 0; padding: 25mm; page-break-after: always; } 
-            
+        @media print {
+            body {
+                display: block !important;
+                background: none;
+                margin: 0;
+                padding: 0;
+            }
+
+            .editor-pane {
+                display: none;
+            }
+
+            .preview-pane {
+                display: block;
+            }
+
+            #receipt {
+                box-shadow: none;
+                width: 100%;
+                height: 100%;
+                margin: 0;
+                padding: 25mm;
+                page-break-after: always;
+            }
+
             /* 印刷時にダミー枠は消す */
-            .seal-dummy { display: none !important; }
-            
-            @page { margin: 0; size: A4 portrait; } 
+            .seal-dummy {
+                display: none !important;
+            }
+
+            @page {
+                margin: 0;
+                size: A4 portrait;
+            }
         }
     </style>
+    <link rel="stylesheet" href="theme.css">
 </head>
+
 <body>
 
     <script src="lock.js"></script>
     <script src="settings.js"></script>
     <script>
         if (typeof checkAuth === 'function') checkAuth(); else document.body.style.display = "flex";
-        window.addEventListener('load', function() {
+        window.addEventListener('load', function () {
             if (typeof applyCompanyData === 'function') applyCompanyData();
-            
+
             // 会社データがあればデフォルトは「会社印」を選択
             if (window.companyData) {
                 changeSealType('company');
@@ -109,31 +329,41 @@
 
     <div class="editor-pane">
         <a href="index.html" class="back-btn">⬅ メニューに戻る</a>
-        
+
         <h2>シンプル領収書</h2>
-        
-        <div class="form-group"><label>宛名</label><input type="text" id="iptClient" placeholder="〇〇株式会社 御中" oninput="update()"></div>
+
+        <div class="form-group"><label>宛名</label><input type="text" id="iptClient" placeholder="〇〇株式会社 御中"
+                oninput="update()"></div>
         <div class="form-group"><label>領収日</label><input type="date" id="iptDate" oninput="update()"></div>
         <hr>
         <div style="background:#f9f9f9; padding:10px; border-radius:4px; margin-bottom:15px;">
             <label style="font-weight:bold; margin-bottom:10px; display:block;">金額入力 (税込)</label>
-            <div class="form-group"><label>10%対象 金額</label><input type="number" id="iptAmount10" class="input-money" placeholder="0" oninput="update()"></div>
-            <div class="form-group"><label>8%対象 金額 (軽減税率)</label><input type="number" id="iptAmount8" class="input-money" placeholder="0" oninput="update()"></div>
+            <div class="form-group"><label>10%対象 金額</label><input type="number" id="iptAmount10" class="input-money"
+                    placeholder="0" oninput="update()"></div>
+            <div class="form-group"><label>8%対象 金額 (軽減税率)</label><input type="number" id="iptAmount8"
+                    class="input-money" placeholder="0" oninput="update()"></div>
             <p style="font-size:11px; color:#666; margin:0;">※ここに入力すると消費税額は自動計算されます。</p>
         </div>
-        <div class="form-group"><label>但し書き</label><input type="text" id="iptProviso" placeholder="お品代として" oninput="update()"></div>
+        <div class="form-group"><label>但し書き</label><input type="text" id="iptProviso" placeholder="お品代として"
+                oninput="update()"></div>
         <hr>
         <h3>発行者情報</h3>
-        <div class="form-group"><label>会社名</label><input type="text" id="iptIssuerName" placeholder="株式会社〇〇" oninput="update()"></div>
-        <div class="form-group"><label>住所</label><textarea id="iptIssuerAddr" rows="2" placeholder="東京都渋谷区..." oninput="update()"></textarea></div>
-        <div class="form-group"><label>登録番号</label><input type="text" id="iptRegNo" placeholder="T12345..." oninput="update()"></div>
-        <div class="form-group"><label>担当者</label><input type="text" id="iptIssuerRep" placeholder="山田 太郎" oninput="update()"></div>
+        <div class="form-group"><label>会社名</label><input type="text" id="iptIssuerName" placeholder="株式会社〇〇"
+                oninput="update()"></div>
+        <div class="form-group"><label>住所</label><textarea id="iptIssuerAddr" rows="2" placeholder="東京都渋谷区..."
+                oninput="update()"></textarea></div>
+        <div class="form-group"><label>登録番号</label><input type="text" id="iptRegNo" placeholder="T12345..."
+                oninput="update()"></div>
+        <div class="form-group"><label>担当者</label><input type="text" id="iptIssuerRep" placeholder="山田 太郎"
+                oninput="update()"></div>
 
         <!-- ▼▼▼ ハンコ選択＆ON/OFF（ここを追加） ▼▼▼ -->
         <div class="form-group seal-type-group">
             <label style="margin-bottom:5px;">印鑑の種類:</label>
-            <label class="seal-type-label"><input type="radio" name="sealType" value="company" checked onchange="changeSealType('company')"> 会社印(角)</label>
-            <label class="seal-type-label"><input type="radio" name="sealType" value="personal" onchange="changeSealType('personal')"> 個人印(丸)</label>
+            <label class="seal-type-label"><input type="radio" name="sealType" value="company" checked
+                    onchange="changeSealType('company')"> 会社印(角)</label>
+            <label class="seal-type-label"><input type="radio" name="sealType" value="personal"
+                    onchange="changeSealType('personal')"> 個人印(丸)</label>
         </div>
         <div class="form-group">
             <label class="seal-switch">
@@ -153,7 +383,10 @@
                 <div class="r-client" id="viewClient"></div>
                 <div class="r-date">領収日　<span id="viewDate"></span></div>
             </div>
-            <div class="r-amount-row"><div class="r-amount-label">合計金額</div><div class="r-total-amount">¥<span id="viewTotal">0</span></div></div>
+            <div class="r-amount-row">
+                <div class="r-amount-label">合計金額</div>
+                <div class="r-total-amount">¥<span id="viewTotal">0</span></div>
+            </div>
             <div class="r-proviso">但し<br><span id="viewProviso"></span><br>上記の通り、正に領収いたしました。</div>
 
             <div class="r-footer">
@@ -170,7 +403,7 @@
                     <div id="viewIssuerAddr" style="white-space: pre-wrap;"></div>
                     <div>登録番号 <span id="viewRegNo"></span></div>
                     <div style="margin-top:5px;">担当：<span id="viewIssuerRep"></span></div>
-                    
+
                     <!-- ハンコエリア -->
                     <div class="seal-container">
                         <img id="viewSeal" src="" class="seal-img" style="display:none;">
@@ -183,7 +416,7 @@
 
     <script>
         function fmt(num) { return num.toLocaleString(); }
-        function formatDate(dateStr) { if(!dateStr) return ""; const d = new Date(dateStr); return `${d.getFullYear()}/${d.getMonth()+1}/${d.getDate()}`; }
+        function formatDate(dateStr) { if (!dateStr) return ""; const d = new Date(dateStr); return `${d.getFullYear()}/${d.getMonth() + 1}/${d.getDate()}`; }
 
         // ▼▼▼ ハンコ切り替えロジック (追加) ▼▼▼
         function changeSealType(type) {
@@ -203,7 +436,7 @@
             const isChecked = document.getElementById('chkSeal').checked;
             const img = document.getElementById('viewSeal');
             const dummy = document.getElementById('dummySeal');
-            
+
             // 画像データがあり、かつチェックされている場合のみ表示
             if (img.src && img.src.length > 10 && isChecked) {
                 img.style.display = 'block';
@@ -218,16 +451,16 @@
             document.getElementById('viewClient').innerText = document.getElementById('iptClient').value;
             document.getElementById('viewDate').innerText = formatDate(document.getElementById('iptDate').value);
             document.getElementById('viewProviso').innerText = document.getElementById('iptProviso').value;
-            
+
             document.getElementById('viewIssuerName').innerText = document.getElementById('iptIssuerName').value;
             document.getElementById('viewIssuerAddr').innerText = document.getElementById('iptIssuerAddr').value;
             document.getElementById('viewRegNo').innerText = document.getElementById('iptRegNo').value;
             document.getElementById('viewIssuerRep').innerText = document.getElementById('iptIssuerRep').value;
 
             const in10 = parseInt(document.getElementById('iptAmount10').value) || 0;
-            const in8  = parseInt(document.getElementById('iptAmount8').value) || 0;
+            const in8 = parseInt(document.getElementById('iptAmount8').value) || 0;
             const total = in10 + in8;
-            document.getElementById('viewTotal').innerText = fmt(total);
+            document.getElementById('viewTotal').innerText = fmt(total) + "-";
 
             const sub10 = Math.floor(in10 / 1.1);
             const tax10 = in10 - sub10;
@@ -239,8 +472,10 @@
             document.getElementById('viewTax10').innerText = fmt(tax10);
             document.getElementById('viewTax8').innerText = fmt(tax8);
         }
-        
+
         document.querySelectorAll('input, textarea').forEach(i => i.addEventListener('input', update));
     </script>
+    <script src="theme.js"></script>
 </body>
+
 </html>

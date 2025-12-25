@@ -1,56 +1,175 @@
 <!DOCTYPE html>
 <html lang="ja">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>宛名ラベル印刷 (12面)</title>
     <style>
         /* --- 全体設定 --- */
-        body { display: none; font-family: "Helvetica Neue", Arial, sans-serif; background-color: #f4f4f4; margin: 0; padding: 20px; gap: 20px; justify-content: center; min-height: 100vh; }
-        
-        /* 左パネル */
-        .editor-pane { width: 380px; background: #fff; padding: 20px; border-radius: 8px; box-shadow: 0 2px 10px rgba(0,0,0,0.1); height: fit-content; max-height: 90vh; overflow-y: auto; }
-        .back-btn { display: inline-block; background-color: #6c757d; color: white; padding: 5px 10px; text-decoration: none; border-radius: 4px; font-size: 12px; margin-bottom: 15px; }
-        
-        /* 差出人設定エリア */
-        .sender-box { background: #e8f5e9; padding: 10px; border-radius: 6px; border: 1px solid #c8e6c9; margin-bottom: 20px; }
-        .sender-title { font-size: 13px; font-weight: bold; color: #2e7d32; margin-bottom: 8px; display: flex; align-items: center; gap: 5px; }
-        .sender-row { display: flex; gap: 5px; margin-bottom: 5px; }
-        
-        /* CSVエリア */
-        .csv-box { background: #e3f2fd; padding: 10px; border-radius: 6px; border: 1px solid #bbdefb; margin-bottom: 20px; }
-        .csv-title { font-size: 12px; font-weight: bold; color: #1565c0; margin-bottom: 5px; }
-        .csv-note { font-size: 10px; color: #555; margin-top: 5px; line-height: 1.4; }
-        
-        /* ラベル入力エリア */
-        .form-group { margin-bottom: 20px; border-bottom: 1px dashed #eee; padding-bottom: 10px; }
-        .form-label-title { display: block; font-size: 12px; font-weight: bold; margin-bottom: 5px; color: #555; background:#f9f9f9; padding:2px 5px; }
-        
-        input[type="text"] { width: 100%; padding: 6px; box-sizing: border-box; border: 1px solid #ccc; border-radius: 4px; font-size: 12px; margin-bottom: 4px; }
-        .input-row { display: flex; gap: 5px; }
-        
-        button.mode-btn { width: 100%; padding: 8px; margin-top:5px; cursor: pointer; border: 1px solid #ccc; background: #fff; border-radius: 4px; font-size: 12px; font-weight:bold; }
-        button.mode-btn:hover { background: #eee; }
-        
-        button.print-btn { width: 100%; padding: 12px; background-color: #009688; color: white; border: none; border-radius: 4px; font-size: 16px; cursor: pointer; font-weight: bold; margin-top: 15px; }
-        
-        /* プレビューエリア */
-        .preview-pane { flex-grow: 1; display: flex; justify-content: center; }
-        
-        #sheet { 
-            width: 210mm; height: 297mm; 
-            background: white; 
-            padding: 12mm; 
-            box-sizing: border-box; 
-            box-shadow: 0 5px 15px rgba(0,0,0,0.2); 
-            display: grid;
-            grid-template-columns: 1fr 1fr; 
-            grid-template-rows: repeat(6, 1fr); 
-            gap: 0mm 5mm; 
+        body {
+            display: none;
+            font-family: "Helvetica Neue", Arial, sans-serif;
+            background-color: #f4f4f4;
+            margin: 0;
+            padding: 20px;
+            gap: 20px;
+            justify-content: center;
+            min-height: 100vh;
         }
-        
+
+        /* 左パネル */
+        .editor-pane {
+            width: 380px;
+            background: #fff;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+            height: fit-content;
+            max-height: 90vh;
+            overflow-y: auto;
+        }
+
+        .back-btn {
+            display: inline-block;
+            padding: 5px 10px;
+            text-decoration: none;
+            border-radius: var(--btn-radius);
+            font-size: 12px;
+            margin-bottom: 15px;
+        }
+
+        /* 差出人設定エリア */
+        .sender-box {
+            background: #e8f5e9;
+            padding: 10px;
+            border-radius: 6px;
+            border: 1px solid #c8e6c9;
+            margin-bottom: 20px;
+        }
+
+        .sender-title {
+            font-size: 13px;
+            font-weight: bold;
+            color: #2e7d32;
+            margin-bottom: 8px;
+            display: flex;
+            align-items: center;
+            gap: 5px;
+        }
+
+        .sender-row {
+            display: flex;
+            gap: 5px;
+            margin-bottom: 5px;
+        }
+
+        /* CSVエリア */
+        .csv-box {
+            background: #e3f2fd;
+            padding: 10px;
+            border-radius: 6px;
+            border: 1px solid #bbdefb;
+            margin-bottom: 20px;
+        }
+
+        .csv-title {
+            font-size: 12px;
+            font-weight: bold;
+            color: #1565c0;
+            margin-bottom: 5px;
+        }
+
+        .csv-note {
+            font-size: 10px;
+            color: #555;
+            margin-top: 5px;
+            line-height: 1.4;
+        }
+
+        /* ラベル入力エリア */
+        .form-group {
+            margin-bottom: 20px;
+            border-bottom: 1px dashed #eee;
+            padding-bottom: 10px;
+        }
+
+        .form-label-title {
+            display: block;
+            font-size: 12px;
+            font-weight: bold;
+            margin-bottom: 5px;
+            color: #555;
+            background: #f9f9f9;
+            padding: 2px 5px;
+        }
+
+        input[type="text"] {
+            width: 100%;
+            padding: 6px;
+            box-sizing: border-box;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+            font-size: 12px;
+            margin-bottom: 4px;
+        }
+
+        .input-row {
+            display: flex;
+            gap: 5px;
+        }
+
+        button.mode-btn {
+            width: 100%;
+            padding: 8px;
+            margin-top: 5px;
+            cursor: pointer;
+            border: 1px solid #ccc;
+            background: #fff;
+            border-radius: 4px;
+            font-size: 12px;
+            font-weight: bold;
+        }
+
+        button.mode-btn:hover {
+            background: #eee;
+        }
+
+        button.print-btn {
+            width: 100%;
+            padding: 12px;
+            background-color: #009688;
+            color: white;
+            border: none;
+            border-radius: 4px;
+            font-size: 16px;
+            cursor: pointer;
+            font-weight: bold;
+            margin-top: 15px;
+        }
+
+        /* プレビューエリア */
+        .preview-pane {
+            flex-grow: 1;
+            display: flex;
+            justify-content: center;
+        }
+
+        #sheet {
+            width: 210mm;
+            height: 297mm;
+            background: white;
+            padding: 12mm;
+            box-sizing: border-box;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            grid-template-rows: repeat(6, 1fr);
+            gap: 0mm 5mm;
+        }
+
         .label-cell {
-            border: 1px dashed #eee; 
+            border: 1px dashed #eee;
             padding: 5mm;
             display: flex;
             flex-direction: column;
@@ -58,47 +177,138 @@
             font-family: "Yu Mincho", "YuMincho", serif;
             position: relative;
         }
-        
-        .l-zip { font-size: 14px; margin-bottom: 3px; letter-spacing: 1px; font-family: Arial, sans-serif; }
-        .l-addr { font-size: 12px; margin-bottom: 5px; line-height: 1.3; height: 32px; overflow: hidden; }
-        .l-company { font-size: 13px; margin-bottom: 5px; height: 18px; overflow: hidden; white-space: nowrap; text-overflow: ellipsis; }
-        .l-name-area { margin-top: 2px; }
-        .l-title { font-size: 10px; color: #333; margin-bottom: 2px; }
-        .l-name { font-size: 18px; font-weight: bold; }
-        .l-subject { position: absolute; bottom: 3mm; right: 5mm; font-size: 10px; color: #555; border: 1px solid #999; padding: 2px 6px; border-radius: 2px; }
+
+        .l-zip {
+            font-size: 14px;
+            margin-bottom: 3px;
+            letter-spacing: 1px;
+            font-family: Arial, sans-serif;
+        }
+
+        .l-addr {
+            font-size: 12px;
+            margin-bottom: 5px;
+            line-height: 1.3;
+            height: 32px;
+            overflow: hidden;
+        }
+
+        .l-company {
+            font-size: 13px;
+            margin-bottom: 5px;
+            height: 18px;
+            overflow: hidden;
+            white-space: nowrap;
+            text-overflow: ellipsis;
+        }
+
+        .l-name-area {
+            margin-top: 2px;
+        }
+
+        .l-title {
+            font-size: 10px;
+            color: #333;
+            margin-bottom: 2px;
+        }
+
+        .l-name {
+            font-size: 18px;
+            font-weight: bold;
+        }
+
+        .l-subject {
+            position: absolute;
+            bottom: 3mm;
+            right: 5mm;
+            font-size: 10px;
+            color: #555;
+            border: 1px solid #999;
+            padding: 2px 6px;
+            border-radius: 2px;
+        }
 
         @media print {
-            body { display: block !important; background: none; margin: 0; padding: 0; }
-            .editor-pane { display: none; }
-            .preview-pane { display: block; }
-            #sheet { box-shadow: none; width: 100%; height: 100%; margin: 0; page-break-after: always; padding: 12mm; }
-            .label-cell { border: none; }
-            @page { margin: 0; size: A4; }
+            body {
+                display: block !important;
+                background: none;
+                margin: 0;
+                padding: 0;
+            }
+
+            .editor-pane {
+                display: none;
+            }
+
+            .preview-pane {
+                display: block;
+            }
+
+            #sheet {
+                box-shadow: none;
+                width: 100%;
+                height: 100%;
+                margin: 0;
+                page-break-after: always;
+                padding: 12mm;
+            }
+
+            .label-cell {
+                border: none;
+            }
+
+            @page {
+                margin: 0;
+                size: A4;
+            }
+        }
+
+        /* ★COOLモード対策：ラベル内の文字は黒強制 */
+        body.theme-dark #sheet {
+            color: #000 !important;
+        }
+
+        body.theme-dark .label-cell {
+            color: #000 !important;
+            border-color: #eee !important;
+        }
+
+        body.theme-dark .l-title {
+            color: #333 !important;
+        }
+
+        body.theme-dark .l-subject {
+            color: #555 !important;
+            border-color: #999 !important;
         }
     </style>
+    <link rel="stylesheet" href="theme.css">
 </head>
+
 <body>
     <script src="lock.js"></script>
     <script src="settings.js"></script>
-    <script>if (typeof checkAuth === 'function') checkAuth(); else document.body.style.display="flex";</script>
+    <script>if (typeof checkAuth === 'function') checkAuth(); else document.body.style.display = "flex";</script>
 
     <div class="editor-pane">
-        <a href="index.html" class="back-btn">⬅ メニュー</a>
+        <a href="index.html" class="back-btn">⬅ メニューに戻る</a>
         <h2>宛名ラベル (12面)</h2>
-        
+
         <!-- ▼ 差出人設定 -->
         <div class="sender-box">
             <div class="sender-title">🏢 差出人・返信設定</div>
             <p style="font-size:10px; margin:0 0 5px 0;">ここで編集してボタンを押すと、全てのラベルに反映されます。</p>
             <div class="input-row">
-                <input type="text" id="sendZip" placeholder="〒" aria-label="差出人郵便番号" onblur="toHalfWidth(this)" style="width:30%;">
+                <input type="text" id="sendZip" placeholder="〒" aria-label="差出人郵便番号" onblur="toHalfWidth(this)"
+                    style="width:30%;">
                 <input type="text" id="sendAddr" placeholder="住所" aria-label="差出人住所">
             </div>
             <input type="text" id="sendName" placeholder="氏名 / 会社名" aria-label="差出人氏名">
             <div class="input-row" style="align-items:center;">
                 <label style="font-size:11px;" for="sendSuffix">敬称:</label>
                 <input type="text" id="sendSuffix" value="宛" style="width:50px; text-align:center;">
-                <button class="mode-btn" onclick="applySenderToAll()" style="margin-top:0; flex:1; background:#2e7d32; color:white; border:none;">全ラベルに反映</button>
+                <button class="mode-btn" onclick="applySenderToAll()"
+                    style="margin-top:0; flex:1; background:#2e7d32; color:white; border:none;">全ラベルに反映</button>
             </div>
         </div>
 
@@ -113,7 +323,7 @@
         </div>
 
         <button class="mode-btn" onclick="clearAll()" style="margin-bottom:15px;">🗑️ 全てクリア</button>
-        
+
         <div id="inputs-list">
             <!-- JSで12個の入力欄を生成 -->
         </div>
@@ -130,11 +340,11 @@
     <script>
         const LABEL_COUNT = 12;
 
-        window.onload = function() {
+        window.onload = function () {
             createInputs();
             if (typeof localStorage !== 'undefined') {
                 const json = localStorage.getItem("my_tool_company_info");
-                if(json) {
+                if (json) {
                     const data = JSON.parse(json);
                     document.getElementById('sendAddr').value = data.addr || "";
                     document.getElementById('sendName').value = data.name || "";
@@ -144,7 +354,7 @@
 
         function toHalfWidth(elm) {
             let val = elm.value;
-            val = val.replace(/[０-９]/g, function(s) {
+            val = val.replace(/[０-９]/g, function (s) {
                 return String.fromCharCode(s.charCodeAt(0) - 0xFEE0);
             });
             val = val.replace(/[ー−]/g, '-');
@@ -162,17 +372,17 @@
                 const div = document.createElement('div');
                 div.className = 'form-group';
                 div.innerHTML = `
-                    <span class="form-label-title">ラベル ${i+1}</span>
+                    <span class="form-label-title">ラベル ${i + 1}</span>
                     <div class="input-row">
-                        <input type="text" id="zip_${i}" placeholder="〒" aria-label="ラベル${i+1} 郵便番号" onblur="toHalfWidth(this); update(${i})" oninput="update(${i})" style="width:30%;">
-                        <input type="text" id="addr_${i}" placeholder="住所" aria-label="ラベル${i+1} 住所" oninput="update(${i})">
+                        <input type="text" id="zip_${i}" placeholder="〒" aria-label="ラベル${i + 1} 郵便番号" onblur="toHalfWidth(this); update(${i})" oninput="update(${i})" style="width:30%;">
+                        <input type="text" id="addr_${i}" placeholder="住所" aria-label="ラベル${i + 1} 住所" oninput="update(${i})">
                     </div>
-                    <input type="text" id="comp_${i}" placeholder="会社名" aria-label="ラベル${i+1} 会社名" oninput="update(${i})">
+                    <input type="text" id="comp_${i}" placeholder="会社名" aria-label="ラベル${i + 1} 会社名" oninput="update(${i})">
                     <div class="input-row">
-                        <input type="text" id="post_${i}" placeholder="役職" aria-label="ラベル${i+1} 役職" oninput="update(${i})" style="width:40%;">
-                        <input type="text" id="name_${i}" placeholder="氏名" aria-label="ラベル${i+1} 氏名" oninput="update(${i})">
+                        <input type="text" id="post_${i}" placeholder="役職" aria-label="ラベル${i + 1} 役職" oninput="update(${i})" style="width:40%;">
+                        <input type="text" id="name_${i}" placeholder="氏名" aria-label="ラベル${i + 1} 氏名" oninput="update(${i})">
                     </div>
-                    <input type="text" id="subj_${i}" placeholder="件名" aria-label="ラベル${i+1} 件名" oninput="update(${i})">
+                    <input type="text" id="subj_${i}" placeholder="件名" aria-label="ラベル${i + 1} 件名" oninput="update(${i})">
                     <input type="hidden" id="suffix_${i}" value="">
                 `;
                 inputList.appendChild(div);
@@ -200,14 +410,14 @@
             document.getElementById(`v_addr_${i}`).innerText = document.getElementById(`addr_${i}`).value;
             document.getElementById(`v_comp_${i}`).innerText = document.getElementById(`comp_${i}`).value;
             document.getElementById(`v_post_${i}`).innerText = document.getElementById(`post_${i}`).value;
-            
+
             const name = document.getElementById(`name_${i}`).value;
             const comp = document.getElementById(`comp_${i}`).value;
             document.getElementById(`v_name_${i}`).innerText = name;
-            
+
             const forcedSuffix = document.getElementById(`suffix_${i}`).value;
             const honEl = document.getElementById(`v_hon_${i}`);
-            
+
             if (forcedSuffix) {
                 honEl.innerText = forcedSuffix;
             } else if (name) {
@@ -220,7 +430,7 @@
 
             const subj = document.getElementById(`subj_${i}`).value;
             const subjEl = document.getElementById(`v_subj_${i}`);
-            if(subj) {
+            if (subj) {
                 subjEl.innerText = subj;
                 subjEl.style.display = "block";
             } else {
@@ -231,19 +441,19 @@
         function applySenderToAll() {
             const zip = document.getElementById('sendZip').value;
             const zipHalf = zip.replace(/[０-９]/g, s => String.fromCharCode(s.charCodeAt(0) - 0xFEE0)).replace(/[ー−]/g, '-');
-            
+
             const addr = document.getElementById('sendAddr').value;
             const name = document.getElementById('sendName').value;
             const suffix = document.getElementById('sendSuffix').value;
 
-            for(let i=0; i<LABEL_COUNT; i++) {
+            for (let i = 0; i < LABEL_COUNT; i++) {
                 document.getElementById(`zip_${i}`).value = zipHalf;
                 document.getElementById(`addr_${i}`).value = addr;
                 document.getElementById(`comp_${i}`).value = "";
                 document.getElementById(`post_${i}`).value = "";
                 document.getElementById(`name_${i}`).value = name;
                 document.getElementById(`subj_${i}`).value = "";
-                
+
                 document.getElementById(`suffix_${i}`).value = suffix;
                 update(i);
             }
@@ -252,23 +462,23 @@
         function loadCSV() {
             const fileInput = document.getElementById('csvFile');
             const file = fileInput.files[0];
-            if(!file) { alert("CSVファイルを選択してください。"); return; }
+            if (!file) { alert("CSVファイルを選択してください。"); return; }
 
             const reader = new FileReader();
             reader.readAsText(file, 'Shift_JIS');
 
-            reader.onload = function(e) {
+            reader.onload = function (e) {
                 const text = e.target.result;
                 const rows = text.split(/\r\n|\n/);
-                
+
                 let count = 0;
-                for(let i=0; i<rows.length; i++) {
-                    if(count >= LABEL_COUNT) break;
+                for (let i = 0; i < rows.length; i++) {
+                    if (count >= LABEL_COUNT) break;
                     const row = rows[i];
-                    if(!row) continue;
-                    
+                    if (!row) continue;
+
                     const cols = row.split(',').map(c => c.replace(/^"|"$/g, ''));
-                    if(cols.length < 2) continue;
+                    if (cols.length < 2) continue;
 
                     let z = cols[0] || "";
                     z = z.replace(/[０-９]/g, s => String.fromCharCode(s.charCodeAt(0) - 0xFEE0)).replace(/[ー−]/g, '-');
@@ -280,7 +490,7 @@
                     document.getElementById(`name_${count}`).value = cols[4] || "";
                     document.getElementById(`subj_${count}`).value = cols[5] || "";
                     document.getElementById(`suffix_${count}`).value = "";
-                    
+
                     update(count);
                     count++;
                 }
@@ -290,7 +500,7 @@
         }
 
         function clearAll() {
-            for(let i=0; i<LABEL_COUNT; i++) {
+            for (let i = 0; i < LABEL_COUNT; i++) {
                 document.getElementById(`zip_${i}`).value = "";
                 document.getElementById(`addr_${i}`).value = "";
                 document.getElementById(`comp_${i}`).value = "";
@@ -302,5 +512,7 @@
             }
         }
     </script>
+    <script src="theme.js"></script>
 </body>
+
 </html>

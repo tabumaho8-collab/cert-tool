@@ -1,17 +1,19 @@
 <!DOCTYPE html>
 <html lang="ja">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>社内ツール ポータル</title>
-    <link href="https://fonts.googleapis.com/css2?family=M+PLUS+Rounded+1c:wght@400;700&family=Noto+Sans+JP:wght@400;700&display=swap" rel="stylesheet">
-    
+    <link
+        href="https://fonts.googleapis.com/css2?family=M+PLUS+Rounded+1c:wght@400;700&family=Noto+Sans+JP:wght@400;700&display=swap"
+        rel="stylesheet">
+
     <style>
         /* =========================================
            CSS変数 (テーマ定義)
            ========================================= */
         :root {
-            /* ▼ モード1: 洗練 (Stylish) */
             --bg-color: #f4f7f6;
             --bg-image: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
             --font-family: "Helvetica Neue", "Noto Sans JP", Arial, sans-serif;
@@ -22,22 +24,21 @@
             --sidebar-bg: rgba(255, 255, 255, 0.7);
             --card-bg: rgba(255, 255, 255, 0.8);
             --border-radius: 12px;
-            --border-style: 1px solid rgba(255,255,255,0.6);
-            --shadow: 0 8px 32px 0 rgba(31, 38, 135, 0.1);
+            --border-style: 1px solid rgba(255, 255, 255, 0.6);
+            --shadow: 0 4px 15px rgba(31, 38, 135, 0.1);
             --backdrop-filter: blur(8px);
             --header-bg: #2d3436;
             --header-text: #ffffff;
             --card-border-left: 4px solid var(--accent-color);
             --btn-radius: 6px;
             --section-line: 1px solid #b2bec3;
-            --header-shadow: 0 2px 10px rgba(0,0,0,0.1);
-            --hover-text-color: #2d3436; /* 通常モードのホバー文字色 */
+            --header-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+            --hover-text-color: #2d3436;
         }
 
-        /* ▼ モード2: かわいい (Kawaii) */
         body.theme-kawaii {
             --bg-color: #fff0f5;
-            --bg-image: radial-gradient(#ffcdd2 20%, transparent 20%), radial-gradient(#ffcdd2 20%, transparent 20%); 
+            --bg-image: radial-gradient(#ffcdd2 20%, transparent 20%), radial-gradient(#ffcdd2 20%, transparent 20%);
             --font-family: "M PLUS Rounded 1c", sans-serif;
             --text-color: #5d4037;
             --text-sub: #8d6e63;
@@ -46,6 +47,7 @@
             --sidebar-bg: #ffffff;
             --card-bg: #fffcf0;
             --border-radius: 25px;
+            /* ★戻した */
             --border-style: 3px solid #fff;
             --shadow: 3px 3px 0px rgba(255, 182, 193, 0.5);
             --backdrop-filter: none;
@@ -58,20 +60,15 @@
             --hover-text-color: #ff6b81;
         }
 
-        /* ▼ モード3: サイバーグラス (Cyber Glass) */
         body.theme-dark {
             --bg-color: #050508;
             --bg-image: linear-gradient(rgba(0, 229, 255, 0.05) 1px, transparent 1px), linear-gradient(90deg, rgba(0, 229, 255, 0.05) 1px, transparent 1px);
             --font-family: "Helvetica Neue", "Noto Sans JP", Arial, sans-serif;
             --text-color: #e0f7fa;
             --text-sub: #80deea;
-            
-            --accent-color: #00e5ff; /* ベース：シアン */
+            --accent-color: #00e5ff;
             --accent-hover: #00b8d4;
-            
-            /* ★追加：ホバー時の発光カラー（蛍光オレンジ） */
-            --hover-text-color: #ffaa00; 
-            
+            --hover-text-color: #ffaa00;
             --sidebar-bg: rgba(15, 23, 42, 0.7);
             --card-bg: rgba(20, 30, 50, 0.6);
             --border-radius: 6px;
@@ -92,119 +89,279 @@
             background-color: var(--bg-color);
             background-image: var(--bg-image);
             background-size: cover;
-            margin: 0; padding: 0;
-            display: none;
+            margin: 0;
+            padding: 0;
             color: var(--text-color);
-            display: flex !important; 
+            display: flex !important;
             flex-direction: column !important;
             min-height: 100vh;
+            /* スクロールを許可 */
+            overflow-y: auto !important;
             transition: background 0.3s, color 0.3s;
         }
-        body.theme-kawaii { background-size: 20px 20px; background-position: 0 0, 10px 10px; }
-        body.theme-dark { background-size: 40px 40px; }
+
+        /* ★Kawaiiモードの背景パターンを復活 */
+        body.theme-kawaii {
+            background-size: 20px 20px;
+            background-position: 0 0, 10px 10px;
+        }
 
         header {
-            background-color: var(--header-bg); color: var(--header-text); width: 100%; padding: 12px 25px; box-sizing: border-box; box-shadow: var(--header-shadow); border-bottom: var(--border-style); display: flex; align-items: center; justify-content: space-between; position: sticky; top: 0; z-index: 100; flex-shrink: 0; transition: 0.3s; backdrop-filter: blur(5px);
+            background-color: var(--header-bg);
+            color: var(--header-text);
+            width: 100%;
+            padding: 10px 25px;
+            box-sizing: border-box;
+            box-shadow: var(--header-shadow);
+            border-bottom: var(--border-style);
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            position: sticky;
+            top: 0;
+            z-index: 100;
+            flex-shrink: 0;
+            transition: 0.3s;
+            backdrop-filter: blur(5px);
         }
-        body.theme-dark h1 { text-shadow: 0 0 10px rgba(0, 229, 255, 0.7); }
-        h1 { margin: 0; font-size: 18px; font-weight: bold; letter-spacing: 1px; }
 
-        .header-btns { display: flex; gap: 10px; }
-        .theme-btn { background: rgba(255,255,255,0.1); color: inherit; border: 1px solid rgba(255,255,255,0.3); padding: 6px 15px; border-radius: 20px; font-size: 12px; cursor: pointer; transition: 0.2s; font-weight: bold; }
-        body.theme-dark .theme-btn { border-color: var(--accent-color); color: var(--accent-color); border-radius: 4px; box-shadow: 0 0 5px rgba(0, 229, 255, 0.4); }
-        .theme-btn:hover { background: rgba(255,255,255,0.2); transform: scale(1.05); }
-        .logout-btn { background: rgba(128,128,128,0.3); color: inherit; border: none; padding: 6px 12px; border-radius: 4px; font-size: 11px; cursor: pointer; }
-        .logout-btn:hover { background: rgba(128,128,128,0.5); }
+        h1 {
+            margin: 0;
+            font-size: 18px;
+            font-weight: bold;
+            letter-spacing: 1px;
+        }
 
-        .dashboard-container { display: flex; max-width: 1400px; margin: 0 auto; padding: 25px; gap: 25px; align-items: flex-start; box-sizing: border-box; width: 100%; flex-grow: 1; }
+        .header-btns {
+            display: flex;
+            gap: 10px;
+        }
+
+        .theme-btn {
+            background: rgba(255, 255, 255, 0.1);
+            color: inherit;
+            border: 1px solid rgba(255, 255, 255, 0.3);
+            padding: 6px 12px;
+            border-radius: 20px;
+            font-size: 11px;
+            cursor: pointer;
+            transition: 0.2s;
+            font-weight: bold;
+        }
+
+        .logout-btn {
+            background: rgba(128, 128, 128, 0.3);
+            color: inherit;
+            border: none;
+            padding: 6px 10px;
+            border-radius: 4px;
+            font-size: 11px;
+            cursor: pointer;
+        }
+
+        .dashboard-container {
+            display: flex;
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 15px 20px;
+            gap: 15px;
+            align-items: flex-start;
+            box-sizing: border-box;
+            width: 100%;
+            flex-grow: 1;
+        }
 
         /* サイドバー */
-        .sidebar { width: 300px; background: var(--sidebar-bg); backdrop-filter: var(--backdrop-filter); padding: 25px; border-radius: var(--border-radius); box-shadow: var(--shadow); border: var(--border-style); flex-shrink: 0; position: sticky; top: 80px; max-height: 85vh; overflow-y: auto; transition: 0.3s; }
-        .sidebar h3 { margin-top: 0; font-size: 15px; color: var(--accent-color); border-bottom: var(--section-line); padding-bottom: 10px; margin-bottom: 20px; text-shadow: var(--text-shadow); }
-        body.theme-dark .sidebar h3 { text-shadow: 0 0 8px var(--accent-color); }
-        
-        .settings-toggle { cursor: pointer; display: flex; justify-content: space-between; align-items: center; user-select: none; transition: 0.2s; }
-        .settings-toggle:hover { opacity: 0.8; }
-        .settings-toggle span { font-size: 12px; color: var(--text-sub); }
-        #settingsBox { display: none; margin-top: 15px; animation: slideDown 0.3s ease-out; }
-        @keyframes slideDown { from { opacity: 0; transform: translateY(-10px); } to { opacity: 1; transform: translateY(0); } }
-
-        .sidebar label { display: block; font-size: 12px; font-weight: bold; margin-bottom: 5px; color: var(--text-color); opacity: 0.9; }
-        .sidebar input, .sidebar textarea { width: 100%; padding: 10px; box-sizing: border-box; border: 1px solid #ddd; border-radius: var(--btn-radius); font-size: 13px; margin-bottom: 15px; background: rgba(255,255,255,0.9); color: #333; font-family: inherit; }
-        body.theme-dark .sidebar input, body.theme-dark .sidebar textarea { background: rgba(0, 0, 0, 0.5); color: #fff; border: 1px solid var(--accent-color); box-shadow: inset 0 0 5px rgba(0, 229, 255, 0.2); }
-        
-        .save-btn { background-color: var(--accent-color); color: white; border: none; padding: 12px; width: 100%; border-radius: var(--btn-radius); font-weight: bold; cursor: pointer; margin-top: 10px; transition: 0.2s; font-size: 14px; box-shadow: 0 4px 6px rgba(0,0,0,0.1); }
-        body.theme-dark .save-btn { background-color: rgba(0, 229, 255, 0.1); color: var(--accent-color); border: 1px solid var(--accent-color); box-shadow: 0 0 10px rgba(0, 229, 255, 0.2); }
-        .save-btn:hover { background-color: var(--accent-hover); transform: translateY(-2px); }
-        body.theme-dark .save-btn:hover { background-color: var(--accent-color); color: #000; box-shadow: 0 0 20px var(--accent-color); }
-
-        .seal-area { background: rgba(255,255,255,0.5); padding: 10px; border-radius: 8px; border: 1px dashed #aaa; text-align: center; margin-bottom: 15px; }
-        body.theme-dark .seal-area { background: rgba(0,0,0,0.3); border-color: var(--accent-color); border-style: dashed; }
-        .seal-preview { width: 60px; height: 60px; object-fit: contain; margin: 5px auto; display: none; background: white; border: 1px solid #eee; }
-
-        /* 外部リンクボタン */
-        .link-group { display: flex; flex-direction: column; gap: 8px; margin-bottom: 25px; }
-        .link-btn {
-            display: flex; align-items: center; gap: 10px; padding: 10px 15px; background: var(--card-bg); border: var(--border-style); border-radius: var(--border-radius); color: var(--text-color); text-decoration: none; font-size: 13px; font-weight: bold; box-shadow: 0 2px 5px rgba(0,0,0,0.05); transition: 0.2s;
+        .sidebar {
+            width: 240px;
+            background: var(--sidebar-bg);
+            backdrop-filter: var(--backdrop-filter);
+            padding: 15px;
+            border-radius: var(--border-radius);
+            box-shadow: var(--shadow);
+            border: var(--border-style);
+            flex-shrink: 0;
+            position: sticky;
+            top: 70px;
+            max-height: 85vh;
+            overflow-y: auto;
+            transition: 0.3s;
         }
-        .link-btn:hover { transform: translateX(5px); color: var(--hover-text-color); border-color: var(--hover-text-color); }
-        body.theme-dark .link-btn:hover { box-shadow: 0 0 10px var(--hover-text-color); }
+
+        .sidebar h3 {
+            margin-top: 0;
+            font-size: 13px;
+            color: var(--accent-color);
+            border-bottom: var(--section-line);
+            padding-bottom: 6px;
+            margin-bottom: 12px;
+        }
+
+        .sidebar label {
+            display: block;
+            font-size: 11px;
+            font-weight: bold;
+            margin-bottom: 4px;
+            color: var(--text-color);
+        }
+
+        /* ★Kawaiiモードのラベルにハートを復活 */
+        body.theme-kawaii .sidebar label::before {
+            content: "♥ ";
+            color: var(--accent-color);
+        }
+
+        .sidebar input,
+        .sidebar textarea {
+            width: 100%;
+            padding: 8px;
+            box-sizing: border-box;
+            border: 1px solid #ddd;
+            border-radius: var(--btn-radius);
+            font-size: 12px;
+            margin-bottom: 10px;
+            background: rgba(255, 255, 255, 0.9);
+            font-family: inherit;
+        }
+
+        .save-btn {
+            background-color: var(--accent-color);
+            color: white;
+            border: none;
+            padding: 10px;
+            width: 100%;
+            border-radius: var(--btn-radius);
+            font-weight: bold;
+            cursor: pointer;
+            margin-top: 5px;
+            font-size: 12px;
+        }
 
         /* メインコンテンツ */
-        .main-content { flex-grow: 1; display: grid; grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); gap: 20px; width: 100%; }
-        
-        .card { 
-            background: var(--card-bg); backdrop-filter: var(--backdrop-filter); 
-            padding: 20px; border-radius: var(--border-radius); 
-            text-align: center; text-decoration: none; color: var(--text-color); 
-            box-shadow: var(--shadow); border: var(--border-style); 
-            border-left: var(--card-border-left); 
-            transition: all 0.3s ease; 
-            display: flex; flex-direction: column; align-items: center; justify-content: center; 
-            height: 100%; box-sizing: border-box; position: relative; overflow: hidden; 
+        .main-content {
+            flex-grow: 1;
+            display: grid;
+            grid-template-columns: repeat(5, 1fr) !important;
+            /* 5列固定 */
+            gap: 15px;
+            /* 隙間をさらに詰める */
+            width: 100%;
         }
-        
-        /* ホバー時の挙動 */
-        .card:hover { transform: translateY(-5px); box-shadow: 0 12px 20px rgba(0,0,0,0.2); }
-        
-        /* ★ダークモード時のホバー：オレンジ発光 */
-        body.theme-dark .card:hover { 
-            border-color: var(--hover-text-color); /* 枠線オレンジ */
-            box-shadow: 0 0 20px rgba(255, 170, 0, 0.5), inset 0 0 10px rgba(255, 170, 0, 0.1); 
-            background-color: rgba(20, 30, 50, 0.9);
-            color: var(--hover-text-color); /* 文字もオレンジ */
+
+        .card {
+            background: var(--card-bg);
+            backdrop-filter: var(--backdrop-filter);
+            padding: 12px 6px;
+            /* ★少し余裕を持たせた */
+            border-radius: var(--border-radius);
+            text-align: center;
+            text-decoration: none;
+            color: var(--text-color);
+            box-shadow: var(--shadow);
+            border: var(--border-style);
+            border-left: var(--card-border-left);
+            transition: 0.2s;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            min-height: 90px;
+            /* ★アイコンが大きくなるので少し高く */
+            box-sizing: border-box;
         }
-        /* 説明文も光らせる */
-        body.theme-dark .card:hover .card-desc { color: var(--hover-text-color); opacity: 1; }
-        
-        /* Kawaiiモード */
-        body.theme-kawaii .card:hover { transform: scale(1.05) rotate(1deg); }
 
-        .card-icon { font-size: 32px; margin-bottom: 12px; display: block; transition: 0.3s; }
-        body.theme-dark .card-icon { text-shadow: 0 0 10px rgba(255,255,255,0.3); }
-        
-        .card:hover .card-icon { transform: scale(1.1); }
-        /* アイコンもオレンジ発光 */
-        body.theme-dark .card:hover .card-icon { text-shadow: 0 0 10px var(--hover-text-color); color: var(--hover-text-color); }
-        
-        .card-title { font-size: 15px; font-weight: bold; display: block; margin-bottom: 6px; transition: color 0.3s; }
-        .card-desc { font-size: 11px; color: var(--text-sub); line-height: 1.4; transition: color 0.3s; }
+        .card:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+        }
 
-        .section-title { grid-column: 1 / -1; font-size: 14px; font-weight: bold; color: var(--text-sub); margin-top: 20px; margin-bottom: 5px; padding-left: 10px; border-left: var(--section-line); line-height: 1; }
-        body.theme-dark .section-title { color: var(--accent-color); border-left: 4px solid var(--accent-color); text-shadow: 0 0 5px var(--accent-color); }
-        .section-title:first-child { margin-top: 0; }
+        .card-icon {
+            font-size: 40px;
+            /* ★さらに大きく */
+            margin-bottom: 5px;
+        }
+
+        .card-title {
+            font-size: 12px;
+            font-weight: bold;
+            margin-bottom: 0px;
+            /* ★余白削減 */
+            line-height: 1.2;
+        }
+
+        .card-desc {
+            font-size: 9px;
+            color: var(--text-sub);
+            line-height: 1.1;
+        }
+
+        .section-title {
+            grid-column: 1 / -1;
+            font-size: 11px;
+            font-weight: bold;
+            color: var(--text-sub);
+            margin-top: 8px;
+            /* ★余白削減 */
+            margin-bottom: 2px;
+            padding-left: 8px;
+            border-left: var(--section-line);
+        }
+
+        .section-title:first-child {
+            margin-top: 0;
+        }
+
+        /* --- 特殊ホバー (Dark) --- */
+        body.theme-dark .card:hover {
+            border-color: var(--hover-text-color);
+            color: var(--hover-text-color);
+            box-shadow: 0 0 15px rgba(255, 170, 0, 0.4);
+        }
+
+        /* ブックマークリンクのスタイル */
+        .link-btn {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            padding: 10px;
+            background: var(--card-bg);
+            border: var(--border-style);
+            border-radius: 8px;
+            text-decoration: none;
+            color: inherit;
+            font-size: 13px;
+            /* ★大きく戻した */
+            font-weight: bold;
+            margin-bottom: 8px;
+            transition: 0.2s;
+        }
+
+        .link-btn:hover {
+            opacity: 0.8;
+            transform: translateX(3px);
+        }
 
         @media (max-width: 900px) {
-            .dashboard-container { flex-direction: column; }
-            .sidebar { width: 100%; position: static; order: 2; }
-            .main-content { width: 100%; order: 1; }
+            .dashboard-container {
+                flex-direction: column;
+            }
+
+            .sidebar {
+                width: 100%;
+                position: static;
+            }
+
+            .main-content {
+                grid-template-columns: repeat(2, 1fr) !important;
+            }
         }
     </style>
 </head>
+
 <body>
 
-    <header>
-        <h1>社内ツール <span style="font-size:11px; opacity:0.7; font-weight:normal;">Portal</span></h1>
+    <header id="global-header">
+        <h1>社内ツール <span style="font-size:11px; opacity:0.7; font-weight:normal;">/ Portal</span></h1>
         <div class="header-btns">
             <button onclick="toggleTheme()" id="themeBtn" class="theme-btn">🎨 テーマ変更</button>
             <button onclick="logout()" class="logout-btn">ログアウト</button>
@@ -214,95 +371,89 @@
     <div class="dashboard-container">
         <aside class="sidebar">
             <h3>🔗 ブックマーク</h3>
-<div class="link-group">
-                <!-- Google AI Studio -->
-                <a href="https://aistudio.google.com/" target="_blank" class="link-btn">
-                    <span>🤖 Google AI Studio</span>
-                </a>
-                
-                <!-- NotebookLM -->
-                <a href="https://notebooklm.google.com/" target="_blank" class="link-btn">
-                    <span>📓 NotebookLM</span>
-                </a>
-                
-                <!-- Antigravity -->
-                <a href="https://antigravity.google/" target="_blank" class="link-btn">
-                    <span>🌌 Antigravity</span>
-                </a>
+            <div class="link-group">
+                <a href="https://aistudio.google.com/" target="_blank" class="link-btn">🤖 AI Studio</a>
+                <a href="https://notebooklm.google.com/" target="_blank" class="link-btn">📓 NotebookLM</a>
+                <a href="https://antigravity.google/" target="_blank" class="link-btn">🌌 Antigravity</a>
             </div>
 
-            <div class="settings-toggle" onclick="toggleSettings()">
-                <h3>⚙️ 会社・基本情報</h3>
-                <span id="toggleIcon">▼</span>
+            <div onclick="toggleSettingsBox()" style="cursor:pointer; display:flex; justify-content:space-between;">
+                <h3 style="border:none; margin-bottom:0;">⚙️ 会社情報設定</h3>
+                <span>▼</span>
             </div>
-            
-            <div id="settingsBox">
-                <p style="font-size:10px; color:var(--text-sub); margin-bottom:10px;">
-                    ※入力した情報はブラウザ内にのみ保存されます。
-                </p>
+
+            <div id="settingsBox" style="display:none; margin-top:10px;">
                 <label>会社名</label>
-                <input type="text" id="setIssuerName" placeholder="株式会社〇〇">
-                <label>住所・TEL</label>
-                <textarea id="setIssuerAddr" rows="3" placeholder="〒000-0000..."></textarea>
-                <label>代表者/担当者</label>
-                <input type="text" id="setIssuerRep" placeholder="代表取締役...">
-                <label>登録番号(T)</label>
-                <input type="text" id="setRegNo" placeholder="T1234567890123">
-                
-                <label style="margin-top:10px;">🔲 会社印 (角印)</label>
-                <div class="seal-area">
-                    <input type="file" id="fileSealCompany" accept="image/*" style="font-size:11px;" onchange="previewSeal(this, 'prevCompany')">
-                    <img id="prevCompany" class="seal-preview">
-                </div>
-                <label style="margin-top:10px;">🔴 個人印 (認印)</label>
-                <div class="seal-area">
-                    <input type="file" id="fileSealPersonal" accept="image/*" style="font-size:11px;" onchange="previewSeal(this, 'prevPersonal')">
-                    <img id="prevPersonal" class="seal-preview" style="width:50px; height:50px; border-radius:50%;">
-                </div>
-                <button onclick="handleSave()" class="save-btn">設定を保存する</button>
+                <input type="text" id="setIssuerName">
+                <label>住所</label>
+                <textarea id="setIssuerAddr" rows="3"></textarea>
+                <label>担当</label>
+                <input type="text" id="setIssuerRep">
+                <label>登録番号</label>
+                <input type="text" id="setRegNo">
+                <button onclick="handleSave()" class="save-btn">保存する</button>
             </div>
         </aside>
 
         <main class="main-content">
             <div class="section-title">事務・経理</div>
-            <a href="seikyu.html" class="card"><span class="card-icon">💰</span><span class="card-title">請求書 作成</span><span class="card-desc">振込先保存・計算自動</span></a>
-            <a href="mitsumori.html" class="card"><span class="card-icon">🧮</span><span class="card-title">見積書 作成</span><span class="card-desc">有効期限付き</span></a>
-            <a href="chumon.html" class="card"><span class="card-icon">🛍️</span><span class="card-title">注文書 (発注)</span><span class="card-desc">納期・場所指定可能</span></a>
-            <a href="nohin.html" class="card"><span class="card-icon">📦</span><span class="card-title">納品書 作成</span><span class="card-desc">受領印エリア付き</span></a>
-            <a href="ryoshusho.html" class="card"><span class="card-icon">¥</span><span class="card-title">領収証 (詳細)</span><span class="card-desc">明細付き・インボイス対応</span></a>
-            <a href="ryoshusho_simple.html" class="card"><span class="card-icon">🧾</span><span class="card-title">領収書 (簡易)</span><span class="card-desc">合計のみ・スピード作成</span></a>
-            <a href="zaishoku.html" class="card"><span class="card-icon">📄</span><span class="card-title">在職証明書</span><span class="card-desc">公的文書スタイル</span></a>
-            <a href="ringi.html" class="card"><span class="card-icon">🈸</span><span class="card-title">稟議書 作成</span><span class="card-desc">承認印枠付き</span></a>
-            <a href="gijiroku.html" class="card"><span class="card-icon">📝</span><span class="card-title">会議議事録</span><span class="card-desc">ToDo管理・行追加</span></a>
-            <a href="phone.html" class="card"><span class="card-icon">📞</span><span class="card-title">電話メモ</span><span class="card-desc">受電内容を即コピー</span></a>
-        
+            <a href="seikyu.html" class="card"><span class="card-icon">💰</span><span class="card-title">請求書</span><span
+                    class="card-desc">振込先・自動計算</span></a>
+            <a href="mitsumori.html" class="card"><span class="card-icon">🧮</span><span
+                    class="card-title">見積書</span><span class="card-desc">有効期限付き</span></a>
+            <a href="chumon.html" class="card"><span class="card-icon">🛍️</span><span
+                    class="card-title">注文書</span><span class="card-desc">発注・納期可能</span></a>
+            <a href="nohin.html" class="card"><span class="card-icon">📦</span><span class="card-title">納品書</span><span
+                    class="card-desc">受領印エリア付</span></a>
+            <a href="ryoshusho.html" class="card"><span class="card-icon">¥</span><span
+                    class="card-title">領収証</span><span class="card-desc">詳細・インボイス</span></a>
+            <a href="ryoshusho_simple.html" class="card"><span class="card-icon">🧾</span><span
+                    class="card-title">領収書(簡)</span><span class="card-desc">合計のみ</span></a>
+            <a href="zaishoku.html" class="card"><span class="card-icon">📄</span><span
+                    class="card-title">在職証明</span><span class="card-desc">公的文書形式</span></a>
+            <a href="ringi.html" class="card"><span class="card-icon">🈸</span><span class="card-title">稟議書</span><span
+                    class="card-desc">承認枠付き</span></a>
+            <a href="gijiroku.html" class="card"><span class="card-icon">📝</span><span
+                    class="card-title">議事録</span><span class="card-desc">ToDo管理</span></a>
+            <a href="phone.html" class="card"><span class="card-icon">📞</span><span class="card-title">電話メモ</span><span
+                    class="card-desc">即コピー</span></a>
+
             <div class="section-title">発送・贈答</div>
-            <a href="label.html" class="card"><span class="card-icon">🏷️</span><span class="card-title">宛名ラベル</span><span class="card-desc">A4 12面・CSV取込</span></a>
-            <a href="fax.html" class="card"><span class="card-icon">📠</span><span class="card-title">FAX 送付状</span><span class="card-desc">インク節約デザイン</span></a>
-            <a href="sofujo.html" class="card"><span class="card-icon">✉️</span><span class="card-title">送付状</span><span class="card-desc">挨拶文自動挿入</span></a>
-            <a href="sofujo_multi.html" class="card"><span class="card-icon">📚</span><span class="card-title">一括 送付状</span><span class="card-desc">宛先リスト管理</span></a>
-            <a href="envelope.html" class="card"><span class="card-icon">📮</span><span class="card-title">封筒印刷</span><span class="card-desc">長形3号・横書き</span></a>
-            <a href="noshi.html" class="card"><span class="card-icon">🎁</span><span class="card-title">のし紙</span><span class="card-desc">紅白・仏事切替可</span></a>
+            <a href="label.html" class="card"><span class="card-icon">🏷️</span><span class="card-title">ラベル</span><span
+                    class="card-desc">A4 12面</span></a>
+            <a href="fax.html" class="card"><span class="card-icon">📠</span><span class="card-title">FAX</span><span
+                    class="card-desc">節約デザイン</span></a>
+            <a href="sofujo.html" class="card"><span class="card-icon">✉️</span><span class="card-title">送付状</span><span
+                    class="card-desc">挨拶文自動</span></a>
+            <a href="sofujo_multi.html" class="card"><span class="card-icon">📚</span><span
+                    class="card-title">一括送付</span><span class="card-desc">宛先リスト</span></a>
+            <a href="envelope.html" class="card"><span class="card-icon">📮</span><span
+                    class="card-title">封筒</span><span class="card-desc">長3横書き</span></a>
+            <a href="noshi.html" class="card"><span class="card-icon">🎁</span><span class="card-title">のし紙</span><span
+                    class="card-desc">紅白・仏事</span></a>
 
             <div class="section-title">勤怠・精算</div>
-             <a href="kintai.html" class="card"><span class="card-icon">📅</span><span class="card-title">勤怠・有給計画</span><span class="card-desc">年間110日シミュレーション</span></a>
-            <a href="tsukin.html" class="card"><span class="card-icon">🚗</span><span class="card-title">通勤費精算</span><span class="card-desc">カレンダー形式・例外対応</span></a>
-            <a href="keihi.html" class="card"><span class="card-icon">🚃</span><span class="card-title">経費精算</span><span class="card-desc">交通費自動計算</span></a>
-       
+            <a href="kintai.html" class="card"><span class="card-icon">📅</span><span
+                    class="card-title">勤怠計画</span><span class="card-desc">有給シミュ</span></a>
+            <a href="tsukin.html" class="card"><span class="card-icon">🚗</span><span class="card-title">通勤費</span><span
+                    class="card-desc">経路保存</span></a>
+            <a href="keihi.html" class="card"><span class="card-icon">🚃</span><span class="card-title">経費精算</span><span
+                    class="card-desc">交通費計算</span></a>
+
             <div class="section-title">管理</div>
-            <a href="backup.html" class="card"><span class="card-icon">💾</span><span class="card-title">バックアップ</span><span class="card-desc">データの保存と復元</span></a>
+            <a href="backup.html" class="card"><span class="card-icon">💾</span><span
+                    class="card-title">バックアップ</span><span class="card-desc">保存と復元</span></a>
         </main>
     </div>
 
-    <!-- Script: パスワード機能も内蔵 -->
     <script src="settings.js"></script>
     <script>
-        const PASSWORD = "0000"; 
-        const SESSION_KEY = "access_token"; 
+        const PASSWORD = "0000";
+        const SESSION_KEY = "access_token";
 
         function checkAuth() {
             if (sessionStorage.getItem(SESSION_KEY) === "allowed") {
-                document.body.style.display = "flex"; 
+                document.body.style.display = "flex";
                 return;
             }
             setTimeout(() => {
@@ -316,42 +467,33 @@
                 }
             }, 50);
         }
+        checkAuth();
 
         function logout() {
-            if(confirm("ログアウトしますか？")) {
+            if (confirm("ログアウトしますか？")) {
                 sessionStorage.removeItem(SESSION_KEY);
                 location.reload();
             }
         }
 
-        checkAuth();
-
         const THEMES = ['', 'theme-kawaii', 'theme-dark'];
-
         window.addEventListener('load', () => {
             const savedTheme = localStorage.getItem('my_tool_theme');
             if (savedTheme && THEMES.includes(savedTheme)) {
                 document.body.className = savedTheme;
             }
             updateBtnText();
-            if(typeof loadSettingsToInputs === 'function') loadSettingsToInputs();
+            if (typeof loadSettingsToInputs === 'function') loadSettingsToInputs();
         });
+
+        function toggleSettingsBox() {
+            const box = document.getElementById('settingsBox');
+            box.style.display = (box.style.display === "none") ? "block" : "none";
+        }
 
         function handleSave() {
             if (typeof saveSettings === 'function') saveSettings();
-            else alert("settings.js 読込エラー");
-        }
-
-        function toggleSettings() {
-            const box = document.getElementById('settingsBox');
-            const icon = document.getElementById('toggleIcon');
-            if (box.style.display === "block") {
-                box.style.display = "none";
-                icon.innerText = "▼";
-            } else {
-                box.style.display = "block";
-                icon.innerText = "▲";
-            }
+            else alert("Error: settings.js not loaded.");
         }
 
         function toggleTheme() {
@@ -359,7 +501,7 @@
             let currentClass = "";
             if (body.classList.contains('theme-kawaii')) currentClass = 'theme-kawaii';
             else if (body.classList.contains('theme-dark')) currentClass = 'theme-dark';
-            
+
             const currentIndex = THEMES.indexOf(currentClass);
             const nextIndex = (currentIndex + 1) % THEMES.length;
             const nextClass = THEMES[nextIndex];
@@ -372,21 +514,16 @@
         function updateBtnText() {
             const btn = document.getElementById('themeBtn');
             const body = document.body;
-            
             if (body.classList.contains('theme-kawaii')) {
-                btn.innerText = "💖 モード切替 (次:Neon)";
-                btn.style.color = "#fff";
-                btn.style.borderColor = "#fff";
+                btn.innerText = "💖 モード切替(次:Neon)";
             } else if (body.classList.contains('theme-dark')) {
-                btn.innerText = "⚡ モード切替 (次:Simple)";
-                btn.style.color = "#00e5ff"; 
-                btn.style.borderColor = "#00e5ff";
+                btn.innerText = "⚡ モード切替(次:Simple)";
             } else {
-                btn.innerText = "✨ モード切替 (次:Kawaii)";
-                btn.style.color = "#fff";
-                btn.style.borderColor = "rgba(255,255,255,0.5)";
+                btn.innerText = "✨ モード切替(次:Kawaii)";
             }
         }
     </script>
+    <script src="theme.js"></script>
 </body>
+
 </html>

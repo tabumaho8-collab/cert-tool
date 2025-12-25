@@ -1,0 +1,679 @@
+/* theme.css - 共通デザイン定義 */
+:root {
+    /* ▼ モード1: 洗練 (Stylish) */
+    --bg-color: #f4f7f6;
+    --bg-image: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
+    --font-family: "Helvetica Neue", "Noto Sans JP", Arial, sans-serif;
+    --text-color: #2d3436;
+    --text-sub: #636e72;
+    --accent-color: #6c5ce7;
+    --accent-hover: #5649c0;
+    --sidebar-bg: rgba(255, 255, 255, 0.7);
+    --card-bg: rgba(255, 255, 255, 0.8);
+    --border-radius: 12px;
+    --border-style: 1px solid rgba(255, 255, 255, 0.6);
+    --shadow: 0 8px 32px 0 rgba(31, 38, 135, 0.1);
+    --backdrop-filter: blur(8px);
+    --header-bg: #2d3436;
+    --header-text: #ffffff;
+    --btn-radius: 12px;
+    --section-line: 1px solid #b2bec3;
+    --header-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+}
+
+/* ▼ モード2: かわいい (Kawaii) */
+/* ▼ モード2: 絶対にかわいい (Kawaii JK Style) */
+body.theme-kawaii {
+    --bg-color: #fff5f8;
+    /* 超薄いピンク */
+    /* 可愛いギンガムチェック背景 */
+    --bg-image:
+        linear-gradient(45deg, #ffe0e9 25%, transparent 25%, transparent 75%, #ffe0e9 75%, #ffe0e9),
+        linear-gradient(45deg, #ffe0e9 25%, transparent 25%, transparent 75%, #ffe0e9 75%, #ffe0e9);
+    --font-family: "M PLUS Rounded 1c", "Kosugi Maru", sans-serif;
+    /* 丸文字必須 */
+    --text-color: #5d4037;
+    /* チョコ色 */
+    --text-sub: #8d6e63;
+    --accent-color: #ff8fa3;
+    /* いちごミルク色 */
+    --accent-hover: #ff6b81;
+    --sidebar-bg: #fff;
+    --card-bg: #fff;
+    --border-radius: 30px;
+    /* まんまる */
+    --border-style: 3px dashed #ffb7c5;
+    /* ステッチみたいな破線 */
+    --shadow: 5px 5px 0px rgba(255, 182, 193, 0.8);
+    /* 飛び出すようなポップな影 */
+    --backdrop-filter: none;
+
+    /* ヘッダー周り */
+    --header-bg: rgba(255, 255, 255, 0.9);
+    --header-text: #ff6b81;
+    --header-shadow: 0 4px 10px rgba(255, 182, 193, 0.4);
+    --btn-radius: 50px;
+}
+
+/* Kawaiiモードの追加装飾 */
+body.theme-kawaii input,
+body.theme-kawaii textarea,
+body.theme-kawaii select {
+    border: 2px solid #ffcdd2 !important;
+    background-color: #fffbfc !important;
+    color: #5d4037 !important;
+    box-shadow: inset 2px 2px 5px rgba(0, 0, 0, 0.03);
+}
+
+body.theme-kawaii input:focus,
+body.theme-kawaii textarea:focus,
+body.theme-kawaii select:focus {
+    border-color: #ff8fa3 !important;
+    box-shadow: 0 0 0 4px rgba(255, 143, 163, 0.3) !important;
+    transform: scale(1.01);
+}
+
+/* Kawaiiモードのボタン */
+body.theme-kawaii button {
+    font-family: "M PLUS Rounded 1c", sans-serif;
+    letter-spacing: 1px;
+}
+
+/* 印刷ボタン (Kawaii仕様: 絶対にかわいく！) */
+body.theme-kawaii .print-btn {
+    background: linear-gradient(135deg, #ff9eb5 0%, #ff6b81 100%) !important;
+    box-shadow: 0 6px 0 #e55c70, 0 10px 15px rgba(255, 107, 129, 0.4) !important;
+    /* 影を強化してぷっくり感 */
+    border-radius: 50px !important;
+    color: #fff !important;
+    border: 3px solid #fff !important;
+    /* 枠を太く */
+    font-size: 18px !important;
+    font-weight: bold !important;
+    padding: 15px 20px !important;
+    margin-top: 20px !important;
+    margin-bottom: 50px !important;
+    /* ★重要: 下が見切れないようにたっぷり余白 */
+    position: relative;
+    overflow: visible !important;
+    /* 影を表示させる */
+    transition: all 0.2s !important;
+}
+
+body.theme-kawaii .print-btn:hover {
+    transform: translateY(-2px) scale(1.02) !important;
+    background: linear-gradient(135deg, #ff8fa3 0%, #ff5c73 100%) !important;
+}
+
+body.theme-kawaii .print-btn:active {
+    box-shadow: 0 0 0 #e55c70, inset 0 2px 5px rgba(0, 0, 0, 0.2) !important;
+    transform: translateY(6px) !important;
+}
+
+body.theme-kawaii .print-btn::before {
+    content: "🌸 ";
+    margin-right: 5px;
+}
+
+body.theme-kawaii .print-btn::after {
+    content: " 💕";
+    margin-left: 5px;
+}
+
+/* 絶対にかわいい戻るボタン */
+body.theme-kawaii .back-btn {
+    background: #b2ebf2 !important;
+    /* パステルソーダ */
+    color: #5d4037 !important;
+    /* チョコミント風 */
+    border: 2px dashed #fff !important;
+    /* ステッチ */
+    box-shadow: 0 0 0 3px #b2ebf2, 0 4px 0 #80deea !important;
+    /* 二重枠＆立体 */
+    border-radius: 20px !important;
+    font-size: 13px !important;
+    padding: 8px 15px !important;
+    transition: 0.2s !important;
+}
+
+body.theme-kawaii .back-btn:hover {
+    transform: translateY(-2px) rotate(-3deg) !important;
+    /* ちょっと傾いて可愛く */
+    background: #80deea !important;
+}
+
+body.theme-kawaii .back-btn::before {
+    content: "🏠 ";
+}
+
+/* 振込先保存ボタン (Kawaii) */
+body.theme-kawaii .save-bank-btn {
+    background: linear-gradient(to bottom, #ffd54f, #ffca28) !important;
+    /* 金貨みたいなイエロー */
+    color: #5d4037 !important;
+    /* チョコ文字 */
+    border: 2px solid #fff !important;
+    border-radius: 20px !important;
+    box-shadow: 0 4px 0 #ffb300, 0 5px 5px rgba(0, 0, 0, 0.1) !important;
+    /* ぷっくり3D */
+    font-weight: bold !important;
+    padding: 6px 15px !important;
+    transition: all 0.2s !important;
+}
+
+body.theme-kawaii .save-bank-btn:hover {
+    transform: translateY(-2px) rotate(2deg) !important;
+    background: linear-gradient(to bottom, #ffe082, #ffd54f) !important;
+}
+
+body.theme-kawaii .save-bank-btn:active {
+    transform: translateY(4px) !important;
+    box-shadow: 0 0 0 #ffb300 !important;
+}
+
+body.theme-kawaii .save-bank-btn::before {
+    content: "🏦 ";
+}
+
+/* Kawaiiモードのカード装飾 */
+body.theme-kawaii .editor-pane,
+body.theme-kawaii .preview-pane {
+    position: relative;
+    /* overflow: visible !important;  <-- これが原因でスクロール不能になっていた */
+    overflow-y: auto !important;
+    /* スクロールを復活させる */
+    overflow-x: hidden;
+    /* 横スクロールは防ぐ */
+}
+
+/* ★修正: Kawaiiモードのエディタ幅を広げる */
+body.theme-kawaii .editor-pane {
+    width: 500px !important;
+    max-width: 90vw !important;
+    /* スマホ対策 */
+}
+
+/* 疑似要素でリボンやハートをつけたいが、汎用性を考えるとシンプルに */
+
+
+/* ▼ モード3: サイバーグラス (Cyber Glass) */
+body.theme-dark {
+    --bg-color: #050508;
+    --bg-image: linear-gradient(rgba(0, 229, 255, 0.05) 1px, transparent 1px), linear-gradient(90deg, rgba(0, 229, 255, 0.05) 1px, transparent 1px);
+    --font-family: "Helvetica Neue", "Noto Sans JP", Arial, sans-serif;
+    --text-color: #e0f7fa;
+    --text-sub: #80deea;
+    --accent-color: #00e5ff;
+    --accent-hover: #00b8d4;
+    --sidebar-bg: rgba(15, 23, 42, 0.7);
+    --card-bg: rgba(20, 30, 50, 0.6);
+    --border-radius: 6px;
+    --border-style: 1px solid rgba(0, 229, 255, 0.2);
+    --shadow: 0 4px 30px rgba(0, 0, 0, 0.5), inset 0 0 20px rgba(0, 229, 255, 0.05);
+    --backdrop-filter: blur(10px);
+    --header-bg: rgba(5, 10, 20, 0.9);
+    --header-text: var(--accent-color);
+    --btn-radius: 4px;
+    --header-shadow: 0 1px 0px rgba(0, 229, 255, 0.3);
+}
+
+/* --- 全体基本スタイル --- */
+body {
+    background-color: var(--bg-color);
+    background-image: var(--bg-image);
+    background-size: cover;
+    color: var(--text-color);
+    font-family: var(--font-family);
+    transition: background 0.3s, color 0.3s;
+    margin: 0;
+    padding: 0;
+    height: 100vh;
+    /* 画面いっぱいに */
+    overflow: hidden;
+    /* スクロールは内部でする */
+    display: flex;
+    flex-direction: column;
+}
+
+body.theme-kawaii {
+    background-size: 20px 20px;
+    background-position: 0 0, 10px 10px;
+}
+
+body.theme-dark {
+    background-size: 40px 40px;
+}
+
+/* ヘッダー */
+#global-header {
+    background-color: var(--header-bg);
+    color: var(--header-text);
+    width: 100%;
+    padding: 12px 25px;
+    box-sizing: border-box;
+    box-shadow: var(--header-shadow);
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    z-index: 1000;
+    flex-shrink: 0;
+    backdrop-filter: blur(5px);
+}
+
+#global-header h1 {
+    margin: 0;
+    font-size: 18px;
+    font-weight: bold;
+    letter-spacing: 1px;
+}
+
+.header-btns {
+    display: flex;
+    gap: 10px;
+}
+
+.theme-btn {
+    background: rgba(255, 255, 255, 0.1);
+    color: inherit;
+    border: 1px solid rgba(255, 255, 255, 0.3);
+    padding: 6px 15px;
+    border-radius: 20px;
+    font-size: 12px;
+    cursor: pointer;
+    transition: 0.2s;
+    font-weight: bold;
+}
+
+body.theme-dark .theme-btn {
+    border-color: var(--accent-color);
+    color: var(--accent-color);
+    border-radius: 4px;
+    box-shadow: 0 0 5px rgba(0, 229, 255, 0.4);
+}
+
+.theme-btn:hover {
+    background: rgba(255, 255, 255, 0.2);
+    transform: scale(1.05);
+}
+
+/* Kawaiiモードのテーマ切替ボタン (見やすく調整) */
+body.theme-kawaii .theme-btn {
+    background-color: #ff6b81 !important;
+    background-image: none !important;
+    /* グラデーションなどの干渉を防ぐ */
+    color: #fff !important;
+    border: 3px solid #fff !important;
+    box-shadow: 0 4px 10px rgba(255, 107, 129, 0.6) !important;
+    border-radius: 50px !important;
+    /* animation: bounce 2s infinite; */
+    /* ★修正: アニメーションで切れるのを防ぐため一旦停止 */
+    /* 可愛くアピール */
+
+    /* 文字が見えるように確実なサイズ指定 */
+    width: auto !important;
+    min-width: auto;
+    flex-shrink: 0;
+    /* ★重要: タイトルに押しつぶされないようにする */
+    white-space: nowrap !important;
+    padding: 10px 25px !important;
+    font-weight: bold !important;
+    text-shadow: 1px 1px 0 rgba(0, 0, 0, 0.1);
+    display: inline-flex !important;
+    align-items: center;
+    justify-content: center;
+    box-sizing: border-box;
+}
+
+@keyframes bounce {
+
+    0%,
+    100% {
+        transform: translateY(0);
+    }
+
+    50% {
+        transform: translateY(-3px);
+    }
+}
+
+.back-btn-header {
+    background: rgba(128, 128, 128, 0.3);
+    color: inherit;
+    border: none;
+    padding: 6px 12px;
+    border-radius: 4px;
+    font-size: 11px;
+    cursor: pointer;
+    text-decoration: none;
+    display: inline-flex;
+    align-items: center;
+}
+
+.back-btn-header:hover {
+    background: rgba(128, 128, 128, 0.5);
+}
+
+/* ▼▼▼ コンテンツレイアウト (横並び復元) ▼▼▼ */
+.app-layout-wrapper {
+    display: flex;
+    flex-direction: row;
+    flex-grow: 1;
+    overflow: hidden;
+    /* コンテンツ内でスクロール */
+    padding: 20px;
+    gap: 20px;
+    align-items: flex-start;
+    justify-content: center;
+}
+
+/* エディタ・サイドバー共通スタイル */
+.editor-pane {
+    background: var(--sidebar-bg) !important;
+    backdrop-filter: var(--backdrop-filter) !important;
+    border-radius: var(--border-radius) !important;
+    box-shadow: var(--shadow) !important;
+    border: var(--border-style) !important;
+    color: var(--text-color) !important;
+
+    /* スクロール設定 */
+    height: auto !important;
+    max-height: calc(100vh - 100px) !important;
+    overflow-y: auto;
+    flex-shrink: 0;
+}
+
+/* プレビューエリア */
+.preview-pane {
+    flex-grow: 1;
+    display: flex;
+    justify-content: center;
+    overflow-y: auto;
+    height: 100%;
+    align-items: flex-start;
+    /* 上寄せ */
+}
+
+/* ▼▼▼ インプット要素のデザイン (Focus: Orange) ▼▼▼ */
+input,
+textarea,
+select {
+    border-radius: var(--btn-radius) !important;
+    border: 1px solid #ccc;
+    outline: none;
+    transition: 0.2s;
+}
+
+/* フォーカス時：カッコいいオレンジ！ */
+input:focus,
+textarea:focus,
+select:focus {
+    border-color: #ff9f43 !important;
+    box-shadow: 0 0 0 3px rgba(255, 159, 67, 0.2) !important;
+}
+
+body.theme-dark input,
+body.theme-dark textarea,
+body.theme-dark select {
+    background: rgba(0, 0, 0, 0.5) !important;
+    color: #fff !important;
+    border-color: var(--accent-color) !important;
+}
+
+/* Darkモードでのフォーカス */
+body.theme-dark input:focus,
+body.theme-dark textarea:focus,
+body.theme-dark select:focus {
+    border-color: #ff9f43 !important;
+    box-shadow: 0 0 10px rgba(255, 159, 67, 0.5) !important;
+}
+
+/* ▼▼▼ ボタン類のデザイン統合 (蛍光色) ▼▼▼ */
+
+/* 印刷ボタン (蛍光青色: Neon Blue) */
+button.print-btn {
+    background-color: #00e5ff !important;
+    /* 蛍光青 */
+    color: #000 !important;
+    /* 文字は黒で見やすく */
+    border: none !important;
+    box-shadow: 0 4px 6px rgba(0, 229, 255, 0.3);
+    transition: all 0.2s ease;
+    position: relative;
+    overflow: hidden;
+    font-weight: bold;
+}
+
+button.print-btn:hover {
+    background-color: #00b8d4 !important;
+    transform: translateY(-2px);
+    box-shadow: 0 6px 15px rgba(0, 229, 255, 0.5);
+}
+
+button.print-btn:focus {
+    outline: none;
+    box-shadow: 0 0 0 3px rgba(0, 229, 255, 0.5) !important;
+}
+
+/* サイドバー内の戻るボタン - テーマ依存 */
+.back-btn {
+    display: inline-flex;
+    align-items: center;
+    background-color: #b2ebf2 !important;
+    /* パステルソーダ (ユーザー指定色) */
+    color: #5d4037 !important;
+    /* チョコミント風の濃い茶色 */
+    padding: 6px 15px;
+    text-decoration: none;
+    border-radius: 50px !important;
+    /* 丸みのあるカプセル型 (ユーザー指定) */
+    font-size: 12px;
+    margin-bottom: 15px;
+    cursor: pointer;
+    transition: 0.2s;
+    font-weight: bold;
+    border: 1px solid rgba(0, 0, 0, 0.05) !important;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+.back-btn:hover {
+    background-color: #80deea !important;
+    transform: translateY(-1px);
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.15);
+    color: #5d4037 !important;
+}
+
+/* ⚡ ダークモードの戻るボタン (蛍光オレンジ) */
+body.theme-dark .back-btn {
+    background-color: #ff9f43 !important;
+    color: #000 !important;
+    box-shadow: 0 4px 6px rgba(255, 159, 67, 0.3);
+}
+
+body.theme-dark .back-btn:hover {
+    background-color: #e67e22 !important;
+    box-shadow: 0 6px 12px rgba(255, 159, 67, 0.5);
+}
+
+/* ▼▼▼ 印鑑選択のスタイリッシュ化 ▼▼▼ */
+.seal-type-group {
+    background: transparent !important;
+    /* 元の背景色を消す */
+    border: none !important;
+    padding: 5px 0 !important;
+    display: flex;
+    gap: 10px;
+}
+
+.seal-type-label {
+    position: relative;
+    padding: 10px 15px;
+    background: rgba(255, 255, 255, 0.5);
+    border: 1px solid #ccc;
+    border-radius: 8px;
+    cursor: pointer;
+    transition: all 0.3s;
+    flex: 1;
+    text-align: center;
+    font-weight: bold;
+    color: var(--text-color);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+}
+
+body.theme-dark .seal-type-label {
+    background: rgba(255, 255, 255, 0.05);
+    border-color: rgba(255, 255, 255, 0.2);
+    color: #eee;
+}
+
+/* ホバー時 */
+.seal-type-label:hover {
+    background: rgba(255, 159, 67, 0.1);
+    border-color: #ff9f43;
+    transform: translateY(-2px);
+}
+
+/* ラジオボタン自体のデザイン */
+.seal-type-label input[type="radio"] {
+    accent-color: #ff9f43;
+    /* オレンジ */
+    width: 16px;
+    height: 16px;
+    margin: 0;
+    cursor: pointer;
+}
+
+/* 選択されているラベルのデザイン (CSSハック: :has()を使用) */
+/* 対応ブラウザのみ。非対応でもラジオボタンの色は変わる */
+.seal-type-label:has(input:checked) {
+    background: rgba(255, 159, 67, 0.15) !important;
+    border-color: #ff9f43 !important;
+    box-shadow: 0 0 10px rgba(255, 159, 67, 0.4);
+    color: #d35400;
+}
+
+body.theme-dark .seal-type-label:has(input:checked) {
+    background: rgba(255, 159, 67, 0.2) !important;
+    color: #ff9f43;
+    box-shadow: 0 0 15px rgba(255, 159, 67, 0.3);
+}
+
+/* 印刷時はヘッダーなどを消す & レイアウト解除 */
+@media print {
+    #global-header {
+        display: none !important;
+    }
+
+    .app-layout-wrapper {
+        display: block;
+        padding: 0;
+        overflow: visible;
+    }
+
+    body {
+        height: auto;
+        overflow: visible;
+        display: block;
+    }
+
+    .editor-pane {
+        display: none !important;
+    }
+
+    .preview-pane {
+        display: block !important;
+        height: auto !important;
+        overflow: visible;
+    }
+}
+
+/* ▼▼▼ スマホ対応 (レスポンシブ) ▼▼▼ */
+@media screen and (max-width: 900px) {
+
+    /* Flexの方向を縦にする */
+    .app-layout-wrapper {
+        flex-direction: column !important;
+        align-items: center !important;
+        padding: 10px !important;
+        height: auto !important;
+        overflow-y: auto !important;
+        gap: 30px !important;
+    }
+
+    /* エディタ画面を幅いっぱいに */
+    .editor-pane {
+        width: 100% !important;
+        max-width: 100% !important;
+        height: auto !important;
+        max-height: none !important;
+        /* モバイルではスクロール制限を解除 */
+        margin-bottom: 20px;
+        order: 1;
+        /* 上に表示 */
+    }
+
+    body.theme-kawaii .editor-pane {
+        width: 100% !important;
+        max-width: 100% !important;
+    }
+
+    /* プレビュー画面 */
+    .preview-pane {
+        width: 100% !important;
+        order: 2;
+        /* 下に表示 */
+        display: block !important;
+        overflow-x: auto !important;
+        /* 横スクロールでA4全体を見せる */
+        justify-content: flex-start !important;
+        /* 左寄せでスクロールさせる */
+    }
+
+    /* プレビュー内の用紙 (A4) */
+    #invoice,
+    .preview-pane>div {
+        transform-origin: top left;
+        /* スマホだとA4はデカすぎるので、少し縮小表示してもいいかも。
+           ただし、ユーザーが拡大縮小できるならスクロールの方が無難。
+           ここでは横スクロール前提とする。 */
+        margin-left: auto !important;
+        margin-right: auto !important;
+    }
+
+    /* ヘッダー調整 */
+    body.theme-kawaii #global-header {
+        padding: 25px 30px !important;
+        /* ★修正: 上下パディングを大幅に増やす */
+        overflow: visible !important;
+        height: auto !important;
+        min-height: 100px;
+        /* ★高さをしっかり確保 */
+    }
+
+    body.theme-kawaii #global-header h1 {
+        line-height: normal !important;
+        padding-bottom: 5px;
+    }
+
+    #global-header {
+        flex-direction: column;
+        gap: 10px;
+        height: auto !important;
+        padding: 10px !important;
+    }
+
+    .header-btns {
+        width: 100%;
+        justify-content: center;
+    }
+
+    /* ボタン類は押しやすく大きく */
+    .theme-btn,
+    .back-btn,
+    .print-btn {
+        padding: 12px 15px !important;
+        font-size: 14px !important;
+    }
+}

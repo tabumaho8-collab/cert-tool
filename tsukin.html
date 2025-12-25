@@ -1,5 +1,6 @@
 <!DOCTYPE html>
 <html lang="ja">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -7,60 +8,217 @@
     <style>
         /* --- ベーススタイル --- */
         body {
-            font-family: "Helvetica Neue", Arial, sans-serif;
-            background-color: #f0f2f5;
+            font-family: var(--font-family, "Helvetica Neue", Arial, sans-serif);
+            background-color: var(--bg-color, #f0f2f5);
             margin: 0;
             display: flex;
-            justify-content: center;
-            min-height: 100vh;
-        }
-
-        /* --- サイドバー（設定画面） --- */
-        .sidebar {
-            width: 320px;
-            background: #fff;
-            padding: 20px;
-            box-shadow: 2px 0 10px rgba(0,0,0,0.1);
+            flex-direction: column;
             height: 100vh;
-            overflow-y: auto;
-            position: fixed;
-            left: 0;
-            top: 0;
-            z-index: 100;
-            box-sizing: border-box;
+            overflow: hidden;
         }
 
-        /* メニューに戻るボタン */
-        .back-btn {
-            display: inline-block;
-            background-color: #6c757d;
-            color: white;
-            padding: 8px 15px;
+        /* --- レイアウト調整 --- */
+        header {
+            background-color: var(--header-bg, #2d3436);
+            color: var(--header-text, #ffffff);
+            width: 100%;
+            height: 50px;
+            padding: 0 20px;
+            box-sizing: border-box;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            position: fixed;
+            top: 0;
+            left: 0;
+            z-index: 1100;
+            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+        }
+
+        .header-left {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+        }
+
+        .header-left h1 {
+            margin: 0;
+            font-size: 16px;
+            font-weight: bold;
+            color: inherit;
+        }
+
+        .header-left h1 span {
+            font-weight: normal;
+            color: inherit;
+            font-size: 13px;
+        }
+
+        .back-btn-global {
+            display: inline-flex;
+            align-items: center;
+            padding: 6px 15px;
             text-decoration: none;
-            border-radius: 4px;
             font-size: 12px;
             font-weight: bold;
-            margin-bottom: 20px;
-            cursor: pointer;
-            transition: background-color 0.2s;
+            border-radius: var(--btn-radius);
+            transition: 0.2s;
+            margin-bottom: 15px;
         }
-        .back-btn:hover { background-color: #5a6268; }
 
-        .sidebar h2 { font-size: 18px; margin-top: 0; border-bottom: 2px solid #ddd; padding-bottom: 10px; }
-        .sidebar h3 { font-size: 14px; background: #eee; padding: 5px; margin-top: 20px; border-radius: 4px; }
-        
-        .form-group { margin-bottom: 15px; }
-        .form-group label { display: block; font-size: 12px; font-weight: bold; margin-bottom: 5px; color: #555; }
-        .form-group input, .form-group select { width: 100%; padding: 8px; border: 1px solid #ccc; border-radius: 4px; box-sizing: border-box; }
-        
-        .btn-primary { background: #007bff; color: white; width: 100%; padding: 10px; border: none; border-radius: 4px; cursor: pointer; font-weight: bold; }
-        .btn-primary:hover { background: #0056b3; }
-        .btn-danger { background: #dc3545; color: white; padding: 5px 10px; border: none; border-radius: 4px; cursor: pointer; font-size: 11px; float: right; }
-        .btn-print { background: #28a745; color: white; width: 100%; padding: 15px; border: none; border-radius: 4px; cursor: pointer; font-weight: bold; font-size: 16px; margin-top: 20px; }
-        
-        .route-row { display: flex; gap: 5px; margin-bottom: 5px; }
-        .route-row input[type="text"] { flex: 2; }
-        .route-row input[type="number"] { flex: 1; }
+        .back-btn-global:hover {
+            background-color: #80deea !important;
+            transform: translateY(-1px);
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.15);
+        }
+
+        .theme-btn-header {
+            background: rgba(255, 255, 255, 0.1);
+            border: 1px solid rgba(255, 255, 255, 0.3);
+            padding: 5px 12px;
+            border-radius: 20px;
+            font-size: 11px;
+            cursor: pointer;
+            color: inherit;
+            font-weight: bold;
+            transition: 0.2s;
+        }
+
+        .theme-btn-header:hover {
+            background: rgba(255, 255, 255, 0.2);
+        }
+
+        .app-layout-wrapper {
+            display: flex;
+            flex-grow: 1;
+            overflow: hidden;
+            padding-top: 50px;
+        }
+
+        .sidebar {
+            width: 320px;
+            background: var(--sidebar-bg, #fff);
+            padding: 20px;
+            padding-bottom: 100px !important;
+            border-right: 1px solid rgba(0, 0, 0, 0.1);
+            height: 100%;
+            overflow-y: auto;
+            box-sizing: border-box;
+            flex-shrink: 0;
+            backdrop-filter: var(--backdrop-filter);
+        }
+
+        .sidebar h2 {
+            font-size: 18px;
+            /* ★見切れ防止 */
+            margin-top: 0;
+            border-bottom: 2px solid var(--accent-color, #6c5ce7);
+            padding-bottom: 8px;
+            color: var(--accent-color, #2d3436);
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+
+        .sidebar h3 {
+            font-size: 13px;
+            background: #f1f3f5;
+            padding: 8px 12px;
+            margin-top: 25px;
+            border-radius: 6px;
+            color: #495057;
+        }
+
+        .form-group {
+            margin-bottom: 18px;
+        }
+
+        .form-group label {
+            display: block;
+            font-size: 12px;
+            font-weight: bold;
+            margin-bottom: 6px;
+            color: #555;
+        }
+
+        .form-group input,
+        .form-group select {
+            width: 100%;
+            padding: 10px;
+            border: 1px solid #dfe6e9;
+            border-radius: 8px;
+            box-sizing: border-box;
+            font-size: 14px;
+        }
+
+        .btn-primary {
+            background: linear-gradient(135deg, #6c5ce7 0%, #a29bfe 100%) !important;
+            color: white;
+            width: 100%;
+            padding: 12px;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            font-weight: bold;
+            box-shadow: 0 4px 6px rgba(108, 92, 231, 0.2);
+            transition: 0.2s;
+        }
+
+        .btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 12px rgba(108, 92, 231, 0.3);
+        }
+
+        .btn-danger {
+            background: #ff7675;
+            color: white;
+            padding: 5px 12px;
+            border: none;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 11px;
+            transition: 0.2s;
+        }
+
+        .btn-danger:hover {
+            background: #d63031;
+        }
+
+        .btn-print {
+            background: linear-gradient(135deg, #2ecc71 0%, #27ae60 100%) !important;
+            color: white;
+            width: 100%;
+            padding: 16px;
+            border: none;
+            border-radius: 12px;
+            cursor: pointer;
+            font-weight: bold;
+            font-size: 18px;
+            margin-top: 30px;
+            box-shadow: 0 10px 20px rgba(46, 204, 113, 0.3);
+            transition: 0.3s;
+            display: block;
+        }
+
+        .btn-print:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 15px 30px rgba(46, 204, 113, 0.4);
+        }
+
+
+        .route-row {
+            display: flex;
+            gap: 5px;
+            margin-bottom: 5px;
+        }
+
+        .route-row input[type="text"] {
+            flex: 2;
+        }
+
+        .route-row input[type="number"] {
+            flex: 1;
+        }
 
         /* ハンコ設定エリア */
         .seal-setting-box {
@@ -70,21 +228,45 @@
             margin-bottom: 10px;
             border: 1px solid #ffe082;
         }
-        .seal-title { font-size: 12px; font-weight: bold; margin-bottom: 5px; display: block; }
-        .seal-input { font-size: 11px; width: 100%; }
-        .seal-preview-mini {
-            height: 30px; margin-top: 5px; border: 1px solid #ddd; display: none;
+
+        .seal-title {
+            font-size: 12px;
+            font-weight: bold;
+            margin-bottom: 5px;
+            display: block;
         }
+
+        .seal-input {
+            font-size: 11px;
+            width: 100%;
+        }
+
+        .seal-preview-mini {
+            height: 30px;
+            margin-top: 5px;
+            border: 1px solid #ddd;
+            display: none;
+        }
+
         .btn-clear {
-            font-size: 10px; background: #999; color: white; border: none; padding: 2px 5px; cursor: pointer; margin-top: 2px; border-radius: 3px;
+            font-size: 10px;
+            background: #999;
+            color: white;
+            border: none;
+            padding: 2px 5px;
+            cursor: pointer;
+            margin-top: 2px;
+            border-radius: 3px;
         }
 
         /* --- プレビューエリア（メイン） --- */
         .main-content {
-            margin-left: 340px;
-            padding: 20px;
-            width: 100%;
-            max-width: 210mm;
+            flex-grow: 1;
+            padding: 30px;
+            overflow-y: auto;
+            display: flex;
+            justify-content: center;
+            align-items: flex-start;
         }
 
         /* 帳票デザイン (A4) */
@@ -94,443 +276,804 @@
             background: white;
             padding: 15mm 10mm;
             box-sizing: border-box;
-            box-shadow: 0 5px 15px rgba(0,0,0,0.2);
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
             position: relative;
             color: #333;
         }
 
-        .sheet-title { text-align: center; font-size: 24px; font-weight: bold; margin-bottom: 5px; border-bottom: 3px double #333; padding-bottom: 5px; }
-        .sheet-info { margin-bottom: 15px; display: flex; justify-content: space-between; align-items: flex-end; }
-        .info-left div { margin-bottom: 5px; font-size: 14px; }
-        
+        .sheet-title {
+            text-align: center;
+            font-size: 24px;
+            font-weight: bold;
+            margin-bottom: 20px;
+            /* 余白を増やす */
+            border-bottom: 3px double #333;
+            padding-bottom: 5px;
+            color: #000 !important;
+            /* ★確実に黒で表示 */
+        }
+
+        .sheet-info {
+            margin-bottom: 15px;
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-end;
+        }
+
+        .info-left div {
+            margin-bottom: 5px;
+            font-size: 14px;
+        }
+
         /* ハンコ枠デザイン */
-        .hanko-box { display: flex; border: 1px solid #333; }
-        .hanko-cell { width: 60px; height: 60px; border-right: 1px solid #333; position: relative; display:flex; align-items:center; justify-content:center; flex-direction: column;}
-        .hanko-cell:last-child { border-right: none; }
-        .hanko-label { position: absolute; top: 2px; left: 2px; font-size: 10px; }
-        
+        .hanko-box {
+            display: flex;
+            border: 1px solid #333;
+        }
+
+        .hanko-cell {
+            width: 60px;
+            height: 60px;
+            border-right: 1px solid #333;
+            position: relative;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            flex-direction: column;
+        }
+
+        .hanko-cell:last-child {
+            border-right: none;
+        }
+
+        .hanko-label {
+            position: absolute;
+            top: 2px;
+            left: 2px;
+            font-size: 10px;
+        }
+
         /* ハンコ画像表示 */
-        .seal-display { width: 45px; height: 45px; object-fit: contain; opacity: 0.85; display: none; position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); }
-        .seal-dummy-text { color: #eee; font-size: 10px; z-index: 0; }
+        .seal-display {
+            width: 45px;
+            height: 45px;
+            object-fit: contain;
+            opacity: 0.85;
+            display: none;
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+        }
+
+        /* 氏名横の印鑑 */
+        .name-seal-container {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            width: 40px;
+            height: 40px;
+            margin-left: 10px;
+            position: relative;
+            vertical-align: middle;
+        }
+
+        .seal-display-inline {
+            width: 40px;
+            height: 40px;
+            object-fit: contain;
+            opacity: 0.85;
+            display: none;
+        }
+
+        .seal-dummy-text-inline {
+            color: #ddd;
+            font-size: 10px;
+            border: 1px solid #eee;
+            border-radius: 50%;
+            width: 30px;
+            height: 30px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .seal-dummy-text {
+            color: #eee;
+            font-size: 10px;
+            z-index: 0;
+        }
 
         /* 2列レイアウト */
-        .cols-container { display: flex; gap: 10mm; }
-        .col-half { flex: 1; }
+        .cols-container {
+            display: flex;
+            gap: 10mm;
+        }
+
+        .col-half {
+            flex: 1;
+        }
 
         /* テーブル */
-        table { width: 100%; border-collapse: collapse; font-size: 11px; margin-bottom: 0; }
-        th, td { border: 1px solid #000; padding: 4px 2px; text-align: center; height: 26px; box-sizing: border-box; }
-        th { background: #eee; font-weight: bold; }
-        
-        select.route-select { width: 100%; border: none; background: transparent; font-size: 11px; cursor: pointer; text-align: center; appearance: none; -webkit-appearance: none; }
-        .print-text { display: none; }
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 11px;
+            margin-bottom: 0;
+        }
 
-        .weekend { background-color: #fce8e8; color: #d00; }
-        .saturday { background-color: #e8f4fc; color: #00d; }
-        .total-box { margin-top: 10px; text-align: right; font-size: 16px; font-weight: bold; padding: 5px; border-bottom: 2px solid #333; }
+        th,
+        td {
+            border: 1px solid #000;
+            padding: 4px 2px;
+            text-align: center;
+            height: 26px;
+            box-sizing: border-box;
+        }
+
+        th {
+            background: #eee;
+            font-weight: bold;
+        }
+
+        select.route-select {
+            width: 100%;
+            border: none;
+            background: transparent;
+            font-size: 11px;
+            cursor: pointer;
+            text-align: center;
+            appearance: none;
+            -webkit-appearance: none;
+        }
+
+        .print-text {
+            display: none;
+        }
+
+        .weekend {
+            background-color: #fce8e8;
+            color: #d00;
+        }
+
+        .saturday {
+            background-color: #e8f4fc;
+            color: #00d;
+        }
+
+        .total-box {
+            margin-top: 10px;
+            text-align: right;
+            font-size: 16px;
+            font-weight: bold;
+            padding: 5px;
+            border-bottom: 2px solid #333;
+        }
+
+        /* --- テーマ別スタイル調整 --- */
+        /* Kawaii Mode */
+        body.theme-kawaii .sidebar {
+            background: #fffcf0;
+            border-right: 3px solid #ff9eb5;
+        }
+
+        body.theme-kawaii .sidebar h3 {
+            background: #ffecf2;
+            color: #d63384;
+        }
+
+        body.theme-kawaii .btn-primary {
+            background: linear-gradient(135deg, #ff9eb5 0%, #ff7eb3 100%) !important;
+            border-radius: 30px !important;
+        }
+
+        body.theme-kawaii .btn-print {
+            background: linear-gradient(135deg, #ff6b81 0%, #ff4757 100%) !important;
+            border-radius: 30px !important;
+        }
+
+        body.theme-kawaii .sheet {
+            border-radius: 20px;
+            border: 3px solid #ff9eb5;
+        }
+
+        /* Dark Mode */
+        body.theme-dark {
+            background-color: #050508;
+            color: #e0f7fa;
+        }
+
+        body.theme-dark .sidebar {
+            background: rgba(15, 23, 42, 0.95);
+            border-right: 1px solid #00e5ff;
+            box-shadow: 5px 0 25px rgba(0, 229, 255, 0.2);
+        }
+
+        body.theme-dark .sidebar h2 {
+            color: #00e5ff;
+            border-color: #00e5ff;
+            text-shadow: 0 0 10px #00e5ff;
+        }
+
+        body.theme-dark .sidebar h3 {
+            background: rgba(0, 229, 255, 0.1);
+            color: #00e5ff;
+        }
+
+        body.theme-dark .form-group label {
+            color: #80deea;
+        }
+
+        body.theme-dark .form-group input,
+        body.theme-dark .form-group select {
+            background: rgba(0, 0, 0, 0.5);
+            color: #fff;
+            border-color: #00e5ff;
+        }
+
+        body.theme-dark .btn-primary {
+            background: rgba(0, 229, 255, 0.2) !important;
+            color: #00e5ff !important;
+            border: 1px solid #00e5ff !important;
+            box-shadow: 0 0 10px rgba(0, 229, 255, 0.3);
+        }
+
+        body.theme-dark .btn-primary:hover {
+            background: #00e5ff !important;
+            color: #000 !important;
+        }
+
+        body.theme-dark .btn-print {
+            background: #00e5ff !important;
+            color: #000 !important;
+            box-shadow: 0 0 20px #00e5ff !important;
+        }
+
+        body.theme-dark .sheet {
+            background: #fff;
+            color: #333;
+        }
+
+        /* 帳票は白背景維持（印刷用） */
 
         /* --- 印刷設定 --- */
         @media print {
-            body { background: none; display: block; margin: 0; }
-            .sidebar { display: none; }
-            .main-content { margin: 0; padding: 0; width: 100%; }
-            .sheet { box-shadow: none; width: 100%; height: 100%; margin: 0; padding: 15mm 10mm; }
-            
-            select.route-select { display: none; }
-            .print-text { display: block; }
-            .seal-dummy-text { display: none !important; }
-            
-            @page { size: A4 portrait; margin: 0; }
+            body {
+                background: none;
+                display: block;
+                margin: 0;
+            }
+
+            .sidebar {
+                display: none !important;
+            }
+
+            .main-content {
+                margin: 0 !important;
+                padding: 0 !important;
+                width: 100% !important;
+            }
+
+            .sheet {
+                box-shadow: none !important;
+                width: 100% !important;
+                height: auto !important;
+                margin: 0 !important;
+                padding: 15mm 10mm !important;
+            }
+
+            select.route-select {
+                display: none !important;
+            }
+
+            .print-text {
+                display: block !important;
+            }
+
+            .seal-dummy-text {
+                display: none !important;
+            }
+
+            @page {
+                size: A4 portrait;
+                margin: 0;
+            }
+        }
+
+        /* レスポンシブ */
+        @media (max-width: 1100px) {
+            body {
+                flex-direction: column;
+                align-items: center;
+            }
+
+            .sidebar {
+                position: static;
+                width: 100%;
+                height: auto;
+                padding-bottom: 30px !important;
+            }
+
+            .main-content {
+                margin-left: 0;
+                display: flex;
+                justify-content: center;
+            }
+
+            .sheet {
+                width: 95vw;
+                height: auto;
+                padding: 10mm 5mm;
+            }
         }
     </style>
+    <link rel="stylesheet" href="theme.css">
 </head>
+
 <body>
 
-    <!-- ▼ サイドバー設定エリア ▼ -->
-    <div class="sidebar">
-        <a href="index.html" class="back-btn">⬅ メニューに戻る</a>
-
-        <h2>設定・操作</h2>
-
-        <!-- メンバー管理 -->
-        <div style="background:#eef; padding:10px; border-radius:4px; margin-bottom:15px;">
-            <label style="font-weight:bold; font-size:12px;">👤 メンバー選択</label>
-            <div style="display:flex; gap:5px; margin-top:5px;">
-                <select id="userSelect" onchange="loadUser()" style="flex:1;"></select>
-                <button onclick="addUser()" style="width:30px;">＋</button>
-                <button onclick="deleteUser()" style="width:30px; background:#d9534f; color:white; border:none;">🗑️</button>
-            </div>
+    <!-- ▼ ヘッダー ▼ -->
+    <header id="global-header">
+        <div class="header-left">
+            <h1>社内ツール <span>/ 通勤費精算書</span></h1>
         </div>
-
-        <div class="form-group"><label>対象年月</label><input type="month" id="targetMonth" onchange="updateTable()"></div>
-        <div class="form-group"><label>所属</label><input type="text" id="iptDept" placeholder="営業部" oninput="saveCurrentData()"></div>
-        <div class="form-group"><label>氏名</label><input type="text" id="iptName" placeholder="氏名" oninput="saveCurrentData()"></div>
-
-        <!-- ハンコ設定エリア (3つ) -->
-        <h3>💮 電子印鑑の設定</h3>
-        
-        <div class="seal-setting-box">
-            <span class="seal-title">承認印 (左枠)</span>
-            <input type="file" accept="image/*" class="seal-input" onchange="handleFileSelect(this, 'sealShonin')">
-            <img id="prev_sealShonin" class="seal-preview-mini">
-            <button class="btn-clear" onclick="clearSeal('sealShonin')">削除</button>
+        <div class="header-right">
+            <button onclick="toggleTheme()" id="themeBtn" class="theme-btn-header">🎨 テーマ変更</button>
         </div>
+    </header>
 
-        <div class="seal-setting-box">
-            <span class="seal-title">確認印 (中枠)</span>
-            <input type="file" accept="image/*" class="seal-input" onchange="handleFileSelect(this, 'sealKakunin')">
-            <img id="prev_sealKakunin" class="seal-preview-mini">
-            <button class="btn-clear" onclick="clearSeal('sealKakunin')">削除</button>
-        </div>
+    <div class="app-layout-wrapper">
+        <!-- ▼ サイドバー設定エリア ▼ -->
+        <aside class="sidebar">
+            <a href="index.html" class="back-btn back-btn-global">⬅ メニューに戻る</a>
+            <h2 class="sidebar-title" style="margin-top: 5px; color: var(--accent-color);">通勤費精算書</h2>
+            <p style="font-size: 11px; color: var(--text-sub); margin-top: -10px; margin-bottom: 20px;">多機能バックオフィス・ツール
+            </p>
 
-        <div class="seal-setting-box">
-            <span class="seal-title">担当印 (右枠)</span>
-            <input type="file" accept="image/*" class="seal-input" onchange="handleFileSelect(this, 'sealTanto')">
-            <img id="prev_sealTanto" class="seal-preview-mini">
-            <button class="btn-clear" onclick="clearSeal('sealTanto')">削除</button>
-            <div style="font-size:10px; color:#666; margin-top:5px;">
-                ※登録がない場合、共通設定のハンコが表示されます。
-            </div>
-        </div>
-
-        <hr>
-        <h3>🚗 経路マスタ</h3>
-        <div id="routeConfig"></div>
-        <button class="btn-primary" onclick="addRouteInput()" style="margin-top:5px; background:#6c757d; font-size:12px;">＋ 経路欄を追加</button>
-
-        <hr>
-        <h3>⚡ 一括入力 (平日)</h3>
-        <div class="form-group"><label>行き</label><select id="batchGo"></select></div>
-        <div class="form-group"><label>帰り</label><select id="batchBack"></select></div>
-        <button class="btn-primary" onclick="applyBatch()">平日に一括セット</button>
-
-        <button class="btn-print" onclick="window.print()">🖨️ 印刷する</button>
-    </div>
-
-    <!-- ▼ メイン帳票エリア ▼ -->
-    <div class="main-content">
-        <div class="sheet">
-            <div class="sheet-title">通勤費精算書</div>
-            
-            <div class="sheet-info">
-                <div class="info-left">
-                    <div>対象月： <span id="viewMonth"></span></div>
-                    <div>所　属： <span id="viewDept"></span></div>
-                    <div>氏　名： <span id="viewName" style="font-size:18px; font-weight:bold;"></span></div>
+            <!-- メンバー管理 -->
+            <div style="background:#eef; padding:10px; border-radius:4px; margin-bottom:15px;">
+                <label style="font-weight:bold; font-size:12px;">👤 メンバー選択</label>
+                <div style="display:flex; gap:5px; margin-top:5px;">
+                    <select id="userSelect" onchange="loadUser()" style="flex:1;"></select>
+                    <button onclick="addUser()" style="width:30px;">＋</button>
+                    <button onclick="deleteUser()"
+                        style="width:30px; background:#d9534f; color:white; border:none;">🗑️</button>
                 </div>
-                <div class="hanko-box">
-                    <!-- 承認印 -->
-                    <div class="hanko-cell">
-                        <span class="hanko-label">承認</span>
-                        <img id="view_sealShonin" class="seal-display">
-                        <span class="seal-dummy-text">(印)</span>
+            </div>
+
+            <div class="form-group"><label>対象年月</label><input type="month" id="targetMonth" onchange="updateTable()">
+            </div>
+            <div class="form-group"><label>所属</label><input type="text" id="iptDept" placeholder="営業部"
+                    oninput="saveCurrentData()"></div>
+            <div class="form-group"><label>氏名</label><input type="text" id="iptName" placeholder="氏名"
+                    oninput="saveCurrentData()"></div>
+
+            <!-- ハンコ設定エリア (3つ) -->
+            <h3>💮 電子印鑑の設定</h3>
+
+            <div class="seal-setting-box">
+                <span class="seal-title">承認印 (左枠)</span>
+                <input type="file" accept="image/*" class="seal-input" onchange="handleFileSelect(this, 'sealShonin')">
+                <img id="prev_sealShonin" class="seal-preview-mini">
+                <button class="btn-clear" onclick="clearSeal('sealShonin')">削除</button>
+            </div>
+
+            <div class="seal-setting-box">
+                <span class="seal-title">確認印 (中枠)</span>
+                <input type="file" accept="image/*" class="seal-input" onchange="handleFileSelect(this, 'sealKakunin')">
+                <img id="prev_sealKakunin" class="seal-preview-mini">
+                <button class="btn-clear" onclick="clearSeal('sealKakunin')">削除</button>
+            </div>
+
+            <div class="seal-setting-box">
+                <span class="seal-title">担当印 (右枠)</span>
+                <input type="file" accept="image/*" class="seal-input" onchange="handleFileSelect(this, 'sealTanto')">
+                <img id="prev_sealTanto" class="seal-preview-mini">
+                <button class="btn-clear" onclick="clearSeal('sealTanto')">削除</button>
+                <div style="font-size:10px; color:#666; margin-top:5px;">
+                    ※登録がない場合、共通設定のハンコが表示されます。
+                </div>
+            </div>
+
+            <hr>
+            <h3>🚗 経路マスタ</h3>
+            <div id="routeConfig"></div>
+            <button class="btn-primary" onclick="addRouteInput()"
+                style="margin-top:5px; background:#6c757d; font-size:12px;">＋ 経路欄を追加</button>
+
+            <hr>
+            <h3>⚡ 一括入力 (平日)</h3>
+            <div class="form-group"><label>行き</label><select id="batchGo"></select></div>
+            <div class="form-group"><label>帰り</label><select id="batchBack"></select></div>
+            <button class="btn-primary" onclick="applyBatch()">平日に一括セット</button>
+
+            <button class="btn-print" onclick="window.print()">🖨️ 印刷する</button>
+        </aside>
+
+        <!-- ▼ メイン帳票エリア ▼ -->
+        <div class="main-content">
+            <div class="sheet">
+                <div class="sheet-title">通勤費精算書</div>
+
+                <div class="sheet-info">
+                    <div class="info-left">
+                        <div>対象月： <span id="viewMonth"></span></div>
+                        <div>所　属： <span id="viewDept"></span></div>
+                        <div style="display: flex; align-items: center;">
+                            氏　名： <span id="viewName" style="font-size:18px; font-weight:bold;"></span>
+                            <div class="name-seal-container">
+                                <img id="view_sealTanto" class="seal-display-inline">
+                                <span class="seal-dummy-text-inline">(印)</span>
+                            </div>
+                        </div>
                     </div>
-                    <!-- 確認印 -->
-                    <div class="hanko-cell">
-                        <span class="hanko-label">確認</span>
-                        <img id="view_sealKakunin" class="seal-display">
-                        <span class="seal-dummy-text">(印)</span>
+                    <div class="hanko-box">
+                        <!-- 承認印 -->
+                        <div class="hanko-cell">
+                            <span class="hanko-label">承認</span>
+                            <img id="view_sealShonin" class="seal-display">
+                            <span class="seal-dummy-text">(印)</span>
+                        </div>
+                        <!-- 確認印 -->
+                        <div class="hanko-cell">
+                            <span class="hanko-label">確認</span>
+                            <img id="view_sealKakunin" class="seal-display">
+                            <span class="seal-dummy-text">(印)</span>
+                        </div>
                     </div>
-                    <!-- 担当印 -->
-                    <div class="hanko-cell">
-                        <span class="hanko-label">担当</span>
-                        <img id="view_sealTanto" class="seal-display">
-                        <span class="seal-dummy-text">(印)</span>
+                </div>
+
+                <div class="cols-container">
+                    <div class="col-half">
+                        <table id="tableLeft">
+                            <thead>
+                                <tr>
+                                    <th style="width:30px;">日</th>
+                                    <th style="width:30px;">曜</th>
+                                    <th>行き</th>
+                                    <th>帰り</th>
+                                    <th style="width:50px;">金額</th>
+                                </tr>
+                            </thead>
+                            <tbody></tbody>
+                        </table>
+                    </div>
+                    <div class="col-half">
+                        <table id="tableRight">
+                            <thead>
+                                <tr>
+                                    <th style="width:30px;">日</th>
+                                    <th style="width:30px;">曜</th>
+                                    <th>行き</th>
+                                    <th>帰り</th>
+                                    <th style="width:50px;">金額</th>
+                                </tr>
+                            </thead>
+                            <tbody></tbody>
+                        </table>
                     </div>
                 </div>
-            </div>
 
-            <div class="cols-container">
-                <div class="col-half">
-                    <table id="tableLeft">
-                        <thead><tr><th style="width:30px;">日</th><th style="width:30px;">曜</th><th>行き</th><th>帰り</th><th style="width:50px;">金額</th></tr></thead>
-                        <tbody></tbody>
-                    </table>
-                </div>
-                <div class="col-half">
-                    <table id="tableRight">
-                        <thead><tr><th style="width:30px;">日</th><th style="width:30px;">曜</th><th>行き</th><th>帰り</th><th style="width:50px;">金額</th></tr></thead>
-                        <tbody></tbody>
-                    </table>
-                </div>
-            </div>
+                <div class="total-box">合計金額： ¥ <span id="grandTotal">0</span></div>
 
-            <div class="total-box">合計金額： ¥ <span id="grandTotal">0</span></div>
-            
-            <div style="margin-top:10px; font-size:12px;">
-                備考：<br>
-                <textarea id="iptNote" style="width:100%; border:none; resize:none; background:#f9f9f9; height:50px;" placeholder="特記事項があれば入力" oninput="saveCurrentData()"></textarea>
-                <div id="viewNote" class="print-text" style="white-space:pre-wrap;"></div>
+                <div style="margin-top:10px; font-size:12px;">
+                    備考：<br>
+                    <textarea id="iptNote"
+                        style="width:100%; border:none; resize:none; background:#f9f9f9; height:50px;"
+                        placeholder="特記事項があれば入力" oninput="saveCurrentData()"></textarea>
+                    <div id="viewNote" class="print-text" style="white-space:pre-wrap;"></div>
+                </div>
             </div>
         </div>
-    </div>
 
-    <script>
-        const KEY_USERS = "my_tool_tsukin_users";
-        const KEY_COMPANY = "my_tool_company_info";
-        
-        let currentUserIndex = 0;
-        let users = [];
-        let routes = [
-            { name: "自宅⇔会社 (下道)", cost: 420 },
-            { name: "自宅⇔会社 (高速)", cost: 1200 },
-            { name: "電車通勤", cost: 560 }
-        ];
-        const defaultRoutes = JSON.parse(JSON.stringify(routes));
+        <script>
+            const KEY_USERS = "my_tool_tsukin_users";
+            const KEY_COMPANY = "my_tool_company_info";
+            const THEMES = ['', 'theme-kawaii', 'theme-dark'];
 
-        window.addEventListener('load', () => {
-            const d = new Date();
-            const ym = `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2, '0')}`;
-            document.getElementById('targetMonth').value = ym;
-            loadUsers();
-            renderRouteInputs();
-            updateTable();
-        });
+            let currentUserIndex = 0;
+            let users = [];
+            let routes = [
+                { name: "自宅⇔会社 (下道)", cost: 420 },
+                { name: "自宅⇔会社 (高速)", cost: 1200 },
+                { name: "電車通勤", cost: 560 }
+            ];
+            const defaultRoutes = JSON.parse(JSON.stringify(routes));
 
-        // --- ユーザー管理 ---
-        function loadUsers() {
-            const json = localStorage.getItem(KEY_USERS);
-            if (json) { users = JSON.parse(json); } 
-            else { users = [{ name: "自分用", dept: "", routes: defaultRoutes, data: {}, seals: {} }]; }
-            renderUserSelect();
-            loadUser();
-        }
+            window.addEventListener('load', () => {
+                // テーマ復元
+                const savedTheme = localStorage.getItem('my_tool_theme');
+                if (savedTheme && THEMES.includes(savedTheme)) {
+                    document.body.className = savedTheme;
+                }
+                updateBtnText();
 
-        function renderUserSelect() {
-            const sel = document.getElementById('userSelect');
-            sel.innerHTML = "";
-            users.forEach((u, idx) => {
-                const opt = document.createElement('option');
-                opt.value = idx;
-                opt.text = u.name;
-                sel.appendChild(opt);
+                const d = new Date();
+                const ym = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}`;
+                document.getElementById('targetMonth').value = ym;
+                loadUsers();
+                renderRouteInputs();
+                updateTable();
             });
-            sel.value = currentUserIndex;
-        }
 
-        function addUser() {
-            const name = prompt("新しいメンバー名:");
-            if (name) {
-                users.push({ name: name, dept: "", routes: defaultRoutes, data: {}, seals: {} });
-                saveUsers();
-                currentUserIndex = users.length - 1;
-                renderUserSelect();
-                loadUser();
+            function toggleTheme() {
+                const body = document.body;
+                let currentClass = "";
+                if (body.classList.contains('theme-kawaii')) currentClass = 'theme-kawaii';
+                else if (body.classList.contains('theme-dark')) currentClass = 'theme-dark';
+
+                const currentIndex = THEMES.indexOf(currentClass);
+                const nextIndex = (currentIndex + 1) % THEMES.length;
+                const nextClass = THEMES[nextIndex];
+
+                body.className = nextClass;
+                localStorage.setItem('my_tool_theme', nextClass);
+                updateBtnText();
             }
-        }
 
-        function deleteUser() {
-            if (users.length <= 1) return alert("削除できません");
-            if (confirm("削除しますか？")) {
-                users.splice(currentUserIndex, 1);
-                currentUserIndex = 0;
-                saveUsers();
-                renderUserSelect();
-                loadUser();
-            }
-        }
-
-        function saveUsers() { localStorage.setItem(KEY_USERS, JSON.stringify(users)); }
-
-        function loadUser() {
-            currentUserIndex = document.getElementById('userSelect').value;
-            const u = users[currentUserIndex];
-            document.getElementById('iptName').value = u.name;
-            document.getElementById('iptDept').value = u.dept || "";
-            document.getElementById('iptNote').value = u.note || "";
-            
-            if (u.routes) routes = u.routes;
-            
-            // ハンコ反映
-            if(!u.seals) u.seals = {};
-            applySeal('sealShonin', u.seals.shonin);
-            applySeal('sealKakunin', u.seals.kakunin);
-            applySeal('sealTanto', u.seals.tanto);
-
-            renderRouteInputs();
-            updateTable(); 
-        }
-
-        function saveCurrentData() {
-            const u = users[currentUserIndex];
-            u.name = document.getElementById('iptName').value;
-            u.dept = document.getElementById('iptDept').value;
-            u.note = document.getElementById('iptNote').value;
-            u.routes = getRoutesFromInput();
-            
-            const month = document.getElementById('targetMonth').value;
-            const dailyData = {};
-            document.querySelectorAll('tr[data-day]').forEach(row => {
-                dailyData[row.getAttribute('data-day')] = { 
-                    go: row.querySelector('.go-select').value, 
-                    back: row.querySelector('.back-select').value 
-                };
-            });
-            if (!u.data) u.data = {};
-            u.data[month] = dailyData;
-            
-            saveUsers();
-            
-            document.getElementById('viewName').innerText = u.name;
-            document.getElementById('viewDept').innerText = u.dept;
-            document.getElementById('viewNote').innerText = u.note;
-            calculateTotal();
-        }
-
-        // --- ハンコ処理 ---
-        function handleFileSelect(input, type) {
-            if (input.files && input.files[0]) {
-                const reader = new FileReader();
-                reader.onload = function(e) {
-                    const dataUrl = e.target.result;
-                    const u = users[currentUserIndex];
-                    if(!u.seals) u.seals = {};
-                    
-                    if(type === 'sealShonin') u.seals.shonin = dataUrl;
-                    if(type === 'sealKakunin') u.seals.kakunin = dataUrl;
-                    if(type === 'sealTanto') u.seals.tanto = dataUrl;
-                    
-                    saveUsers();
-                    loadUser(); // 再描画
-                };
-                reader.readAsDataURL(input.files[0]);
-            }
-        }
-
-        function clearSeal(type) {
-            const u = users[currentUserIndex];
-            if(!u.seals) return;
-            if(type === 'sealShonin') u.seals.shonin = null;
-            if(type === 'sealKakunin') u.seals.kakunin = null;
-            if(type === 'sealTanto') u.seals.tanto = null;
-            
-            // inputタグもクリア
-            const inputs = document.querySelectorAll('.seal-input');
-            inputs.forEach(i => i.value = "");
-
-            saveUsers();
-            loadUser();
-        }
-
-        function applySeal(type, dataUrl) {
-            const imgView = document.getElementById('view_' + type);
-            const imgPrev = document.getElementById('prev_' + type);
-            
-            let src = dataUrl;
-            
-            // 担当印のみ、個別設定がなければ共通設定(index.html)を見る
-            if (type === 'sealTanto' && !src) {
-                const companyJson = localStorage.getItem(KEY_COMPANY);
-                if(companyJson) {
-                    const co = JSON.parse(companyJson);
-                    src = co.sealData || co.seal || co.stamp;
+            function updateBtnText() {
+                const btn = document.getElementById('themeBtn');
+                const body = document.body;
+                if (body.classList.contains('theme-kawaii')) {
+                    btn.innerText = "🌸 モード：Kawaii";
+                } else if (body.classList.contains('theme-dark')) {
+                    btn.innerText = "⚡ モード：Neon";
+                } else {
+                    btn.innerText = "✨ モード：Simple";
                 }
             }
 
-            if (src && src.length > 50) {
-                imgView.src = src;
-                imgView.style.display = "block";
-                // プレビュー欄
-                imgPrev.src = src;
-                imgPrev.style.display = "block";
-                // ダミー文字を消す
-                imgView.nextElementSibling.style.display = "none";
-            } else {
-                imgView.style.display = "none";
-                imgPrev.style.display = "none";
-                // ダミー文字を出す
-                imgView.nextElementSibling.style.display = "block";
+            // --- ユーザー管理 ---
+            function loadUsers() {
+                const json = localStorage.getItem(KEY_USERS);
+                if (json) { users = JSON.parse(json); }
+                else { users = [{ name: "自分用", dept: "", routes: defaultRoutes, data: {}, seals: {} }]; }
+                renderUserSelect();
+                loadUser();
             }
-        }
 
-        // --- 以下、計算・描画ロジック ---
-        function renderRouteInputs() {
-            const container = document.getElementById('routeConfig');
-            container.innerHTML = "";
-            routes.forEach((r, i) => {
-                container.innerHTML += `<div class="route-row"><input type="text" value="${r.name}" class="r-name" onchange="saveCurrentData();updateBatchSelect()"><input type="number" value="${r.cost}" class="r-cost" onchange="saveCurrentData();updateTable()"></div>`;
-            });
-            updateBatchSelect();
-        }
-        function addRouteInput() { routes.push({ name: "", cost: 0 }); renderRouteInputs(); saveCurrentData(); }
-        function getRoutesFromInput() {
-            const newRoutes = [];
-            document.querySelectorAll('#routeConfig .route-row').forEach(row => {
-                const name = row.querySelector('.r-name').value;
-                const cost = parseInt(row.querySelector('.r-cost').value) || 0;
-                if(name) newRoutes.push({ name, cost });
-            });
-            return newRoutes;
-        }
-        function updateBatchSelect() {
-            const opts = `<option value="">(なし)</option>` + routes.map((r, i) => `<option value="${i}">${r.name} (¥${r.cost})</option>`).join('');
-            document.getElementById('batchGo').innerHTML = opts;
-            document.getElementById('batchBack').innerHTML = opts;
-            updateTable(false);
-        }
-        function updateTable(load = true) {
-            const ym = document.getElementById('targetMonth').value;
-            if(!ym) return;
-            const [year, month] = ym.split('-').map(Number);
-            document.getElementById('viewMonth').innerText = `${year}年 ${month}月度`;
-            document.getElementById('viewName').innerText = document.getElementById('iptName').value;
-            document.getElementById('viewDept').innerText = document.getElementById('iptDept').value;
-            
-            const u = users[currentUserIndex];
-            const savedData = (u.data && u.data[ym]) ? u.data[ym] : {};
-            const lastDay = new Date(year, month, 0).getDate();
-            const tbLeft = document.querySelector('#tableLeft tbody');
-            const tbRight = document.querySelector('#tableRight tbody');
-            tbLeft.innerHTML = ""; tbRight.innerHTML = "";
-            
-            const routeOpts = `<option value="">-</option>` + routes.map((r, i) => `<option value="${i}">${r.name}</option>`).join('');
+            function renderUserSelect() {
+                const sel = document.getElementById('userSelect');
+                sel.innerHTML = "";
+                users.forEach((u, idx) => {
+                    const opt = document.createElement('option');
+                    opt.value = idx;
+                    opt.text = u.name;
+                    sel.appendChild(opt);
+                });
+                sel.value = currentUserIndex;
+            }
 
-            for (let d = 1; d <= lastDay; d++) {
-                const dateObj = new Date(year, month - 1, d);
-                const dow = dateObj.getDay();
-                let cls = ""; if(dow===0) cls="weekend"; if(dow===6) cls="saturday";
-                const saved = savedData[d] || { go: "", back: "" };
-                
-                const tr = document.createElement('tr');
-                tr.setAttribute('data-day', d); tr.setAttribute('data-dow', dow);
-                if(cls) tr.className = cls;
-                tr.innerHTML = `<td>${d}</td><td>${["日","月","火","水","木","金","土"][dow]}</td>
+            function addUser() {
+                const name = prompt("新しいメンバー名:");
+                if (name) {
+                    users.push({ name: name, dept: "", routes: defaultRoutes, data: {}, seals: {} });
+                    saveUsers();
+                    currentUserIndex = users.length - 1;
+                    renderUserSelect();
+                    loadUser();
+                }
+            }
+
+            function deleteUser() {
+                if (users.length <= 1) return alert("削除できません");
+                if (confirm("削除しますか？")) {
+                    users.splice(currentUserIndex, 1);
+                    currentUserIndex = 0;
+                    saveUsers();
+                    renderUserSelect();
+                    loadUser();
+                }
+            }
+
+            function saveUsers() { localStorage.setItem(KEY_USERS, JSON.stringify(users)); }
+
+            function loadUser() {
+                currentUserIndex = document.getElementById('userSelect').value;
+                const u = users[currentUserIndex];
+                document.getElementById('iptName').value = u.name;
+                document.getElementById('iptDept').value = u.dept || "";
+                document.getElementById('iptNote').value = u.note || "";
+
+                if (u.routes) routes = u.routes;
+
+                // ハンコ反映
+                if (!u.seals) u.seals = {};
+                applySeal('sealShonin', u.seals.shonin);
+                applySeal('sealKakunin', u.seals.kakunin);
+                applySeal('sealTanto', u.seals.tanto);
+
+                renderRouteInputs();
+                updateTable();
+            }
+
+            function saveCurrentData() {
+                const u = users[currentUserIndex];
+                u.name = document.getElementById('iptName').value;
+                u.dept = document.getElementById('iptDept').value;
+                u.note = document.getElementById('iptNote').value;
+                u.routes = getRoutesFromInput();
+
+                const month = document.getElementById('targetMonth').value;
+                const dailyData = {};
+                document.querySelectorAll('tr[data-day]').forEach(row => {
+                    dailyData[row.getAttribute('data-day')] = {
+                        go: row.querySelector('.go-select').value,
+                        back: row.querySelector('.back-select').value
+                    };
+                });
+                if (!u.data) u.data = {};
+                u.data[month] = dailyData;
+
+                saveUsers();
+
+                document.getElementById('viewName').innerText = u.name;
+                document.getElementById('viewDept').innerText = u.dept;
+                document.getElementById('viewNote').innerText = u.note;
+                calculateTotal();
+            }
+
+            // --- ハンコ処理 ---
+            function handleFileSelect(input, type) {
+                if (input.files && input.files[0]) {
+                    const reader = new FileReader();
+                    reader.onload = function (e) {
+                        const dataUrl = e.target.result;
+                        const u = users[currentUserIndex];
+                        if (!u.seals) u.seals = {};
+
+                        if (type === 'sealShonin') u.seals.shonin = dataUrl;
+                        if (type === 'sealKakunin') u.seals.kakunin = dataUrl;
+                        if (type === 'sealTanto') u.seals.tanto = dataUrl;
+
+                        saveUsers();
+                        loadUser(); // 再描画
+                    };
+                    reader.readAsDataURL(input.files[0]);
+                }
+            }
+
+            function clearSeal(type) {
+                const u = users[currentUserIndex];
+                if (!u.seals) return;
+                if (type === 'sealShonin') u.seals.shonin = null;
+                if (type === 'sealKakunin') u.seals.kakunin = null;
+                if (type === 'sealTanto') u.seals.tanto = null;
+
+                // inputタグもクリア
+                const inputs = document.querySelectorAll('.seal-input');
+                inputs.forEach(i => i.value = "");
+
+                saveUsers();
+                loadUser();
+            }
+
+            function applySeal(type, dataUrl) {
+                const isTanto = (type === 'sealTanto');
+                const imgView = document.getElementById('view_' + type);
+                const dummySpan = isTanto ? imgView.nextElementSibling : imgView.nextElementSibling;
+                // tantoの場合は seal-dummy-text-inline
+
+                const imgPrev = document.getElementById('prev_' + type);
+
+                let src = dataUrl;
+
+                // 担当印のみ、個別設定がなければ共通設定(index.html)を見る
+                if (type === 'sealTanto' && !src) {
+                    const companyJson = localStorage.getItem(KEY_COMPANY);
+                    if (companyJson) {
+                        const co = JSON.parse(companyJson);
+                        src = co.sealData || co.seal || co.stamp;
+                    }
+                }
+
+                if (src && src.length > 50) {
+                    imgView.src = src;
+                    imgView.style.display = "block";
+                    // プレビュー欄
+                    imgPrev.src = src;
+                    imgPrev.style.display = "block";
+                    // ダミー文字を消す
+                    if (imgView.nextElementSibling) imgView.nextElementSibling.style.display = "none";
+                } else {
+                    imgView.style.display = "none";
+                    imgPrev.style.display = "none";
+                    // ダミー文字を出す
+                    if (imgView.nextElementSibling) imgView.nextElementSibling.style.display = isTanto ? "flex" : "block";
+                }
+            }
+
+            // --- 以下、計算・描画ロジック ---
+            function renderRouteInputs() {
+                const container = document.getElementById('routeConfig');
+                container.innerHTML = "";
+                routes.forEach((r, i) => {
+                    container.innerHTML += `<div class="route-row"><input type="text" value="${r.name}" class="r-name" onchange="saveCurrentData();updateBatchSelect()"><input type="number" value="${r.cost}" class="r-cost" onchange="saveCurrentData();updateTable()"></div>`;
+                });
+                updateBatchSelect();
+            }
+            function addRouteInput() { routes.push({ name: "", cost: 0 }); renderRouteInputs(); saveCurrentData(); }
+            function getRoutesFromInput() {
+                const newRoutes = [];
+                document.querySelectorAll('#routeConfig .route-row').forEach(row => {
+                    const name = row.querySelector('.r-name').value;
+                    const cost = parseInt(row.querySelector('.r-cost').value) || 0;
+                    if (name) newRoutes.push({ name, cost });
+                });
+                return newRoutes;
+            }
+            function updateBatchSelect() {
+                const opts = `<option value="">(なし)</option>` + routes.map((r, i) => `<option value="${i}">${r.name} (¥${r.cost})</option>`).join('');
+                document.getElementById('batchGo').innerHTML = opts;
+                document.getElementById('batchBack').innerHTML = opts;
+                updateTable(false);
+            }
+            function updateTable(load = true) {
+                const ym = document.getElementById('targetMonth').value;
+                if (!ym) return;
+                const [year, month] = ym.split('-').map(Number);
+                document.getElementById('viewMonth').innerText = `${year}年 ${month}月度`;
+                document.getElementById('viewName').innerText = document.getElementById('iptName').value;
+                document.getElementById('viewDept').innerText = document.getElementById('iptDept').value;
+
+                const u = users[currentUserIndex];
+                const savedData = (u.data && u.data[ym]) ? u.data[ym] : {};
+                const lastDay = new Date(year, month, 0).getDate();
+                const tbLeft = document.querySelector('#tableLeft tbody');
+                const tbRight = document.querySelector('#tableRight tbody');
+                tbLeft.innerHTML = ""; tbRight.innerHTML = "";
+
+                const routeOpts = `<option value="">-</option>` + routes.map((r, i) => `<option value="${i}">${r.name}</option>`).join('');
+
+                for (let d = 1; d <= lastDay; d++) {
+                    const dateObj = new Date(year, month - 1, d);
+                    const dow = dateObj.getDay();
+                    let cls = ""; if (dow === 0) cls = "weekend"; if (dow === 6) cls = "saturday";
+                    const saved = savedData[d] || { go: "", back: "" };
+
+                    const tr = document.createElement('tr');
+                    tr.setAttribute('data-day', d); tr.setAttribute('data-dow', dow);
+                    if (cls) tr.className = cls;
+                    tr.innerHTML = `<td>${d}</td><td>${["日", "月", "火", "水", "木", "金", "土"][dow]}</td>
                 <td><select class="route-select go-select" onchange="calcRow(this)">${routeOpts}</select><span class="print-text go-text"></span></td>
                 <td><select class="route-select back-select" onchange="calcRow(this)">${routeOpts}</select><span class="print-text back-text"></span></td>
                 <td class="row-total">0</td>`;
-                
-                tr.querySelector('.go-select').value = saved.go;
-                tr.querySelector('.back-select').value = saved.back;
-                
-                if (d <= 15) tbLeft.appendChild(tr); else tbRight.appendChild(tr);
-                calcRow(tr.querySelector('.go-select'));
+
+                    tr.querySelector('.go-select').value = saved.go;
+                    tr.querySelector('.back-select').value = saved.back;
+
+                    if (d <= 15) tbLeft.appendChild(tr); else tbRight.appendChild(tr);
+                    calcRow(tr.querySelector('.go-select'));
+                }
+                calculateTotal();
             }
-            calculateTotal();
-        }
-        function calcRow(el) {
-            const tr = el.closest('tr');
-            const g = tr.querySelector('.go-select').value;
-            const b = tr.querySelector('.back-select').value;
-            let c = 0, gt = "-", bt = "-";
-            if(g!==""){ const r=routes[g]; if(r){c+=r.cost; gt=r.name;} }
-            if(b!==""){ const r=routes[b]; if(r){c+=r.cost; bt=r.name;} }
-            tr.querySelector('.row-total').innerText = c > 0 ? c.toLocaleString() : "-";
-            tr.querySelector('.go-text').innerText = gt;
-            tr.querySelector('.back-text').innerText = bt;
-            saveCurrentData();
-        }
-        function calculateTotal() {
-            let t = 0; document.querySelectorAll('.row-total').forEach(td => { const v = parseInt(td.innerText.replace(/,/g,'')); if(!isNaN(v)) t+=v; });
-            document.getElementById('grandTotal').innerText = t.toLocaleString();
-        }
-        function applyBatch() {
-            const g = document.getElementById('batchGo').value; const b = document.getElementById('batchBack').value;
-            document.querySelectorAll('tr[data-dow]').forEach(tr => {
-                const d = parseInt(tr.getAttribute('data-dow'));
-                if(d!==0 && d!==6){ tr.querySelector('.go-select').value = g; tr.querySelector('.back-select').value = b; calcRow(tr.querySelector('.go-select')); }
-            });
-            saveCurrentData();
-        }
-    </script>
+            function calcRow(el) {
+                const tr = el.closest('tr');
+                const g = tr.querySelector('.go-select').value;
+                const b = tr.querySelector('.back-select').value;
+                let c = 0, gt = "-", bt = "-";
+                if (g !== "") { const r = routes[g]; if (r) { c += r.cost; gt = r.name; } }
+                if (b !== "") { const r = routes[b]; if (r) { c += r.cost; bt = r.name; } }
+                tr.querySelector('.row-total').innerText = c > 0 ? c.toLocaleString() : "-";
+                tr.querySelector('.go-text').innerText = gt;
+                tr.querySelector('.back-text').innerText = bt;
+                saveCurrentData();
+            }
+            function calculateTotal() {
+                let t = 0; document.querySelectorAll('.row-total').forEach(td => { const v = parseInt(td.innerText.replace(/,/g, '')); if (!isNaN(v)) t += v; });
+                document.getElementById('grandTotal').innerText = t.toLocaleString();
+            }
+            function applyBatch() {
+                const g = document.getElementById('batchGo').value; const b = document.getElementById('batchBack').value;
+                document.querySelectorAll('tr[data-dow]').forEach(tr => {
+                    const d = parseInt(tr.getAttribute('data-dow'));
+                    if (d !== 0 && d !== 6) { tr.querySelector('.go-select').value = g; tr.querySelector('.back-select').value = b; calcRow(tr.querySelector('.go-select')); }
+                });
+                saveCurrentData();
+            }
+        </script>
+    </div>
+    <script src="theme.js"></script>
 </body>
+
 </html>

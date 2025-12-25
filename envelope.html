@@ -1,5 +1,6 @@
 <!DOCTYPE html>
 <html lang="ja">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -7,7 +8,8 @@
     <style>
         /* --- 全体のレイアウト --- */
         body {
-            display: none; /* セキュリティ用 */
+            display: none;
+            /* セキュリティ用 */
             font-family: "Helvetica Neue", Arial, "Hiragino Kaku Gothic ProN", "Hiragino Sans", Meiryo, sans-serif;
             background-color: #f4f4f4;
             margin: 0;
@@ -23,33 +25,67 @@
             background: #fff;
             padding: 20px;
             border-radius: 8px;
-            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
             height: fit-content;
         }
 
         .back-btn {
-            display: inline-block; background-color: #6c757d; color: white;
-            padding: 5px 10px; text-decoration: none; border-radius: 4px;
-            font-size: 12px; margin-bottom: 15px; cursor: pointer;
+            display: inline-block;
+            padding: 5px 10px;
+            text-decoration: none;
+            border-radius: var(--btn-radius);
+            font-size: 12px;
+            margin-bottom: 15px;
+            cursor: pointer;
         }
-        .back-btn:hover { background-color: #5a6268; }
 
-        .form-group { margin-bottom: 15px; }
-        .form-group label { display: block; font-size: 12px; font-weight: bold; margin-bottom: 5px; color: #555; }
-        .form-group input, .form-group textarea, .form-group select {
-            width: 100%; padding: 10px; box-sizing: border-box;
-            border: 1px solid #ccc; border-radius: 4px; font-size: 14px;
+        .form-group {
+            margin-bottom: 15px;
         }
-        
+
+        .form-group label {
+            display: block;
+            font-size: 12px;
+            font-weight: bold;
+            margin-bottom: 5px;
+            color: #555;
+        }
+
+        .form-group input,
+        .form-group textarea,
+        .form-group select {
+            width: 100%;
+            padding: 10px;
+            box-sizing: border-box;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+            font-size: 14px;
+        }
+
         button.print-btn {
-            width: 100%; padding: 12px; background-color: #d9534f; /* 封筒っぽい色 */
-            color: white; border: none; border-radius: 4px; font-size: 16px;
-            cursor: pointer; font-weight: bold; margin-top: 20px;
+            width: 100%;
+            padding: 12px;
+            background-color: #d9534f;
+            /* 封筒っぽい色 */
+            color: white;
+            border: none;
+            border-radius: 4px;
+            font-size: 16px;
+            cursor: pointer;
+            font-weight: bold;
+            margin-top: 20px;
         }
-        button.print-btn:hover { background-color: #c9302c; }
+
+        button.print-btn:hover {
+            background-color: #c9302c;
+        }
 
         /* --- プレビューエリア --- */
-        .preview-pane { flex-grow: 1; display: flex; justify-content: center; }
+        .preview-pane {
+            flex-grow: 1;
+            display: flex;
+            justify-content: center;
+        }
 
         /* 長形3号サイズ：120mm x 235mm */
         #envelope {
@@ -57,9 +93,9 @@
             height: 235mm;
             background: white;
             position: relative;
-            box-shadow: 0 5px 15px rgba(0,0,0,0.2);
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
             /* 印刷ズレを防ぐためのパディング */
-            padding: 20mm 10mm; 
+            padding: 20mm 10mm;
             box-sizing: border-box;
             color: #333;
         }
@@ -69,13 +105,19 @@
         .zip-area {
             position: absolute;
             top: 15mm;
-            left: 15mm; /* 郵便番号枠の位置に合わせるなら調整 */
+            left: 15mm;
+            /* 郵便番号枠の位置に合わせるなら調整 */
             font-size: 22px;
             font-weight: bold;
             letter-spacing: 5px;
-            font-family: "OCR-B", monospace, sans-serif; /* 数字を見やすく */
+            font-family: "OCR-B", monospace, sans-serif;
+            /* 数字を見やすく */
         }
-        .zip-mark { font-size: 14px; margin-right: 5px; }
+
+        .zip-mark {
+            font-size: 14px;
+            margin-right: 5px;
+        }
 
         /* 住所 */
         .address-area {
@@ -93,10 +135,26 @@
             margin-left: 15mm;
             margin-right: 5mm;
         }
-        .dest-company { font-size: 18px; margin-bottom: 5px; }
-        .dest-dept { font-size: 14px; margin-bottom: 10px; }
-        .dest-name { font-size: 26px; font-weight: bold; }
-        .honorific { font-size: 20px; margin-left: 10px; }
+
+        .dest-company {
+            font-size: 18px;
+            margin-bottom: 5px;
+        }
+
+        .dest-dept {
+            font-size: 14px;
+            margin-bottom: 10px;
+        }
+
+        .dest-name {
+            font-size: 26px;
+            font-weight: bold;
+        }
+
+        .honorific {
+            font-size: 20px;
+            margin-left: 10px;
+        }
 
         /* --- 差出人（自分の会社） --- */
         .sender-area {
@@ -109,47 +167,90 @@
             font-size: 12px;
             line-height: 1.4;
         }
-        .sender-title { font-size: 10px; color: #777; margin-bottom: 2px; }
-        .sender-name { font-weight: bold; font-size: 14px; }
-        
+
+        .sender-title {
+            font-size: 10px;
+            color: #777;
+            margin-bottom: 2px;
+        }
+
+        .sender-name {
+            font-weight: bold;
+            font-size: 14px;
+        }
+
         /* 切手枠イメージ（画面確認用） */
         .stamp-mark {
-            position: absolute; top: 10mm; right: 10mm;
-            width: 20mm; height: 24mm; border: 1px dashed #ddd;
-            color: #ddd; text-align: center; line-height: 24mm; font-size: 10px;
+            position: absolute;
+            top: 10mm;
+            right: 10mm;
+            width: 20mm;
+            height: 24mm;
+            border: 1px dashed #ddd;
+            color: #ddd;
+            text-align: center;
+            line-height: 24mm;
+            font-size: 10px;
         }
 
         /* --- 印刷設定 --- */
         @media print {
-            body { display: block !important; background: none; margin: 0; padding: 0; }
-            .editor-pane { display: none; }
-            .preview-pane { display: block; }
+            body {
+                display: block !important;
+                background: none;
+                margin: 0;
+                padding: 0;
+            }
+
+            .editor-pane {
+                display: none;
+            }
+
+            .preview-pane {
+                display: block;
+            }
+
             /* 画面上の切手枠などは消す */
-            .stamp-mark { display: none; }
-            
+            .stamp-mark {
+                display: none;
+            }
+
             #envelope {
                 box-shadow: none;
                 margin: 0;
                 /* プリンタによっては余白設定が必要 */
                 page-break-after: always;
             }
+
             /* 長形3号サイズを指定 */
-            @page { size: 120mm 235mm; margin: 0; }
+            @page {
+                size: 120mm 235mm;
+                margin: 0;
+            }
         }
-        
+
         @media (max-width: 900px) {
-            body { flex-direction: column; align-items: center; }
-            .editor-pane { width: 100%; max-width: 500px; }
+            body {
+                flex-direction: column;
+                align-items: center;
+            }
+
+            .editor-pane {
+                width: 100%;
+                max-width: 500px;
+            }
         }
     </style>
+    <link rel="stylesheet" href="theme.css">
 </head>
+
 <body>
 
     <script src="lock.js"></script>
     <script src="settings.js"></script>
     <script>
         if (typeof checkAuth === 'function') checkAuth(); else document.body.style.display = "flex";
-        window.addEventListener('load', function() {
+        window.addEventListener('load', function () {
             if (typeof applyCompanyData === 'function') applyCompanyData();
             update();
         });
@@ -158,9 +259,9 @@
     <!-- 入力フォーム -->
     <div class="editor-pane">
         <a href="index.html" class="back-btn">⬅ メニューに戻る</a>
-        
+
         <h2>長形3号 宛名印刷</h2>
-        
+
         <h3>お届け先</h3>
         <div class="form-group">
             <label>郵便番号</label>
@@ -194,7 +295,7 @@
         </div>
 
         <hr>
-        
+
         <h3>差出人 (自動入力)</h3>
         <div class="form-group">
             <label>会社名</label>
@@ -254,15 +355,17 @@
             document.getElementById('viewDept').innerText = document.getElementById('iptDept').value;
             document.getElementById('viewName').innerText = document.getElementById('iptName').value;
             document.getElementById('viewHonor').innerText = document.getElementById('iptHonor').value;
-            
+
             // 差出人（settings.jsから自動で入った値または手入力）
             document.getElementById('viewIssuerName').innerText = document.getElementById('iptIssuerName').value;
             document.getElementById('viewIssuerAddr').innerText = document.getElementById('iptIssuerAddr').value;
-            
+
             // 担当者名があれば表示
             const rep = document.getElementById('iptIssuerRep').value;
             document.getElementById('viewIssuerRep').innerText = rep ? rep : "";
         }
     </script>
+    <script src="theme.js"></script>
 </body>
+
 </html>
